@@ -35,6 +35,10 @@
   --color-error: #EF4444;
   --color-info: #3B82F6;
 
+  /* Surfaces */
+  --color-hover-bg: #F1F5F9;
+  --color-surface-subtle: #F1F5F9;
+
   /* Fonts */
   --font-sans: var(--font-sans);
   --font-mono: var(--font-jetbrains-mono);
@@ -171,56 +175,87 @@
 }
 
 @layer components {
-  /**
-   * Standard full-width section inner wrapper.
-   * Centres content, caps width, and applies responsive horizontal padding.
-   * Use on the inner div of every section/nav/footer that needs edge margins.
-   * NOTE: @apply only accepts named Tailwind utilities — no arbitrary values.
-   * Use plain CSS properties for anything that requires a specific color/size.
-   */
+
+  /* ── Section container ──────────────────────────────────── */
   .section-container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /** Full-page background shell for every auth screen. */
+  /* ── Auth page shell ────────────────────────────────────── */
   .auth-page {
-    @apply min-h-screen flex flex-col items-center justify-center px-4 py-12;
-    background-color: #F1F5F9;
+    @apply min-h-screen flex flex-col items-center justify-center py-12 px-4 bg-surface-subtle;
   }
 
-  /** White card used on every auth screen. */
+  /* ── Auth card ──────────────────────────────────────────── */
   .auth-card {
-    @apply w-full rounded-2xl shadow-sm p-8;
-    max-width: 28rem;
-    background-color: #ffffff;
-    border: 1px solid var(--color-border);
+    @apply w-full max-w-md rounded-2xl p-8 bg-surface border border-border shadow-sm;
   }
 
-  /** Spacing wrapper for each form field (label + input + error). */
+  /* ── Form field wrapper ─────────────────────────────────── */
   .form-field {
     @apply flex flex-col gap-1;
   }
 
-  /** Inline validation error message below a form field. */
+  /* ── Field validation error ─────────────────────────────── */
   .field-error {
-    @apply text-xs font-medium;
-    color: var(--color-error);
+    @apply text-xs font-medium text-error;
   }
 
-  /** Full-width primary submit button used across all auth forms. */
+  /* ── Auth submit button ─────────────────────────────────── */
   .auth-submit-btn {
-    @apply w-full font-semibold rounded-lg transition-colors cursor-pointer;
-    height: 2.75rem;
-    background-color: var(--color-primary-light);
-    color: #ffffff;
+    @apply w-full h-11 font-semibold text-sm rounded-lg cursor-pointer bg-primary-light text-white border-0 transition-colors duration-150;
   }
 
   .auth-submit-btn:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
+    @apply bg-primary-hover;
   }
 
   .auth-submit-btn:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
+    @apply opacity-65 cursor-not-allowed;
+  }
+
+  /* ── Icon button (topbar, notification bell, etc.) ─────── */
+  .icon-btn {
+    @apply relative p-2 rounded-lg cursor-pointer text-text-secondary transition-colors duration-150 hover:bg-hover-bg;
+  }
+
+  /* ── User avatar circle ─────────────────────────────────── */
+  /* Caller sets size: add w-8 h-8 or w-9 h-9 */
+  .user-avatar {
+    @apply flex items-center justify-center rounded-full shrink-0 text-xs font-bold text-white bg-primary-light;
+  }
+
+  /* ── Topbar search input ────────────────────────────────── */
+  .topbar-search {
+    @apply h-9 pl-9 pr-4 w-56 rounded-lg text-sm bg-surface-elevated text-text-primary border border-border outline-none transition duration-150;
+  }
+
+  .topbar-search::placeholder {
+    @apply text-text-muted;
+  }
+
+  .topbar-search:focus {
+    @apply border-primary-light ring-2 ring-primary-light/20;
+  }
+
+  /* ── Sidebar nav item ───────────────────────────────────── */
+  /* Left border reserved even when inactive so text never shifts */
+  .nav-item {
+    @apply flex items-center gap-3 w-full rounded-md text-sm font-medium text-text-muted no-underline cursor-pointer transition-colors duration-150;
+    @apply pt-2.5 pr-3 pb-2.5 pl-[calc(0.75rem-3px)];
+    @apply border-l-[3px] border-solid border-l-transparent;
+  }
+
+  .nav-item:hover {
+    @apply text-white bg-white/[0.06];
+  }
+
+  /* Active — blue left border + highlight bg */
+  .nav-item-active {
+    @apply font-semibold text-white bg-white/10 border-l-primary-light;
+  }
+
+  .nav-item-active:hover {
+    @apply text-white bg-white/10;
   }
 }

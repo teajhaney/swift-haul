@@ -68,6 +68,13 @@ export const EMPTY_STATE = {
   },
 } as const;
 
+// ── Notification Bell ─────────────────────────────────────────
+
+export const NOTIFICATION_BELL = {
+  ARIA_LABEL_DEFAULT: "Notifications",
+  ARIA_LABEL_UNREAD: (count: number) => `${count} unread notifications`,
+} as const;
+
 // ── Generic UI ────────────────────────────────────────────────
 
 export const UI = {
