@@ -1,11 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Clock, TrendingUp, Package, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  MapPin,
+  Clock,
+  TrendingUp,
+  Package,
+  DollarSign,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
-import { MOCK_DELIVERY_HISTORY, HISTORY_STATS } from '@/constants/driver-history-mock';
-import { HISTORY_TABS, HISTORY_STATUS_STYLES, HISTORY_PAGE_SIZE } from '@/constants/driver-history';
+import {
+  MOCK_DELIVERY_HISTORY,
+  HISTORY_STATS,
+} from '@/constants/driver-history-mock';
+import {
+  HISTORY_TABS,
+  HISTORY_STATUS_STYLES,
+  HISTORY_PAGE_SIZE,
+} from '@/constants/driver-history';
 import type { HistoryFilterTab } from '@/types/driver-pages';
 
 export default function DriverHistoryPage() {
@@ -13,10 +28,10 @@ export default function DriverHistoryPage() {
   const [page, setPage] = useState(1);
 
   // For mock purposes, show all items regardless of tab
-  const items      = MOCK_DELIVERY_HISTORY;
+  const items = MOCK_DELIVERY_HISTORY;
   const totalPages = Math.ceil(items.length / HISTORY_PAGE_SIZE);
-  const start      = (page - 1) * HISTORY_PAGE_SIZE;
-  const pageItems  = items.slice(start, start + HISTORY_PAGE_SIZE);
+  const start = (page - 1) * HISTORY_PAGE_SIZE;
+  const pageItems = items.slice(start, start + HISTORY_PAGE_SIZE);
 
   function goTo(p: number) {
     setPage(Math.max(1, Math.min(p, totalPages)));
@@ -33,8 +48,9 @@ export default function DriverHistoryPage() {
       <DriverTopbar />
 
       <div className="max-w-3xl mx-auto px-4 py-5 pb-24 space-y-5">
-
-        <h1 className="text-base font-bold text-text-primary">Delivery History</h1>
+        <h1 className="text-base font-bold text-text-primary">
+          Delivery History
+        </h1>
 
         {/* ── Stats row ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -43,8 +59,12 @@ export default function DriverHistoryPage() {
               <Package className="w-4 h-4 text-primary-light" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">Total</p>
-              <p className="text-xl font-bold text-text-primary">{HISTORY_STATS.totalDeliveries}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                Total
+              </p>
+              <p className="text-xl font-bold text-text-primary">
+                {HISTORY_STATS.totalDeliveries}
+              </p>
             </div>
           </div>
           <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
@@ -52,8 +72,12 @@ export default function DriverHistoryPage() {
               <Clock className="w-4 h-4 text-info" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">This Week</p>
-              <p className="text-xl font-bold text-text-primary">{HISTORY_STATS.thisWeek}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                This Week
+              </p>
+              <p className="text-xl font-bold text-text-primary">
+                {HISTORY_STATS.thisWeek}
+              </p>
             </div>
           </div>
           <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
@@ -61,8 +85,12 @@ export default function DriverHistoryPage() {
               <TrendingUp className="w-4 h-4 text-success" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">On-time</p>
-              <p className="text-xl font-bold text-text-primary">{HISTORY_STATS.successRate}%</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                On-time
+              </p>
+              <p className="text-xl font-bold text-text-primary">
+                {HISTORY_STATS.successRate}%
+              </p>
             </div>
           </div>
           <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
@@ -70,8 +98,12 @@ export default function DriverHistoryPage() {
               <DollarSign className="w-4 h-4 text-accent" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">Earned</p>
-              <p className="text-xl font-bold text-text-primary">{HISTORY_STATS.weekEarnings}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                Earned
+              </p>
+              <p className="text-xl font-bold text-text-primary">
+                {HISTORY_STATS.weekEarnings}
+              </p>
             </div>
           </div>
         </div>
@@ -100,13 +132,27 @@ export default function DriverHistoryPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-elevated">
-                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">Order</th>
-                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">Date</th>
-                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">Recipient</th>
-                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">Status</th>
-                <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">Distance</th>
-                <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">Duration</th>
-                <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">Earned</th>
+                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Order
+                </th>
+                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Date
+                </th>
+                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Recipient
+                </th>
+                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Status
+                </th>
+                <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Distance
+                </th>
+                <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Duration
+                </th>
+                <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Earned
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -114,22 +160,41 @@ export default function DriverHistoryPage() {
                 const s = HISTORY_STATUS_STYLES[item.status];
                 const Icon = s.icon;
                 return (
-                  <tr key={item.orderId} className={`border-b border-border last:border-0 hover:bg-surface-elevated transition-colors ${idx % 2 === 0 ? '' : 'bg-surface-elevated/30'}`}>
-                    <td className="px-4 py-3 font-mono text-xs text-text-muted">{item.orderId}</td>
-                    <td className="px-4 py-3 text-xs text-text-secondary">{item.date}</td>
-                    <td className="px-4 py-3">
-                      <p className="font-semibold text-text-primary">{item.recipientName}</p>
-                      <p className="text-xs text-text-muted truncate max-w-[160px]">{item.address}</p>
+                  <tr
+                    key={item.orderId}
+                    className={`border-b border-border last:border-0 hover:bg-surface-elevated transition-colors ${idx % 2 === 0 ? '' : 'bg-surface-elevated/30'}`}
+                  >
+                    <td className="px-4 py-3 font-mono text-xs text-text-muted">
+                      {item.orderId}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-text-secondary">
+                      {item.date}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide ${s.bg} ${s.text}`}>
+                      <p className="font-semibold text-text-primary">
+                        {item.recipientName}
+                      </p>
+                      <p className="text-xs text-text-muted truncate max-w-[160px]">
+                        {item.address}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide ${s.bg} ${s.text}`}
+                      >
                         <Icon className="w-3 h-3" />
                         {item.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-right text-text-secondary">{item.distanceMi}</td>
-                    <td className="px-4 py-3 text-xs text-right text-text-secondary">{item.duration}</td>
-                    <td className={`px-4 py-3 text-xs text-right font-semibold ${item.status === 'DELIVERED' ? 'text-success' : 'text-text-muted'}`}>
+                    <td className="px-4 py-3 text-xs text-right text-text-secondary">
+                      {item.distanceMi}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-right text-text-secondary">
+                      {item.duration}
+                    </td>
+                    <td
+                      className={`px-4 py-3 text-xs text-right font-semibold ${item.status === 'DELIVERED' ? 'text-success' : 'text-text-muted'}`}
+                    >
                       {item.earning}
                     </td>
                   </tr>
@@ -142,16 +207,25 @@ export default function DriverHistoryPage() {
         {/* Mobile cards */}
         <div className="sm:hidden space-y-2">
           {pageItems.map(item => {
-            const s = STATUS_STYLES[item.status];
+            const s = HISTORY_STATUS_STYLES[item.status];
             const Icon = s.icon;
             return (
-              <div key={item.orderId} className="bg-surface rounded-xl border border-border p-4">
+              <div
+                key={item.orderId}
+                className="bg-surface rounded-xl border border-border p-4"
+              >
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <span className="font-mono text-xs text-text-muted">{item.orderId}</span>
-                    <p className="text-sm font-semibold text-text-primary mt-0.5">{item.recipientName}</p>
+                    <span className="font-mono text-xs text-text-muted">
+                      {item.orderId}
+                    </span>
+                    <p className="text-sm font-semibold text-text-primary mt-0.5">
+                      {item.recipientName}
+                    </p>
                   </div>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide ${s.bg} ${s.text}`}>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide ${s.bg} ${s.text}`}
+                  >
                     <Icon className="w-3 h-3" />
                     {item.status}
                   </span>
@@ -162,9 +236,14 @@ export default function DriverHistoryPage() {
                 </div>
                 <div className="flex items-center gap-4 text-xs text-text-muted border-t border-border pt-2">
                   <span>{item.date}</span>
-                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{item.duration}</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {item.duration}
+                  </span>
                   <span>{item.distanceMi}</span>
-                  <span className={`ml-auto font-semibold ${item.status === 'DELIVERED' ? 'text-success' : 'text-text-muted'}`}>
+                  <span
+                    className={`ml-auto font-semibold ${item.status === 'DELIVERED' ? 'text-success' : 'text-text-muted'}`}
+                  >
                     {item.earning}
                   </span>
                 </div>
@@ -177,7 +256,9 @@ export default function DriverHistoryPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-1">
             <p className="text-xs text-text-muted">
-              Showing {start + 1}–{Math.min(start + HISTORY_PAGE_SIZE, items.length)} of {items.length} deliveries
+              Showing {start + 1}–
+              {Math.min(start + HISTORY_PAGE_SIZE, items.length)} of{' '}
+              {items.length} deliveries
             </p>
             <div className="flex items-center gap-1">
               <button
