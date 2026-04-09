@@ -29,8 +29,6 @@ export default function DriverProfilePage() {
     profile.availability
   );
 
-  const activeStyle = AVAILABILITY_STYLES[availability];
-
   return (
     <>
       <DriverTopbar />

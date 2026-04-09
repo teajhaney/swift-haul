@@ -10,68 +10,9 @@ import {
 } from 'lucide-react';
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
-import {
-  MOCK_ACTIVE_DELIVERY,
-  MOCK_QUEUE,
-} from '@/constants/driver-queue-mock';
-import type { MapStop } from '@/types/driver-pages';
-
-const MAP_STOPS: MapStop[] = [
-  {
-    orderId: MOCK_ACTIVE_DELIVERY.orderId,
-    recipientName: MOCK_ACTIVE_DELIVERY.recipientName,
-    address: MOCK_ACTIVE_DELIVERY.deliveryAddress,
-    timeWindow: `Est. ${MOCK_ACTIVE_DELIVERY.estimatedDelivery}`,
-    status: 'active',
-    pinX: '50%',
-    pinY: '48%',
-  },
-  {
-    orderId: MOCK_QUEUE[0].orderId,
-    recipientName: MOCK_QUEUE[0].recipientName,
-    address: MOCK_QUEUE[0].address,
-    timeWindow: MOCK_QUEUE[0].timeWindow,
-    status: 'next',
-    pinX: '70%',
-    pinY: '62%',
-  },
-  {
-    orderId: MOCK_QUEUE[1].orderId,
-    recipientName: MOCK_QUEUE[1].recipientName,
-    address: MOCK_QUEUE[1].address,
-    timeWindow: MOCK_QUEUE[1].timeWindow,
-    status: 'upcoming',
-    pinX: '78%',
-    pinY: '28%',
-  },
-  {
-    orderId: MOCK_QUEUE[2].orderId,
-    recipientName: MOCK_QUEUE[2].recipientName,
-    address: MOCK_QUEUE[2].address,
-    timeWindow: MOCK_QUEUE[2].timeWindow,
-    status: 'upcoming',
-    pinX: '30%',
-    pinY: '72%',
-  },
-];
-
-const PIN_STYLES: Record<MapStop['status'], string> = {
-  active: 'bg-accent border-white shadow-lg w-8 h-8',
-  next: 'bg-primary-light border-white shadow w-6 h-6',
-  upcoming: 'bg-border-strong border-white shadow w-5 h-5',
-};
-
-const STOP_LABEL: Record<MapStop['status'], string> = {
-  active: 'In Progress',
-  next: 'Next Stop',
-  upcoming: 'Upcoming',
-};
-
-const STOP_BADGE: Record<MapStop['status'], string> = {
-  active: 'bg-accent/10 text-accent',
-  next: 'bg-info/10 text-info',
-  upcoming: 'bg-surface-elevated text-text-muted border border-border',
-};
+import { MOCK_ACTIVE_DELIVERY } from '@/constants/driver-queue-mock';
+import { MOCK_MAP_STOPS } from '@/constants/driver-map-mock';
+import { MAP_PIN_STYLES, MAP_STOP_LABEL, MAP_STOP_BADGE } from '@/constants/driver-map';
 
 export default function DriverMapPage() {
   return (
@@ -154,14 +95,14 @@ export default function DriverMapPage() {
           </div>
 
           {/* Stop pins */}
-          {MAP_STOPS.map(stop => (
+          {MOCK_MAP_STOPS.map(stop => (
             <div
               key={stop.orderId}
               className="absolute -translate-x-1/2 -translate-y-full"
               style={{ left: stop.pinX, top: stop.pinY }}
             >
               <div
-                className={`rounded-full border-2 flex items-center justify-center ${PIN_STYLES[stop.status]}`}
+                className={`rounded-full border-2 flex items-center justify-center ${MAP_PIN_STYLES[stop.status]}`}
               >
                 <MapPin className="w-3 h-3 text-white" />
               </div>
@@ -214,7 +155,7 @@ export default function DriverMapPage() {
               Today&apos;s Route
             </h2>
             <div className="space-y-2">
-              {MAP_STOPS.map((stop, idx) => (
+              {MOCK_MAP_STOPS.map((stop, idx) => (
                 <Link
                   key={stop.orderId}
                   href={`/driver/orders/${stop.orderId}`}
@@ -236,9 +177,9 @@ export default function DriverMapPage() {
                         {stop.orderId}
                       </span>
                       <span
-                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${STOP_BADGE[stop.status]}`}
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${MAP_STOP_BADGE[stop.status]}`}
                       >
-                        {STOP_LABEL[stop.status]}
+                        {MAP_STOP_LABEL[stop.status]}
                       </span>
                     </div>
                     <p className="text-sm font-semibold text-text-primary truncate">

@@ -1,31 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { Package, RefreshCw, Calendar, Settings, AlertTriangle, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
 import { MOCK_DRIVER_ALERTS, ALERT_TYPE_STYLES } from '@/constants/driver-alerts-mock';
-import type { DriverAlert, DriverAlertType } from '@/types/driver-pages';
-
-const TYPE_ICONS: Record<DriverAlertType, LucideIcon> = {
-  ORDER_ASSIGNED:  Package,
-  ORDER_UPDATED:   RefreshCw,
-  SCHEDULE_CHANGE: Calendar,
-  SYSTEM:          Settings,
-  URGENT:          AlertTriangle,
-};
-
-const PAGE_SIZE = 5;
+import { ALERT_TYPE_ICONS, ALERTS_PAGE_SIZE } from '@/constants/driver-alerts';
+import type { DriverAlert } from '@/types/driver-pages';
 
 export default function DriverAlertsPage() {
   const [alerts, setAlerts] = useState<DriverAlert[]>(MOCK_DRIVER_ALERTS);
   const [page, setPage] = useState(1);
 
   const unreadCount  = alerts.filter(a => !a.isRead).length;
-  const totalPages   = Math.ceil(alerts.length / PAGE_SIZE);
-  const start        = (page - 1) * PAGE_SIZE;
-  const pageItems    = alerts.slice(start, start + PAGE_SIZE);
+  const totalPages   = Math.ceil(alerts.length / ALERTS_PAGE_SIZE);
+  const start        = (page - 1) * ALERTS_PAGE_SIZE;
+  const pageItems    = alerts.slice(start, start + ALERTS_PAGE_SIZE);
 
   function markRead(id: string) {
     setAlerts(prev => prev.map(a => a.id === id ? { ...a, isRead: true } : a));
@@ -71,7 +61,7 @@ export default function DriverAlertsPage() {
         <div className="space-y-2">
           {pageItems.map(alert => {
             const styles = ALERT_TYPE_STYLES[alert.type];
-            const Icon   = TYPE_ICONS[alert.type];
+            const Icon   = ALERT_TYPE_ICONS[alert.type];
 
             return (
               <button
@@ -119,13 +109,13 @@ export default function DriverAlertsPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-2">
             <p className="text-xs text-text-muted">
-              Showing {start + 1}–{Math.min(start + PAGE_SIZE, alerts.length)} of {alerts.length} alerts
+              Showing {start + 1}–{Math.min(start + ALERTS_PAGE_SIZE, alerts.length)} of {alerts.length} alerts
             </p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => goTo(page - 1)}
                 disabled={page === 1}
-                className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-text-secondary hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="pagination-nav-btn"
                 aria-label="Previous page"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -135,11 +125,7 @@ export default function DriverAlertsPage() {
                 <button
                   key={p}
                   onClick={() => goTo(p)}
-                  className={`w-8 h-8 rounded-lg text-xs font-semibold transition-colors ${
-                    p === page
-                      ? 'bg-primary-light text-white'
-                      : 'border border-border text-text-secondary hover:bg-surface-elevated'
-                  }`}
+                  className={`pagination-page-btn ${p === page ? 'pagination-page-btn-active' : ''}`}
                 >
                   {p}
                 </button>
@@ -148,7 +134,7 @@ export default function DriverAlertsPage() {
               <button
                 onClick={() => goTo(page + 1)}
                 disabled={page === totalPages}
-                className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-text-secondary hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="pagination-nav-btn"
                 aria-label="Next page"
               >
                 <ChevronRight className="w-4 h-4" />

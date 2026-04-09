@@ -1,25 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Clock, CheckCircle2, XCircle, TrendingUp, Package, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Clock, TrendingUp, Package, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
 import { MOCK_DELIVERY_HISTORY, HISTORY_STATS } from '@/constants/driver-history-mock';
+import { HISTORY_TABS, HISTORY_STATUS_STYLES, HISTORY_PAGE_SIZE } from '@/constants/driver-history';
 import type { HistoryFilterTab } from '@/types/driver-pages';
-
-const TABS: { key: HistoryFilterTab; label: string }[] = [
-  { key: 'today',  label: 'Today'      },
-  { key: 'week',   label: 'This Week'  },
-  { key: 'month',  label: 'This Month' },
-  { key: 'all',    label: 'All Time'   },
-];
-
-const STATUS_STYLES = {
-  DELIVERED: { bg: 'bg-success/10', text: 'text-success', icon: CheckCircle2 },
-  FAILED:    { bg: 'bg-error/10',   text: 'text-error',   icon: XCircle      },
-};
-
-const PAGE_SIZE = 5;
 
 export default function DriverHistoryPage() {
   const [activeTab, setActiveTab] = useState<HistoryFilterTab>('week');
@@ -27,9 +14,9 @@ export default function DriverHistoryPage() {
 
   // For mock purposes, show all items regardless of tab
   const items      = MOCK_DELIVERY_HISTORY;
-  const totalPages = Math.ceil(items.length / PAGE_SIZE);
-  const start      = (page - 1) * PAGE_SIZE;
-  const pageItems  = items.slice(start, start + PAGE_SIZE);
+  const totalPages = Math.ceil(items.length / HISTORY_PAGE_SIZE);
+  const start      = (page - 1) * HISTORY_PAGE_SIZE;
+  const pageItems  = items.slice(start, start + HISTORY_PAGE_SIZE);
 
   function goTo(p: number) {
     setPage(Math.max(1, Math.min(p, totalPages)));
@@ -91,7 +78,7 @@ export default function DriverHistoryPage() {
 
         {/* ── Filter tabs ── */}
         <div className="flex gap-1 bg-surface-elevated rounded-xl p-1 border border-border">
-          {TABS.map(tab => (
+          {HISTORY_TABS.map(tab => (
             <button
               key={tab.key}
               onClick={() => changeTab(tab.key)}
@@ -124,7 +111,7 @@ export default function DriverHistoryPage() {
             </thead>
             <tbody>
               {pageItems.map((item, idx) => {
-                const s = STATUS_STYLES[item.status];
+                const s = HISTORY_STATUS_STYLES[item.status];
                 const Icon = s.icon;
                 return (
                   <tr key={item.orderId} className={`border-b border-border last:border-0 hover:bg-surface-elevated transition-colors ${idx % 2 === 0 ? '' : 'bg-surface-elevated/30'}`}>
@@ -190,13 +177,13 @@ export default function DriverHistoryPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-1">
             <p className="text-xs text-text-muted">
-              Showing {start + 1}–{Math.min(start + PAGE_SIZE, items.length)} of {items.length} deliveries
+              Showing {start + 1}–{Math.min(start + HISTORY_PAGE_SIZE, items.length)} of {items.length} deliveries
             </p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => goTo(page - 1)}
                 disabled={page === 1}
-                className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-text-secondary hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="pagination-nav-btn"
                 aria-label="Previous page"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -206,11 +193,7 @@ export default function DriverHistoryPage() {
                 <button
                   key={p}
                   onClick={() => goTo(p)}
-                  className={`w-8 h-8 rounded-lg text-xs font-semibold transition-colors ${
-                    p === page
-                      ? 'bg-primary-light text-white'
-                      : 'border border-border text-text-secondary hover:bg-surface-elevated'
-                  }`}
+                  className={`pagination-page-btn ${p === page ? 'pagination-page-btn-active' : ''}`}
                 >
                   {p}
                 </button>
@@ -219,7 +202,7 @@ export default function DriverHistoryPage() {
               <button
                 onClick={() => goTo(page + 1)}
                 disabled={page === totalPages}
-                className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-text-secondary hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="pagination-nav-btn"
                 aria-label="Next page"
               >
                 <ChevronRight className="w-4 h-4" />

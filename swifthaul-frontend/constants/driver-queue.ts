@@ -1,3 +1,5 @@
+import type { DriverOrderStatus } from '@/types/driver-order';
+
 export const DRIVER_QUEUE = {
   BRAND: 'SwiftHaul',
   DRIVER_ROLE_BADGE: 'DRIVER',
@@ -45,3 +47,17 @@ export const DRIVER_QUEUE = {
   KG_SUFFIX: 'kg',
   MI_SUFFIX: 'mi',
 } as const;
+
+export const QUEUE_PAGE_SIZE = 5;
+
+/** CTA button config for each driver order status on the detail page */
+export const CTA_CONFIG: Record<DriverOrderStatus, { label: string; color: string } | null> = {
+  ASSIGNED:         null,
+  ACCEPTED:         { label: DRIVER_QUEUE.STATUS_ACCEPTED,         color: 'bg-warning hover:bg-amber-600'        },
+  PICKED_UP:        { label: DRIVER_QUEUE.STATUS_MARK_DELIVERED,   color: 'bg-purple-600 hover:bg-purple-700'    },
+  IN_TRANSIT:       { label: DRIVER_QUEUE.STATUS_MARK_DELIVERED,   color: 'bg-purple-600 hover:bg-purple-700'    },
+  OUT_FOR_DELIVERY: { label: DRIVER_QUEUE.STATUS_OUT_FOR_DELIVERY,  color: 'bg-success hover:bg-emerald-600'     },
+  DELIVERED:        null,
+  FAILED:           null,
+  PENDING:          null,
+};

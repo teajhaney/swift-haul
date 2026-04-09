@@ -10,43 +10,12 @@ import {
   CheckCircle2,
   Circle,
   Zap,
-  Truck,
-  LayoutList,
-  UserCircle2,
 } from 'lucide-react';
 
 import { DriverTopbar } from '@/components/driver/driver-topbar';
-import { DRIVER_QUEUE } from '@/constants/driver-queue';
-import {
-  MOCK_DELIVERY_DETAILS,
-  MOCK_ACTIVE_DELIVERY,
-  STATUS_COLORS,
-  PRIORITY_COLORS,
-} from '@/constants/driver-queue-mock';
-import type { DriverOrderStatus } from '@/types/driver-order';
-
-// ── CTA config per status ─────────────────────────────────────
-
-const CTA_CONFIG: Record<DriverOrderStatus, { label: string; color: string } | null> = {
-  ASSIGNED:         null,
-  ACCEPTED:         { label: DRIVER_QUEUE.STATUS_ACCEPTED,        color: 'bg-warning hover:bg-amber-600' },
-  PICKED_UP:        { label: DRIVER_QUEUE.STATUS_MARK_DELIVERED,  color: 'bg-purple-600 hover:bg-purple-700' },
-  IN_TRANSIT:       { label: DRIVER_QUEUE.STATUS_MARK_DELIVERED,  color: 'bg-purple-600 hover:bg-purple-700' },
-  OUT_FOR_DELIVERY: { label: DRIVER_QUEUE.STATUS_OUT_FOR_DELIVERY, color: 'bg-success hover:bg-emerald-600' },
-  DELIVERED:        null,
-  FAILED:           null,
-  PENDING:          null,
-};
-
-// ── Detail page bottom nav (mobile) ──────────────────────────
-
-const DETAIL_NAV = [
-  { label: DRIVER_QUEUE.NAV_ROUTES,  icon: LayoutList,  href: '/driver/orders' },
-  { label: DRIVER_QUEUE.NAV_ACTIVE,  icon: Truck,       href: `/driver/orders/${MOCK_ACTIVE_DELIVERY.orderId}` },
-  { label: DRIVER_QUEUE.NAV_PROFILE, icon: UserCircle2, href: '/driver/profile' },
-];
-
-// ─────────────────────────────────────────────────────────────
+import { DRIVER_QUEUE, CTA_CONFIG } from '@/constants/driver-queue';
+import { MOCK_DELIVERY_DETAILS, STATUS_COLORS, PRIORITY_COLORS } from '@/constants/driver-queue-mock';
+import { DRIVER_DETAIL_NAV as DETAIL_NAV } from '@/constants/driver-navigation';
 
 export default function DriverDeliveryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

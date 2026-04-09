@@ -14,17 +14,13 @@ import {
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
 
-import { DRIVER_QUEUE } from '@/constants/driver-queue';
+import { DRIVER_QUEUE, QUEUE_PAGE_SIZE } from '@/constants/driver-queue';
 import {
   MOCK_ACTIVE_DELIVERY,
   MOCK_QUEUE,
   STATUS_COLORS,
   PRIORITY_COLORS,
 } from '@/constants/driver-queue-mock';
-
-// ─────────────────────────────────────────────────────────────
-
-const QUEUE_PAGE_SIZE = 5;
 
 export default function DriverOrderQueuePage() {
   const active = MOCK_ACTIVE_DELIVERY;
@@ -279,7 +275,7 @@ export default function DriverOrderQueuePage() {
                 <button
                   onClick={() => goTo(page - 1)}
                   disabled={page === 1}
-                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-text-secondary hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="pagination-nav-btn"
                   aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -289,11 +285,7 @@ export default function DriverOrderQueuePage() {
                   <button
                     key={p}
                     onClick={() => goTo(p)}
-                    className={`w-8 h-8 rounded-lg text-xs font-semibold transition-colors ${
-                      p === page
-                        ? 'bg-primary-light text-white'
-                        : 'border border-border text-text-secondary hover:bg-surface-elevated'
-                    }`}
+                    className={`pagination-page-btn ${p === page ? 'pagination-page-btn-active' : ''}`}
                   >
                     {p}
                   </button>
@@ -302,7 +294,7 @@ export default function DriverOrderQueuePage() {
                 <button
                   onClick={() => goTo(page + 1)}
                   disabled={page === totalPages}
-                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-text-secondary hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="pagination-nav-btn"
                   aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />

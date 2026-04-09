@@ -3,47 +3,19 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  Bell,
-  LayoutList,
-  Map,
-  History,
-  UserCircle2,
-  ArrowLeft,
-  Package,
-  RefreshCw,
-  Calendar,
-  Settings,
-  AlertTriangle,
-  ChevronRight,
-} from 'lucide-react';
+import { Bell, ArrowLeft, ChevronRight } from 'lucide-react';
 import {
   MOCK_DRIVER_ALERTS,
   ALERT_TYPE_STYLES,
 } from '@/constants/driver-alerts-mock';
-import type { DriverAlertType } from '@/types/driver-pages';
+import { DRIVER_DESKTOP_NAV } from '@/constants/driver-navigation';
+import { ALERT_TYPE_ICONS } from '@/constants/driver-alerts';
 
 interface DriverTopbarProps {
   /** If provided, mobile shows a back arrow + title instead of the brand */
   backHref?: string;
   title?: string;
 }
-
-const DESKTOP_NAV = [
-  { label: 'Queue', href: '/driver/orders', icon: LayoutList },
-  { label: 'Map View', href: '/driver/map', icon: Map },
-  { label: 'Alerts', href: '/driver/alerts', icon: Bell },
-  { label: 'History', href: '/driver/history', icon: History },
-  { label: 'Profile', href: '/driver/profile', icon: UserCircle2 },
-];
-
-const TYPE_ICONS: Record<DriverAlertType, typeof Bell> = {
-  ORDER_ASSIGNED: Package,
-  ORDER_UPDATED: RefreshCw,
-  SCHEDULE_CHANGE: Calendar,
-  SYSTEM: Settings,
-  URGENT: AlertTriangle,
-};
 
 export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
   const pathname = usePathname();
@@ -99,7 +71,7 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
 
         {/* ── Center: desktop nav tabs ── */}
         <nav className="hidden sm:flex items-center gap-0.5 flex-1">
-          {DESKTOP_NAV.map(({ label, href, icon: Icon }) => {
+          {DRIVER_DESKTOP_NAV.map(({ label, href, icon: Icon }) => {
             const active =
               href === '/driver/orders'
                 ? pathname === '/driver/orders' ||
@@ -175,7 +147,7 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
                 <div className="divide-y divide-border max-h-64 overflow-y-auto">
                   {preview.map(alert => {
                     const style = ALERT_TYPE_STYLES[alert.type];
-                    const Icon = TYPE_ICONS[alert.type];
+                    const Icon = ALERT_TYPE_ICONS[alert.type];
                     return (
                       <Link
                         key={alert.id}

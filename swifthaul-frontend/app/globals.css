@@ -320,6 +320,24 @@
     @apply px-5 py-4 border-t border-border flex items-center gap-3 shrink-0;
   }
 
+  /* ── Pagination controls ───────────────────────────────── */
+  /* Prev / Next arrow buttons */
+  .pagination-nav-btn {
+    @apply w-8 h-8 rounded-lg border border-border flex items-center justify-center
+           text-text-secondary hover:bg-surface-elevated transition-colors
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  /* Numbered page buttons — add .pagination-page-btn-active for selected state */
+  .pagination-page-btn {
+    @apply w-8 h-8 rounded-lg text-xs font-semibold transition-colors
+           border border-border text-text-secondary hover:bg-surface-elevated;
+  }
+
+  .pagination-page-btn-active {
+    @apply bg-primary-light text-white border-transparent hover:bg-primary-hover;
+  }
+
   /* ── Sidebar nav item ───────────────────────────────────── */
   /* Left border reserved even when inactive so text never shifts */
   .nav-item {
