@@ -17,6 +17,9 @@ import {
 import { DRIVER_DETAIL } from '@/constants/driver-detail';
 import { getDriverDetail } from '@/constants/driver-detail-mock';
 import { AVAILABILITY_STYLES } from '@/constants/drivers-mock';
+import { AssignOrderModal } from '@/components/drivers/assign-order-modal';
+import type { Order } from '@/types/order';
+import { toast } from 'sonner';
 
 const STATUS_COLOR: Record<string, string> = {
   'IN TRANSIT': 'text-primary-light',
@@ -47,7 +50,12 @@ export default function DriverDetailPage({
   const { id } = use(params);
   const driver = getDriverDetail(id);
 
-  const [historyPage, setHistoryPage] = useState(1);
+  const [historyPage, setHistoryPage]   = useState(1);
+  const [showAssignOrder, setShowAssignOrder] = useState(false);
+
+  function handleOrderAssigned(order: Order) {
+    toast.success(`Order ${order.id} assigned to ${driver?.name}`);
+  }
 
   if (!driver) {
     return (
@@ -83,6 +91,7 @@ export default function DriverDetailPage({
   const historySlice = driver.deliveryHistory.slice(hFrom, hTo);
 
   return (
+    <>
     <div className="space-y-5">
       {/* ── Breadcrumb ── */}
       <nav className="flex items-center gap-2 text-sm text-text-secondary">
@@ -410,7 +419,10 @@ export default function DriverDetailPage({
 
             {/* Assign new order */}
             <div className="p-3 border-t border-border">
-              <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border-strong text-sm font-medium text-text-secondary hover:bg-surface-elevated hover:border-primary-light hover:text-primary-light transition-colors">
+              <button
+                onClick={() => setShowAssignOrder(true)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border-strong text-sm font-medium text-text-secondary hover:bg-surface-elevated hover:border-primary-light hover:text-primary-light transition-colors"
+              >
                 <Plus className="w-4 h-4" />
                 {DRIVER_DETAIL.ASSIGN_NEW_ORDER}
               </button>
@@ -460,5 +472,14 @@ export default function DriverDetailPage({
         </div>
       </div>
     </div>
+
+    {showAssignOrder && (
+      <AssignOrderModal
+        driverName={driver.name}
+        onConfirm={handleOrderAssigned}
+        onClose={() => setShowAssignOrder(false)}
+      />
+    )}
+    </>
   );
 }

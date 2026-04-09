@@ -265,6 +265,61 @@
     @apply border-primary-light ring-2 ring-primary-light/20;
   }
 
+  /* ── Primary action button ─────────────────────────────── */
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors duration-150 bg-primary-light;
+  }
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-primary-hover;
+  }
+  .btn-primary:disabled {
+    @apply opacity-40 cursor-not-allowed;
+  }
+
+  /* ── Secondary (outlined) button ───────────────────────── */
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg border border-border text-sm font-medium text-text-secondary transition-colors duration-150;
+  }
+  .btn-secondary:hover {
+    @apply bg-surface-elevated;
+  }
+
+  /* ── Modal backdrop + centering shell ──────────────────── */
+  /* position/inset/z-index written as plain CSS — @apply fixed/inset-0/z-50  */
+  /* does not apply position:fixed reliably in this project's Tailwind v4 setup */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 43, 70, 0.45);
+    backdrop-filter: blur(2px);
+  }
+
+  /* ── Modal panel card ───────────────────────────────────── */
+  .modal-panel {
+    @apply bg-surface rounded-xl shadow-2xl w-full flex flex-col;
+    max-height: 85vh;
+  }
+
+  /* ── Modal header row ───────────────────────────────────── */
+  .modal-header {
+    @apply flex items-start justify-between px-5 pt-5 pb-4 border-b border-border shrink-0;
+  }
+
+  /* ── Modal scrollable body ──────────────────────────────── */
+  .modal-body {
+    @apply overflow-y-auto flex-1 px-3 py-2;
+  }
+
+  /* ── Modal footer row ───────────────────────────────────── */
+  .modal-footer {
+    @apply px-5 py-4 border-t border-border flex items-center gap-3 shrink-0;
+  }
+
   /* ── Sidebar nav item ───────────────────────────────────── */
   /* Left border reserved even when inactive so text never shifts */
   .nav-item {
