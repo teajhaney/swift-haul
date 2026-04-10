@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   Filter,
   Download,
@@ -115,11 +116,17 @@ export default function DashboardPage() {
             </Link>
 
             {/* Filter + Export — desktop only */}
-            <button className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors">
+            <button
+              onClick={() => toast.info('Filter coming soon')}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors"
+            >
               <Filter className="w-3.5 h-3.5" />
               {DASHBOARD.RECENT_ORDERS_FILTER}
             </button>
-            <button className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-primary-light hover:bg-primary-hover transition-colors">
+            <button
+              onClick={() => toast.info('CSV export coming soon')}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-primary-light hover:bg-primary-hover transition-colors"
+            >
               <Download className="w-3.5 h-3.5" />
               {DASHBOARD.RECENT_ORDERS_EXPORT}
             </button>

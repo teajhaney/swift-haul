@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Search, ChevronRight, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Search, ChevronRight, ChevronDown, LogOut, User, Settings } from "lucide-react";
 import { PAGE_META, TOPBAR } from "@/constants/navigation";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { Logo } from "@/components/shared/logo";
@@ -9,10 +10,24 @@ import { Logo } from "@/components/shared/logo";
 const PLACEHOLDER_USER = {
   name: "Alex Reed",
   initials: "AR",
+  role: "Admin",
+  email: "alex.reed@swifthaul.com",
 };
 
 export function Topbar() {
   const pathname = usePathname();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleMouseDown(e: MouseEvent) {
+      if (!userMenuRef.current?.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, []);
 
   // Match longest prefix (handles /orders/new before /orders)
   const meta =
@@ -72,16 +87,61 @@ export function Topbar() {
           <NotificationBell count={3} iconClassName="w-5 h-5 text-text-secondary" />
 
           {/* User menu */}
-          <button
-            className="flex items-center gap-2 hover:bg-surface-elevated px-2 py-1.5 rounded-lg transition-colors"
-            aria-label={TOPBAR.USER_MENU_LABEL}
-          >
-            <div className="user-avatar w-8 h-8">
-              {PLACEHOLDER_USER.initials}
-            </div>
-            <span className="text-sm font-medium text-text-primary">{PLACEHOLDER_USER.name}</span>
-            <ChevronDown className="w-4 h-4 text-text-muted" />
-          </button>
+          <div ref={userMenuRef} className="relative">
+            <button
+              onClick={() => setUserMenuOpen(o => !o)}
+              className="flex items-center gap-2 hover:bg-surface-elevated px-2 py-1.5 rounded-lg transition-colors"
+              aria-label={TOPBAR.USER_MENU_LABEL}
+            >
+              <div className="user-avatar w-8 h-8">
+                {PLACEHOLDER_USER.initials}
+              </div>
+              <span className="text-sm font-medium text-text-primary">{PLACEHOLDER_USER.name}</span>
+              <ChevronDown className={`w-4 h-4 text-text-muted transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {userMenuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-surface rounded-xl border border-border shadow-xl z-50 overflow-hidden">
+                {/* User info header */}
+                <div className="px-4 py-3 border-b border-border">
+                  <p className="text-sm font-semibold text-text-primary">{PLACEHOLDER_USER.name}</p>
+                  <p className="text-xs text-text-secondary mt-0.5">{PLACEHOLDER_USER.email}</p>
+                  <span className="inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-white tracking-wide">
+                    {PLACEHOLDER_USER.role}
+                  </span>
+                </div>
+
+                {/* Menu items */}
+                <div className="py-1">
+                  <button
+                    onClick={() => setUserMenuOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors text-left"
+                  >
+                    <User className="w-4 h-4 shrink-0" />
+                    My Profile
+                  </button>
+                  <button
+                    onClick={() => setUserMenuOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors text-left"
+                  >
+                    <Settings className="w-4 h-4 shrink-0" />
+                    Settings
+                  </button>
+                </div>
+
+                {/* Sign out */}
+                <div className="border-t border-border py-1">
+                  <button
+                    onClick={() => setUserMenuOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-red-50 transition-colors text-left"
+                  >
+                    <LogOut className="w-4 h-4 shrink-0" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

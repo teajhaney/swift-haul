@@ -144,7 +144,10 @@ export default function DriverDetailPage({
                       </span>
                     </div>
                   </div>
-                  <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-light hover:bg-primary-hover text-white text-sm font-semibold transition-colors shrink-0">
+                  <button
+                    onClick={() => toast.info('Edit Profile coming soon')}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-light hover:bg-primary-hover text-white text-sm font-semibold transition-colors shrink-0"
+                  >
                     <Pencil className="w-3.5 h-3.5" />
                     {DRIVER_DETAIL.EDIT_PROFILE}
                   </button>
@@ -240,7 +243,10 @@ export default function DriverDetailPage({
               <h3 className="text-base font-semibold text-text-primary">
                 {DRIVER_DETAIL.HISTORY_HEADING}
               </h3>
-              <button className="text-sm font-semibold text-primary-light hover:text-primary-hover transition-colors">
+              <button
+                onClick={() => toast.info('Export coming soon')}
+                className="text-sm font-semibold text-primary-light hover:text-primary-hover transition-colors"
+              >
                 {DRIVER_DETAIL.HISTORY_EXPORT}
               </button>
             </div>
@@ -464,7 +470,10 @@ export default function DriverDetailPage({
             </div>
 
             <div className="px-4 pb-4">
-              <button className="text-sm font-semibold text-primary-light hover:text-primary-hover transition-colors">
+              <button
+                onClick={() => toast.info('Full activity log coming soon')}
+                className="text-sm font-semibold text-primary-light hover:text-primary-hover transition-colors"
+              >
                 {DRIVER_DETAIL.VIEW_FULL_LOG}
               </button>
             </div>

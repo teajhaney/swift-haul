@@ -23,7 +23,9 @@ import { OrderTimeline } from '@/components/orders/order-timeline';
 import { OrderMap } from '@/components/orders/order-map';
 import { PodViewer } from '@/components/orders/pod-viewer';
 import { AssignDriverModal } from '@/components/orders/assign-driver-modal';
+import { CancelOrderModal } from '@/components/orders/cancel-order-modal';
 import { ORDER_DETAIL } from '@/constants/order-detail';
+import { toast } from 'sonner';
 import { getOrderDetail } from '@/constants/order-detail-mock';
 import { PRIORITY_STYLES } from '@/constants/orders-mock';
 import type { Driver } from '@/types/order-detail';
@@ -83,6 +85,7 @@ export default function OrderDetailPage({ params }: Props) {
 
   const [detail, setDetail] = useState(initial);
   const [modalOpen, setModalOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
 
   // ── Not found ──────────────────────────────────────────────────────────────
   if (!detail) {
@@ -114,6 +117,12 @@ export default function OrderDetailPage({ params }: Props) {
 
   function handleAssign(driver: Driver) {
     setDetail(prev => (prev ? { ...prev, driver } : prev));
+  }
+
+  function handleCancel() {
+    const orderId = detail?.id;
+    setDetail(prev => (prev ? { ...prev, status: 'CANCELLED' } : prev));
+    toast.success(`Order ${orderId} has been cancelled`);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -148,10 +157,16 @@ export default function OrderDetailPage({ params }: Props) {
           {/* Action buttons — only for non-terminal orders */}
           {canAssign && (
             <div className="flex items-center gap-2">
-              <button className="px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors">
+              <button
+                onClick={() => toast.info('Edit Order coming soon')}
+                className="px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors"
+              >
                 {ORDER_DETAIL.ACTION_EDIT}
               </button>
-              <button className="px-3 py-1.5 rounded-lg border border-red-200 text-sm font-medium text-error hover:bg-red-50 transition-colors">
+              <button
+                onClick={() => setCancelOpen(true)}
+                className="px-3 py-1.5 rounded-lg border border-red-200 text-sm font-medium text-error hover:bg-red-50 transition-colors"
+              >
                 {ORDER_DETAIL.ACTION_CANCEL}
               </button>
             </div>
@@ -341,6 +356,15 @@ export default function OrderDetailPage({ params }: Props) {
           currentDriverId={detail.driver?.id ?? null}
           onConfirm={handleAssign}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+
+      {/* Cancel order modal */}
+      {cancelOpen && (
+        <CancelOrderModal
+          orderId={detail.id}
+          onConfirm={handleCancel}
+          onClose={() => setCancelOpen(false)}
         />
       )}
     </>

@@ -13,6 +13,7 @@ import {
 
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
+import { toast } from 'sonner';
 
 import { DRIVER_QUEUE, QUEUE_PAGE_SIZE } from '@/constants/driver-queue';
 import {
@@ -191,7 +192,10 @@ export default function DriverOrderQueuePage() {
                 of {queue.length})
               </span>
             </div>
-            <button className="text-sm font-semibold text-primary-light hover:text-primary-hover transition-colors">
+            <button
+              onClick={() => toast.info('Schedule view coming soon')}
+              className="text-sm font-semibold text-primary-light hover:text-primary-hover transition-colors"
+            >
               {DRIVER_QUEUE.VIEW_SCHEDULE}
             </button>
           </div>

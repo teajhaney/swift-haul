@@ -17,6 +17,7 @@ import {
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
 import { ORDERS } from '@/constants/orders';
 import { MOCK_ORDERS, PRIORITY_STYLES } from '@/constants/orders-mock';
+import { toast } from 'sonner';
 import type { OrderFilterStatus, PriorityFilter } from '@/types/order';
 
 // ── Pagination helpers ────────────────────────────────────────────────────────
@@ -140,7 +141,10 @@ export default function OrdersPage() {
         </div>
 
         {/* Export — desktop only */}
-        <button className="hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors shrink-0">
+        <button
+          onClick={() => toast.info('CSV export coming soon')}
+          className="hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors shrink-0"
+        >
           <Download className="w-3.5 h-3.5" />
           {ORDERS.EXPORT_BTN}
         </button>
