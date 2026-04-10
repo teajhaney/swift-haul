@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import {
   MapPin,
@@ -13,12 +13,14 @@ import {
 } from 'lucide-react';
 
 import { DriverTopbar } from '@/components/driver/driver-topbar';
+import { ReportFailedModal } from '@/components/driver/report-failed-modal';
 import { DRIVER_QUEUE, CTA_CONFIG } from '@/constants/driver-queue';
 import { MOCK_DELIVERY_DETAILS, STATUS_COLORS, PRIORITY_COLORS } from '@/constants/driver-queue-mock';
 import { DRIVER_DETAIL_NAV as DETAIL_NAV } from '@/constants/driver-navigation';
 
 export default function DriverDeliveryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const [showFailedModal, setShowFailedModal] = useState(false);
 
   const detail = MOCK_DELIVERY_DETAILS[id] ?? {
     ...MOCK_DELIVERY_DETAILS['SH-a8f3r7v2'],
@@ -36,7 +38,7 @@ export default function DriverDeliveryDetailPage({ params }: { params: Promise<{
         {/* ── Order ID + status ── */}
         <div className="text-center py-2">
           <span className={`inline-block px-3 py-1 rounded text-xs font-bold tracking-wider uppercase mb-1 ${STATUS_COLORS[detail.status]}`}>
-            {detail.status.replace('_', ' ')}
+            {detail.status.replaceAll('_', ' ')}
           </span>
           <p className="font-mono text-sm text-text-muted">{detail.orderId}</p>
         </div>
@@ -149,7 +151,7 @@ export default function DriverDeliveryDetailPage({ params }: { params: Promise<{
             <div className="bg-surface rounded-xl border border-border shadow-sm p-5">
               <div className="flex items-center gap-2 mb-3">
                 <span className={`px-2 py-0.5 rounded text-[11px] font-bold tracking-wider uppercase ${STATUS_COLORS[detail.status]}`}>
-                  {detail.status.replace('_', ' ')}
+                  {detail.status.replaceAll('_', ' ')}
                 </span>
                 <span className={`px-2 py-0.5 rounded text-[11px] font-bold tracking-wider uppercase ${PRIORITY_COLORS[detail.priority]}`}>
                   {detail.priority}
@@ -161,10 +163,22 @@ export default function DriverDeliveryDetailPage({ params }: { params: Promise<{
               </div>
               {cta && (
                 <>
-                  <button className={`w-full h-10 rounded-lg text-white text-sm font-semibold transition-colors mb-2 ${cta.color}`}>
-                    {cta.label}
-                  </button>
-                  <button className="w-full h-9 rounded-lg border border-error text-error text-sm font-medium hover:bg-error/5 transition-colors">
+                  {detail.status === 'OUT_FOR_DELIVERY' ? (
+                    <Link
+                      href={`/driver/orders/${id}/pod`}
+                      className={`w-full h-10 rounded-lg text-white text-sm font-semibold transition-colors mb-2 flex items-center justify-center ${cta.color}`}
+                    >
+                      {cta.label}
+                    </Link>
+                  ) : (
+                    <button className={`w-full h-10 rounded-lg text-white text-sm font-semibold transition-colors mb-2 ${cta.color}`}>
+                      {cta.label}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowFailedModal(true)}
+                    className="w-full h-9 rounded-lg border border-error text-error text-sm font-medium hover:bg-error/5 transition-colors"
+                  >
                     {DRIVER_QUEUE.STATUS_MARK_FAILED}
                   </button>
                 </>
@@ -224,6 +238,12 @@ export default function DriverDeliveryDetailPage({ params }: { params: Promise<{
           })}
         </ul>
       </nav>
+
+      <ReportFailedModal
+        isOpen={showFailedModal}
+        onClose={() => setShowFailedModal(false)}
+        orderId={detail.orderId}
+      />
     </>
   );
 }

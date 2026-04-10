@@ -2,7 +2,7 @@ import type { ActiveDelivery, QueueOrder, DriverDeliveryDetail } from '@/types/d
 
 export const MOCK_ACTIVE_DELIVERY: ActiveDelivery = {
   orderId: 'SH-a8f3r7v2',
-  status: 'IN_TRANSIT',
+  status: 'OUT_FOR_DELIVERY',
   priority: 'EXPRESS',
   recipientName: 'Sarah Jenkins',
   deliveryAddress: '482 Oakwood Ave, Springfield, IL 62704',
@@ -81,7 +81,7 @@ export const MOCK_QUEUE: QueueOrder[] = [
 export const MOCK_DELIVERY_DETAILS: Record<string, DriverDeliveryDetail> = {
   'SH-a8f3r7v2': {
     orderId: 'SH-a8f3r7v2',
-    status: 'IN_TRANSIT',
+    status: 'OUT_FOR_DELIVERY',
     priority: 'EXPRESS',
     recipientName: 'Alexander Graham',
     recipientAddress: '842 North Michigan Avenue, Suite 1205, Chicago, IL 60611',

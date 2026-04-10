@@ -64,7 +64,7 @@ export default function DriverOrderQueuePage() {
                   <span
                     className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wider uppercase ${STATUS_COLORS[active.status]}`}
                   >
-                    {active.status.replace('_', ' ')}
+                    {active.status.replaceAll('_', ' ')}
                   </span>
                   <span
                     className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wider uppercase ml-auto sm:ml-0 ${PRIORITY_COLORS[active.priority]}`}
@@ -285,7 +285,11 @@ export default function DriverOrderQueuePage() {
                   <button
                     key={p}
                     onClick={() => goTo(p)}
-                    className={`pagination-page-btn ${p === page ? 'pagination-page-btn-active' : ''}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                      p === page
+                        ? 'bg-primary-light text-white'
+                        : 'border border-border text-text-secondary hover:bg-surface-elevated'
+                    }`}
                   >
                     {p}
                   </button>
