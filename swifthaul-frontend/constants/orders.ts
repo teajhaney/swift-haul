@@ -1,6 +1,6 @@
-// ─────────────────────────────────────────────────────────────────────────────
 // orders.ts — All hardcoded strings for the orders list page
-// ─────────────────────────────────────────────────────────────────────────────
+
+import type { Priority } from '@/types/order';
 
 export const ORDERS = {
   // Page header
@@ -26,10 +26,10 @@ export const ORDERS = {
 
   // Priority filter options
   PRIORITY_OPTIONS: [
-    { label: 'All Priorities', value: 'ALL'    },
-    { label: 'High',           value: 'HIGH'   },
-    { label: 'Normal',         value: 'NORMAL' },
-    { label: 'Low',            value: 'LOW'    },
+    { label: 'All Priorities', value: 'ALL'      },
+    { label: 'Standard',       value: 'STANDARD' },
+    { label: 'Express',        value: 'EXPRESS'  },
+    { label: 'Same Day',       value: 'SAME_DAY' },
   ] as const,
 
   // Table columns
@@ -55,3 +55,17 @@ export const ORDERS = {
   SHOWING: (from: number, to: number, total: number) =>
     `Showing ${from}–${to} of ${total} orders`,
 } as const;
+
+// Human-readable labels for Priority enum values — use these in the UI, never display the raw enum.
+export const PRIORITY_LABELS: Record<Priority, string> = {
+  STANDARD: 'Standard',
+  EXPRESS:  'Express',
+  SAME_DAY: 'Same Day',
+};
+
+// Badge styles for each priority level.
+export const PRIORITY_STYLES: Record<Priority, string> = {
+  STANDARD: 'bg-gray-100 text-gray-600',
+  EXPRESS:  'bg-blue-100 text-blue-700',
+  SAME_DAY: 'bg-orange-100 text-orange-700',
+};

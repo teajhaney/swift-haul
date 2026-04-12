@@ -24,6 +24,7 @@ import {
   MOCK_TOTAL_ORDERS as TOTAL_ORDERS,
   PRIORITY_STYLES,
 } from '@/constants/dashboard-mock';
+import { PRIORITY_LABELS } from '@/constants/orders';
 import type { TimeRange } from '@/types/analytics';
 
 // Chart components use ResizeObserver — dynamically imported to avoid SSR mismatch
@@ -150,13 +151,13 @@ export default function DashboardPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {RECENT_ORDERS.map((order) => (
-                <tr key={order.id} className="hover:bg-surface-elevated transition-colors group">
+                <tr key={order.referenceId} className="hover:bg-surface-elevated transition-colors group">
                   <td className="px-5 py-3.5">
                     <Link
-                      href={`/orders/${order.id}`}
+                      href={`/orders/${order.referenceId}`}
                       className="font-mono text-sm font-medium text-primary-light hover:underline"
                     >
-                      {order.id}
+                      {order.referenceId}
                     </Link>
                   </td>
                   <td className="px-4 py-3.5">
@@ -174,7 +175,7 @@ export default function DashboardPage() {
                   </td>
                   <td className="px-4 py-3.5">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${PRIORITY_STYLES[order.priority]}`}>
-                      {order.priority}
+                      {PRIORITY_LABELS[order.priority]}
                     </span>
                   </td>
                   <td className="px-4 py-3.5 text-sm text-text-secondary font-mono">{order.time}</td>
@@ -193,13 +194,13 @@ export default function DashboardPage() {
         <div className="lg:hidden divide-y divide-border">
           {RECENT_ORDERS.map((order) => (
             <Link
-              key={order.id}
-              href={`/orders/${order.id}`}
+              key={order.referenceId}
+              href={`/orders/${order.referenceId}`}
               className="flex items-start justify-between px-4 py-3.5 hover:bg-surface-elevated transition-colors"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="font-mono text-xs font-semibold text-primary-light">{order.id}</span>
+                  <span className="font-mono text-xs font-semibold text-primary-light">{order.referenceId}</span>
                   <OrderStatusBadge status={order.status} />
                 </div>
                 <p className="text-sm font-semibold text-text-primary truncate">{order.recipient}</p>

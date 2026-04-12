@@ -29,7 +29,7 @@ export function PodViewer({ pod, status }: PodViewerProps) {
             {isDelivered ? 'Successfully Delivered' : 'Delivery Failed'}
           </p>
           <p className={`text-xs mt-0.5 ${isDelivered ? 'text-green-700' : 'text-red-700'}`}>
-            {pod.timestamp}
+            {pod.uploadedAt}
           </p>
         </div>
       </div>
@@ -50,7 +50,7 @@ export function PodViewer({ pod, status }: PodViewerProps) {
         <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">
           {ORDER_DETAIL.POD_PHOTO}
         </p>
-        {pod.hasPhoto ? (
+        {pod.photoUrl ? (
           <div className="w-full h-36 rounded-lg bg-surface-elevated border border-border flex flex-col items-center justify-center gap-2 text-text-muted">
             <ImageIcon className="w-7 h-7" />
             <p className="text-xs">Photo stored in Cloudinary</p>
@@ -62,12 +62,12 @@ export function PodViewer({ pod, status }: PodViewerProps) {
       </div>
 
       {/* Note */}
-      {pod.note && (
+      {pod.notes && (
         <div>
           <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-1">
             {ORDER_DETAIL.POD_NOTE}
           </p>
-          <p className="text-sm text-text-secondary">{pod.note}</p>
+          <p className="text-sm text-text-secondary">{pod.notes}</p>
         </div>
       )}
 

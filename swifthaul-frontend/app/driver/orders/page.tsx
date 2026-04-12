@@ -96,7 +96,7 @@ export default function DriverOrderQueuePage() {
                     </span>
                   </span>
                   <Link
-                    href={`/driver/orders/${active.orderId}`}
+                    href={`/driver/orders/${active.referenceId}`}
                     className="ml-auto text-sm font-semibold text-primary-light whitespace-nowrap"
                   >
                     {DRIVER_QUEUE.VIEW_DETAILS}
@@ -106,7 +106,7 @@ export default function DriverOrderQueuePage() {
                 {/* Actions */}
                 <div className="flex items-center gap-3">
                   <Link
-                    href={`/driver/orders/${active.orderId}`}
+                    href={`/driver/orders/${active.referenceId}`}
                     className="flex-1 flex items-center justify-center gap-2 h-10 rounded-lg bg-primary-light hover:bg-primary-hover text-white text-sm font-semibold transition-colors"
                   >
                     <CheckCircle2 className="w-4 h-4" />
@@ -204,13 +204,13 @@ export default function DriverOrderQueuePage() {
           <div className="hidden sm:grid grid-cols-2 gap-3">
             {pageQueue.map(order => (
               <Link
-                key={order.orderId}
-                href={`/driver/orders/${order.orderId}`}
+                key={order.referenceId}
+                href={`/driver/orders/${order.referenceId}`}
                 className="bg-surface rounded-xl border border-border shadow-sm p-4 hover:bg-surface-elevated transition-colors group"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-mono text-xs font-semibold text-text-muted">
-                    {order.orderId}
+                    {order.referenceId}
                   </span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-info/10 text-info tracking-wide">
                     ASSIGNED
@@ -237,14 +237,14 @@ export default function DriverOrderQueuePage() {
           <div className="sm:hidden space-y-3">
             {pageQueue.map(order => (
               <Link
-                key={order.orderId}
-                href={`/driver/orders/${order.orderId}`}
+                key={order.referenceId}
+                href={`/driver/orders/${order.referenceId}`}
                 className="bg-surface rounded-xl border border-border shadow-sm p-4 flex items-start gap-3 hover:bg-surface-elevated transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-mono text-xs font-semibold text-text-muted">
-                      {order.orderId}
+                      {order.referenceId}
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-info/10 text-info tracking-wide">
                       ASSIGNED

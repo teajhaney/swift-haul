@@ -97,7 +97,7 @@ export default function DriverMapPage() {
           {/* Stop pins */}
           {MOCK_MAP_STOPS.map(stop => (
             <div
-              key={stop.orderId}
+              key={stop.referenceId}
               className="absolute -translate-x-1/2 -translate-y-full"
               style={{ left: stop.pinX, top: stop.pinY }}
             >
@@ -136,7 +136,7 @@ export default function DriverMapPage() {
 
           {/* Navigate button */}
           <Link
-            href={`/driver/orders/${MOCK_ACTIVE_DELIVERY.orderId}`}
+            href={`/driver/orders/${MOCK_ACTIVE_DELIVERY.referenceId}`}
             className="absolute bottom-3 right-3 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-light text-white text-sm font-semibold shadow-lg hover:bg-primary-hover transition-colors"
           >
             <Navigation className="w-4 h-4" />
@@ -157,8 +157,8 @@ export default function DriverMapPage() {
             <div className="space-y-2">
               {MOCK_MAP_STOPS.map((stop, idx) => (
                 <Link
-                  key={stop.orderId}
-                  href={`/driver/orders/${stop.orderId}`}
+                  key={stop.referenceId}
+                  href={`/driver/orders/${stop.referenceId}`}
                   className="flex items-start gap-3 p-3 rounded-xl border border-border hover:bg-surface-elevated transition-colors group"
                 >
                   {/* Stop number */}
@@ -174,7 +174,7 @@ export default function DriverMapPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
                       <span className="font-mono text-[10px] text-text-muted">
-                        {stop.orderId}
+                        {stop.referenceId}
                       </span>
                       <span
                         className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${MAP_STOP_BADGE[stop.status]}`}

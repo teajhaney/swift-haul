@@ -27,7 +27,7 @@ import { CancelOrderModal } from '@/components/orders/cancel-order-modal';
 import { ORDER_DETAIL } from '@/constants/order-detail';
 import { toast } from 'sonner';
 import { getOrderDetail } from '@/constants/order-detail-mock';
-import { PRIORITY_STYLES } from '@/constants/orders-mock';
+import { PRIORITY_STYLES, PRIORITY_LABELS } from '@/constants/orders';
 import type { Driver } from '@/types/order-detail';
 
 type Props = { params: Promise<{ id: string }> };
@@ -120,7 +120,7 @@ export default function OrderDetailPage({ params }: Props) {
   }
 
   function handleCancel() {
-    const orderId = detail?.id;
+    const orderId = detail?.referenceId;
     setDetail(prev => (prev ? { ...prev, status: 'CANCELLED' } : prev));
     toast.success(`Order ${orderId} has been cancelled`);
   }
@@ -144,13 +144,13 @@ export default function OrderDetailPage({ params }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl font-bold font-mono text-text-primary">
-              {detail.id}
+              {detail.referenceId}
             </h1>
             <OrderStatusBadge status={detail.status} />
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${PRIORITY_STYLES[detail.priority]}`}
             >
-              {detail.priority}
+              {PRIORITY_LABELS[detail.priority]}
             </span>
           </div>
 
@@ -207,7 +207,7 @@ export default function OrderDetailPage({ params }: Props) {
               <InfoRow
                 icon={Weight}
                 label={ORDER_DETAIL.LABEL_WEIGHT}
-                value={detail.weight}
+                value={detail.weightKg}
               />
               <InfoRow
                 icon={Ruler}
@@ -362,7 +362,7 @@ export default function OrderDetailPage({ params }: Props) {
       {/* Cancel order modal */}
       {cancelOpen && (
         <CancelOrderModal
-          orderId={detail.id}
+          orderId={detail.referenceId}
           onConfirm={handleCancel}
           onClose={() => setCancelOpen(false)}
         />

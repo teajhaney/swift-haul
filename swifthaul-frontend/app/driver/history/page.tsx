@@ -161,11 +161,11 @@ export default function DriverHistoryPage() {
                 const Icon = s.icon;
                 return (
                   <tr
-                    key={item.orderId}
+                    key={item.referenceId}
                     className={`border-b border-border last:border-0 hover:bg-surface-elevated transition-colors ${idx % 2 === 0 ? '' : 'bg-surface-elevated/30'}`}
                   >
                     <td className="px-4 py-3 font-mono text-xs text-text-muted">
-                      {item.orderId}
+                      {item.referenceId}
                     </td>
                     <td className="px-4 py-3 text-xs text-text-secondary">
                       {item.date}
@@ -211,13 +211,13 @@ export default function DriverHistoryPage() {
             const Icon = s.icon;
             return (
               <div
-                key={item.orderId}
+                key={item.referenceId}
                 className="bg-surface rounded-xl border border-border p-4"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <span className="font-mono text-xs text-text-muted">
-                      {item.orderId}
+                      {item.referenceId}
                     </span>
                     <p className="text-sm font-semibold text-text-primary mt-0.5">
                       {item.recipientName}

@@ -3,7 +3,7 @@ import { MOCK_ACTIVE_DELIVERY, MOCK_QUEUE } from '@/constants/driver-queue-mock'
 
 export const MOCK_MAP_STOPS: MapStop[] = [
   {
-    orderId:       MOCK_ACTIVE_DELIVERY.orderId,
+    referenceId:       MOCK_ACTIVE_DELIVERY.referenceId,
     recipientName: MOCK_ACTIVE_DELIVERY.recipientName,
     address:       MOCK_ACTIVE_DELIVERY.deliveryAddress,
     timeWindow:    `Est. ${MOCK_ACTIVE_DELIVERY.estimatedDelivery}`,
@@ -12,7 +12,7 @@ export const MOCK_MAP_STOPS: MapStop[] = [
     pinY:          '48%',
   },
   {
-    orderId:       MOCK_QUEUE[0].orderId,
+    referenceId:       MOCK_QUEUE[0].referenceId,
     recipientName: MOCK_QUEUE[0].recipientName,
     address:       MOCK_QUEUE[0].address,
     timeWindow:    MOCK_QUEUE[0].timeWindow,
@@ -21,7 +21,7 @@ export const MOCK_MAP_STOPS: MapStop[] = [
     pinY:          '62%',
   },
   {
-    orderId:       MOCK_QUEUE[1].orderId,
+    referenceId:       MOCK_QUEUE[1].referenceId,
     recipientName: MOCK_QUEUE[1].recipientName,
     address:       MOCK_QUEUE[1].address,
     timeWindow:    MOCK_QUEUE[1].timeWindow,
@@ -30,7 +30,7 @@ export const MOCK_MAP_STOPS: MapStop[] = [
     pinY:          '28%',
   },
   {
-    orderId:       MOCK_QUEUE[2].orderId,
+    referenceId:       MOCK_QUEUE[2].referenceId,
     recipientName: MOCK_QUEUE[2].recipientName,
     address:       MOCK_QUEUE[2].address,
     timeWindow:    MOCK_QUEUE[2].timeWindow,

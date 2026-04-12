@@ -12,7 +12,8 @@ import {
 } from 'lucide-react';
 import { DASHBOARD } from '@/constants/dashboard';
 import type { KpiData, DeliveryChartPoint, StatusSlice } from '@/types/analytics';
-import type { RecentOrder, Priority } from '@/types/order';
+import type { RecentOrder } from '@/types/order';
+import { PRIORITY_STYLES } from '@/constants/orders';
 
 export const MOCK_KPI_DATA: KpiData[] = [
   {
@@ -73,16 +74,12 @@ export const MOCK_DONUT_DATA: StatusSlice[] = [
 ];
 
 export const MOCK_RECENT_ORDERS: RecentOrder[] = [
-  { id: 'SH-8F3X9K2', status: 'IN_TRANSIT', recipient: 'Sarah Jenkins',     destination: '482 Oakwood Ave, Portland',    driver: 'Marcus Chen',     priority: 'HIGH',   time: '14:22' },
-  { id: 'SH-409L2P5', status: 'DELIVERED',  recipient: 'TechCorp Solutions', destination: '1200 Innovation Way, Seattle', driver: 'Elena Rodriguez', priority: 'NORMAL', time: '14:15' },
-  { id: 'SH-1Z6Y4M8', status: 'FAILED',     recipient: 'David Miller',       destination: '93 Pine St, Tacoma',           driver: 'James Wilson',    priority: 'HIGH',   time: '13:58' },
-  { id: 'SH-9T4V2X8', status: 'PENDING',    recipient: 'Alice Green',        destination: '214 Harbor Rd, Everett',       driver: null,              priority: 'LOW',    time: '13:45' },
+  { referenceId: 'SH-8F3X9K2', status: 'IN_TRANSIT', recipient: 'Sarah Jenkins',      destination: '482 Oakwood Ave, Portland',    driver: 'Marcus Chen',     priority: 'SAME_DAY', time: '14:22' },
+  { referenceId: 'SH-409L2P5', status: 'DELIVERED',  recipient: 'TechCorp Solutions', destination: '1200 Innovation Way, Seattle', driver: 'Elena Rodriguez', priority: 'STANDARD', time: '14:15' },
+  { referenceId: 'SH-1Z6Y4M8', status: 'FAILED',     recipient: 'David Miller',       destination: '93 Pine St, Tacoma',           driver: 'James Wilson',    priority: 'EXPRESS',  time: '13:58' },
+  { referenceId: 'SH-9T4V2X8', status: 'PENDING',    recipient: 'Alice Green',        destination: '214 Harbor Rd, Everett',       driver: null,              priority: 'STANDARD', time: '13:45' },
 ];
 
 export const MOCK_TOTAL_ORDERS = 42;
 
-export const PRIORITY_STYLES: Record<Priority, string> = {
-  HIGH:   'bg-red-100 text-red-700',
-  NORMAL: 'bg-gray-100 text-gray-600',
-  LOW:    'bg-slate-50 text-slate-500',
-};
+export { PRIORITY_STYLES };

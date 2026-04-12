@@ -15,8 +15,8 @@ import {
 } from 'lucide-react';
 
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
-import { ORDERS } from '@/constants/orders';
-import { MOCK_ORDERS, PRIORITY_STYLES } from '@/constants/orders-mock';
+import { ORDERS, PRIORITY_STYLES, PRIORITY_LABELS } from '@/constants/orders';
+import { MOCK_ORDERS } from '@/constants/orders-mock';
 import { toast } from 'sonner';
 import type { OrderFilterStatus, PriorityFilter } from '@/types/order';
 
@@ -71,7 +71,7 @@ export default function OrdersPage() {
       if (search) {
         const q = search.toLowerCase();
         return (
-          order.id.toLowerCase().includes(q) ||
+          order.referenceId.toLowerCase().includes(q) ||
           order.recipient.toLowerCase().includes(q) ||
           order.destination.toLowerCase().includes(q)
         );
@@ -227,15 +227,15 @@ export default function OrdersPage() {
                 <tbody className="divide-y divide-border">
                   {paginated.map(order => (
                     <tr
-                      key={order.id}
+                      key={order.referenceId}
                       className="hover:bg-surface-elevated transition-colors group"
                     >
                       <td className="px-5 py-3.5">
                         <Link
-                          href={`/orders/${order.id}`}
+                          href={`/orders/${order.referenceId}`}
                           className="font-mono text-sm font-semibold text-primary-light hover:underline"
                         >
-                          {order.id}
+                          {order.referenceId}
                         </Link>
                       </td>
 
@@ -266,7 +266,7 @@ export default function OrdersPage() {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${PRIORITY_STYLES[order.priority]}`}
                         >
-                          {order.priority}
+                          {PRIORITY_LABELS[order.priority]}
                         </span>
                       </td>
 
@@ -294,15 +294,15 @@ export default function OrdersPage() {
             <div className="lg:hidden divide-y divide-border">
               {paginated.map(order => (
                 <Link
-                  key={order.id}
-                  href={`/orders/${order.id}`}
+                  key={order.referenceId}
+                  href={`/orders/${order.referenceId}`}
                   className="flex items-start justify-between px-4 py-4 hover:bg-surface-elevated transition-colors gap-3"
                 >
                   <div className="min-w-0 flex-1 space-y-1">
                     {/* ID + status */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-xs font-semibold text-primary-light">
-                        {order.id}
+                        {order.referenceId}
                       </span>
                       <OrderStatusBadge status={order.status} />
                     </div>

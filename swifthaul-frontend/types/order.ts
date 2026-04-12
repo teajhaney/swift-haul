@@ -10,11 +10,11 @@ export type OrderStatus =
   | 'RESCHEDULED'
   | 'CANCELLED';
 
-export type Priority = 'HIGH' | 'NORMAL' | 'LOW';
+export type Priority = 'STANDARD' | 'EXPRESS' | 'SAME_DAY';
 
 /** Used in the dashboard recent-orders widget */
 export interface RecentOrder {
-  id: string;
+  referenceId: string;
   status: OrderStatus;
   recipient: string;
   destination: string;
@@ -25,7 +25,7 @@ export interface RecentOrder {
 
 /** Full order record used in the orders list page */
 export interface Order {
-  id: string;
+  referenceId: string;
   status: OrderStatus;
   recipient: string;
   destination: string;

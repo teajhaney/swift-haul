@@ -21,6 +21,6 @@ export const DRIVER_DESKTOP_NAV: DriverNavItem[] = [
 /** 3-tab bottom nav shown on the order detail page (mobile) */
 export const DRIVER_DETAIL_NAV: DriverNavItem[] = [
   { label: DRIVER_QUEUE.NAV_ROUTES,  icon: LayoutList,  href: '/driver/orders' },
-  { label: DRIVER_QUEUE.NAV_ACTIVE,  icon: Truck,       href: `/driver/orders/${MOCK_ACTIVE_DELIVERY.orderId}` },
+  { label: DRIVER_QUEUE.NAV_ACTIVE,  icon: Truck,       href: `/driver/orders/${MOCK_ACTIVE_DELIVERY.referenceId}` },
   { label: DRIVER_QUEUE.NAV_PROFILE, icon: UserCircle2, href: '/driver/profile' },
 ];

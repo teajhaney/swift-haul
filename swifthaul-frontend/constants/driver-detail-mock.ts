@@ -5,7 +5,7 @@ const MOCK_ASSIGNMENTS: Record<string, DriverAssignment[]> = {
   'DRV-00293': [],
   'DRV-00104': [
     {
-      orderId: 'SH-K9J2L5W4',
+      referenceId: 'SH-K9J2L5W4',
       status: 'IN TRANSIT',
       statusColor: 'blue',
       recipientName: 'James Robert',
@@ -15,7 +15,7 @@ const MOCK_ASSIGNMENTS: Record<string, DriverAssignment[]> = {
   ],
   'DRV-00441': [
     {
-      orderId: 'SH-K9J2L5W4',
+      referenceId: 'SH-K9J2L5W4',
       status: 'IN TRANSIT',
       statusColor: 'blue',
       recipientName: 'James Robert',
@@ -23,7 +23,7 @@ const MOCK_ASSIGNMENTS: Record<string, DriverAssignment[]> = {
       eta: '15:45',
     },
     {
-      orderId: 'SH-U7V3Y9P1',
+      referenceId: 'SH-U7V3Y9P1',
       status: 'PICKED UP',
       statusColor: 'amber',
       recipientName: 'Linda Grey',
@@ -33,7 +33,7 @@ const MOCK_ASSIGNMENTS: Record<string, DriverAssignment[]> = {
   ],
   'DRV-00382': [
     {
-      orderId: 'SH-8X92K0L',
+      referenceId: 'SH-8X92K0L',
       status: 'IN TRANSIT',
       statusColor: 'blue',
       recipientName: 'Electronics Bulk Delivery',
@@ -41,7 +41,7 @@ const MOCK_ASSIGNMENTS: Record<string, DriverAssignment[]> = {
       eta: '14:00',
     },
     {
-      orderId: 'SH-1P33M5X',
+      referenceId: 'SH-1P33M5X',
       status: 'ACCEPTED',
       statusColor: 'green',
       recipientName: 'Priority Medical Supplies',
@@ -66,14 +66,14 @@ const MOCK_ACTIVITY: Record<string, DriverActivity[]> = {
 };
 
 const MOCK_HISTORY: DriverDeliveryRow[] = [
-  { orderId: 'SH-A8F3X9K2', status: 'DELIVERED', recipientName: 'Sarah Jenkins',  recipientAddress: '12 Oakwood St, Lekki',         completedAt: 'Today, 14:20' },
-  { orderId: 'SH-M2N9V4L1', status: 'DELIVERED', recipientName: 'Michael Okon',   recipientAddress: '48 Banana Island Rd',            completedAt: 'Today, 11:45' },
-  { orderId: 'SH-P5R1Q8Z3', status: 'FAILED',    recipientName: 'Evelyn Shaw',    recipientAddress: 'Avenue 4, Victoria Isla...',      completedAt: 'Yesterday, 17:10' },
-  { orderId: 'SH-D2K7B3X9', status: 'DELIVERED', recipientName: 'Daniel Craig',   recipientAddress: 'Plot 12, Ikoyi Estate',           completedAt: 'Yesterday, 15:30' },
-  { orderId: 'SH-2N88M4Z',  status: 'DELIVERED', recipientName: 'Aisha Mohammed', recipientAddress: '5 Marina Road, Lagos',            completedAt: 'Apr 12, 02:30 PM' },
-  { orderId: 'SH-9W21P6K',  status: 'DELIVERED', recipientName: 'Tunde Bello',    recipientAddress: '23 Allen Ave, Ikeja',             completedAt: 'Apr 12, 11:15 AM' },
-  { orderId: 'SH-R4X9M2K1', status: 'DELIVERED', recipientName: 'Grace Adeyemi',  recipientAddress: 'Block 7, Lekki Gardens',          completedAt: 'Apr 11, 16:40' },
-  { orderId: 'SH-B3Q7N1Z8', status: 'FAILED',    recipientName: 'Peter Eze',      recipientAddress: 'No. 2, Creek Road',               completedAt: 'Apr 11, 13:00' },
+  { referenceId: 'SH-A8F3X9K2', status: 'DELIVERED', recipientName: 'Sarah Jenkins',  recipientAddress: '12 Oakwood St, Lekki',         completedAt: 'Today, 14:20' },
+  { referenceId: 'SH-M2N9V4L1', status: 'DELIVERED', recipientName: 'Michael Okon',   recipientAddress: '48 Banana Island Rd',            completedAt: 'Today, 11:45' },
+  { referenceId: 'SH-P5R1Q8Z3', status: 'FAILED',    recipientName: 'Evelyn Shaw',    recipientAddress: 'Avenue 4, Victoria Isla...',      completedAt: 'Yesterday, 17:10' },
+  { referenceId: 'SH-D2K7B3X9', status: 'DELIVERED', recipientName: 'Daniel Craig',   recipientAddress: 'Plot 12, Ikoyi Estate',           completedAt: 'Yesterday, 15:30' },
+  { referenceId: 'SH-2N88M4Z',  status: 'DELIVERED', recipientName: 'Aisha Mohammed', recipientAddress: '5 Marina Road, Lagos',            completedAt: 'Apr 12, 02:30 PM' },
+  { referenceId: 'SH-9W21P6K',  status: 'DELIVERED', recipientName: 'Tunde Bello',    recipientAddress: '23 Allen Ave, Ikeja',             completedAt: 'Apr 12, 11:15 AM' },
+  { referenceId: 'SH-R4X9M2K1', status: 'DELIVERED', recipientName: 'Grace Adeyemi',  recipientAddress: 'Block 7, Lekki Gardens',          completedAt: 'Apr 11, 16:40' },
+  { referenceId: 'SH-B3Q7N1Z8', status: 'FAILED',    recipientName: 'Peter Eze',      recipientAddress: 'No. 2, Creek Road',               completedAt: 'Apr 11, 13:00' },
 ];
 
 function getAssignments(id: string): DriverAssignment[] {

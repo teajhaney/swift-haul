@@ -12,9 +12,11 @@ export const NOTIFICATIONS = {
 
   // Notification type labels
   TITLE_ORDER_ASSIGNED:      'Order Assigned',
+  TITLE_STATUS_CHANGED:      'Status Updated',
   TITLE_DELIVERY_COMPLETED:  'Delivery Completed',
   TITLE_DELIVERY_FAILED:     'Delivery Failed',
-  TITLE_DRIVER_ONLINE:       'New Driver Online',
+  TITLE_DRIVER_ONLINE:       'Driver Online',
+  TITLE_DRIVER_OFFLINE:      'Driver Offline',
   TITLE_SYSTEM_MAINTENANCE:  'System Maintenance',
   TITLE_SYSTEM_UPDATE:       'System Update',
   TITLE_SHIPMENT_UPDATE:     'Shipment Update',

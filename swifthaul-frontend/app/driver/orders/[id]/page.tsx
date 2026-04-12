@@ -24,7 +24,7 @@ export default function DriverDeliveryDetailPage({ params }: { params: Promise<{
 
   const detail = MOCK_DELIVERY_DETAILS[id] ?? {
     ...MOCK_DELIVERY_DETAILS['SH-a8f3r7v2'],
-    orderId: id,
+    referenceId: id,
   };
 
   const cta = CTA_CONFIG[detail.status];
@@ -40,7 +40,7 @@ export default function DriverDeliveryDetailPage({ params }: { params: Promise<{
           <span className={`inline-block px-3 py-1 rounded text-xs font-bold tracking-wider uppercase mb-1 ${STATUS_COLORS[detail.status]}`}>
             {detail.status.replaceAll('_', ' ')}
           </span>
-          <p className="font-mono text-sm text-text-muted">{detail.orderId}</p>
+          <p className="font-mono text-sm text-text-muted">{detail.referenceId}</p>
         </div>
 
         {/* ── Map placeholder ── */}
@@ -119,10 +119,10 @@ export default function DriverDeliveryDetailPage({ params }: { params: Promise<{
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-1">
                     {DRIVER_QUEUE.SENDER_LABEL}
                   </p>
-                  <h2 className="text-base font-bold text-text-primary">{detail.pickupName}</h2>
+                  <h2 className="text-base font-bold text-text-primary">{detail.senderName}</h2>
                 </div>
                 <a
-                  href={`tel:${detail.pickupPhone}`}
+                  href={`tel:${detail.senderPhone}`}
                   className="w-9 h-9 rounded-full bg-surface-elevated flex items-center justify-center text-text-secondary hover:bg-hover-bg transition-colors shrink-0"
                   aria-label="Call pickup"
                 >
@@ -131,7 +131,7 @@ export default function DriverDeliveryDetailPage({ params }: { params: Promise<{
               </div>
               <div className="flex items-start gap-2 text-sm text-text-secondary">
                 <Warehouse className="w-4 h-4 text-text-muted shrink-0 mt-0.5" />
-                <span>{detail.pickupAddress}</span>
+                <span>{detail.senderAddress}</span>
               </div>
             </div>
 
@@ -242,7 +242,7 @@ export default function DriverDeliveryDetailPage({ params }: { params: Promise<{
       <ReportFailedModal
         isOpen={showFailedModal}
         onClose={() => setShowFailedModal(false)}
-        orderId={detail.orderId}
+        orderId={detail.referenceId}
       />
     </>
   );

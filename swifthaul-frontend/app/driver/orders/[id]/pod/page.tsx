@@ -42,7 +42,7 @@ export default function DriverPodPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const order = { ...MOCK_POD_ORDER, orderId: id };
+  const order = { ...MOCK_POD_ORDER, referenceId: id };
 
   const [step, setStep] = useState<PodStep>('photo');
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -151,7 +151,7 @@ export default function DriverPodPage({
               <div className="flex items-center justify-between bg-surface-elevated rounded-lg px-4 py-2.5 border border-border">
                 <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                   {POD.ORDER_ID_LABEL}{' '}
-                  <span className="font-mono text-primary-light text-xs">{order.orderId}</span>
+                  <span className="font-mono text-primary-light text-xs">{order.referenceId}</span>
                 </p>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-700 tracking-wide uppercase">
                   {order.status.replace(/_/g, ' ')}
@@ -267,7 +267,7 @@ export default function DriverPodPage({
               <div className="rounded-lg border border-border bg-surface-elevated px-4 py-3 grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-0.5">{POD.SIG_ORDER_LABEL}</p>
-                  <p className="font-mono text-sm font-bold text-primary-light">{order.orderId}</p>
+                  <p className="font-mono text-sm font-bold text-primary-light">{order.referenceId}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-0.5">{POD.SIG_RECIP_LABEL}</p>
@@ -350,7 +350,7 @@ export default function DriverPodPage({
               {/* Tracking ID */}
               <div className="bg-surface-elevated rounded-xl border border-border px-4 py-3">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-1">{POD.CONF_TRACK_LABEL}</p>
-                <p className="font-mono text-sm font-bold text-primary-light">{order.orderId}</p>
+                <p className="font-mono text-sm font-bold text-primary-light">{order.referenceId}</p>
               </div>
 
               {/* Timestamp */}
@@ -425,7 +425,7 @@ export default function DriverPodPage({
       <ReportFailedModal
         isOpen={showFailModal}
         onClose={() => setShowFailModal(false)}
-        orderId={order.orderId}
+        orderId={order.referenceId}
       />
     </>
   );

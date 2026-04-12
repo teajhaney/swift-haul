@@ -20,14 +20,20 @@ export interface Driver {
 }
 
 export interface ProofOfDelivery {
-  signedBy: string;
-  timestamp: string;
-  hasPhoto: boolean;
-  note?: string;
+  // Successful delivery
+  photoUrl?: string;
+  signatureUrl?: string;
+  signedBy?: string;
+  // Failed delivery
+  failReason?: 'NOT_HOME' | 'WRONG_ADDRESS' | 'REFUSED' | 'OTHER';
+  failureNotes?: string;
+  // Shared
+  notes?: string;
+  uploadedAt: string;
 }
 
 export interface OrderDetail {
-  id: string;
+  referenceId: string;
   status: OrderStatus;
   priority: Priority;
   createdAt: string;
@@ -43,7 +49,7 @@ export interface OrderDetail {
   deliveryAddress: string;
 
   // Package
-  weight: string;
+  weightKg: string;
   dimensions: string;
   description: string;
   notes?: string;

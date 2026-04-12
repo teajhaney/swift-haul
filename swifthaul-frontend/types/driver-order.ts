@@ -9,7 +9,7 @@ export type DriverOrderStatus =
   | 'FAILED';
 
 export interface ActiveDelivery {
-  orderId: string;
+  referenceId: string;
   status: DriverOrderStatus;
   priority: string;
   recipientName: string;
@@ -21,7 +21,7 @@ export interface ActiveDelivery {
 }
 
 export interface QueueOrder {
-  orderId: string;
+  referenceId: string;
   recipientName: string;
   address: string;
   timeWindow: string;
@@ -37,16 +37,16 @@ export interface DeliveryTimelineEvent {
 }
 
 export interface DriverDeliveryDetail {
-  orderId: string;
+  referenceId: string;
   status: DriverOrderStatus;
   priority: string;
   recipientName: string;
   recipientAddress: string;
   recipientPhone: string;
   deliveryNotes?: string;
-  pickupName: string;
-  pickupAddress: string;
-  pickupPhone: string;
+  senderName: string;
+  senderAddress: string;
+  senderPhone: string;
   packageDescription: string;
   estimatedDelivery: string;
   createdAt: string;

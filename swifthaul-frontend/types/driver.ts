@@ -18,7 +18,7 @@ export interface Driver {
 }
 
 export interface DriverAssignment {
-  orderId: string;
+  referenceId: string;
   status: string;
   statusColor: 'blue' | 'amber' | 'green' | 'purple';
   recipientName: string;
@@ -34,7 +34,7 @@ export interface DriverActivity {
 }
 
 export interface DriverDeliveryRow {
-  orderId: string;
+  referenceId: string;
   status: 'DELIVERED' | 'FAILED';
   recipientName: string;
   recipientAddress: string;

@@ -95,13 +95,13 @@ function findDriver(name: string | null): Driver | null {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export function getOrderDetail(id: string): OrderDetail | null {
-  const order = MOCK_ORDERS.find((o) => o.id === id);
+  const order = MOCK_ORDERS.find((o) => o.referenceId === id);
   if (!order) return null;
 
   const driver = findDriver(order.driver);
 
   return {
-    id:                order.id,
+    referenceId:       order.referenceId,
     status:            order.status,
     priority:          order.priority,
     createdAt:         `${order.date} at ${order.time}`,
@@ -114,18 +114,18 @@ export function getOrderDetail(id: string): OrderDetail | null {
     pickupAddress:   '1420 5th Ave, Seattle, WA 98101',
     deliveryAddress: order.destination,
 
-    weight:      '2.4 kg',
+    weightKg:    '2.4 kg',
     dimensions:  '30 × 20 × 15 cm',
     description: 'Standard parcel — fragile contents',
-    notes: order.priority === 'HIGH' ? 'Handle with care. Signature required.' : undefined,
+    notes: order.priority === 'SAME_DAY' ? 'Handle with care. Signature required.' : undefined,
 
     driver,
     timeline: buildTimeline(order.status, order.date, order.time),
 
     pod: order.status === 'DELIVERED'
-      ? { signedBy: order.recipient, timestamp: `${order.date} at ${order.time}`, hasPhoto: true }
+      ? { signedBy: order.recipient, photoUrl: '/mock-pod-photo.jpg', uploadedAt: `${order.date} at ${order.time}` }
       : order.status === 'FAILED'
-      ? { signedBy: 'N/A', timestamp: `${order.date} at ${order.time}`, hasPhoto: false, note: 'Delivery attempted — no one present.' }
+      ? { failReason: 'NOT_HOME', failureNotes: 'Delivery attempted — no one present.', uploadedAt: `${order.date} at ${order.time}` }
       : undefined,
   };
 }

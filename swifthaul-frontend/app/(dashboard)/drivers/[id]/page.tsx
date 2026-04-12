@@ -54,7 +54,7 @@ export default function DriverDetailPage({
   const [showAssignOrder, setShowAssignOrder] = useState(false);
 
   function handleOrderAssigned(order: Order) {
-    toast.success(`Order ${order.id} assigned to ${driver?.name}`);
+    toast.success(`Order ${order.referenceId} assigned to ${driver?.name}`);
   }
 
   if (!driver) {
@@ -274,15 +274,15 @@ export default function DriverDetailPage({
                 <tbody className="divide-y divide-border">
                   {historySlice.map(row => (
                     <tr
-                      key={row.orderId}
+                      key={row.referenceId}
                       className="hover:bg-surface-elevated transition-colors"
                     >
                       <td className="px-5 py-3.5">
                         <Link
-                          href={`/orders/${row.orderId}`}
+                          href={`/orders/${row.referenceId}`}
                           className="font-mono text-sm font-semibold text-primary-light hover:underline"
                         >
-                          {row.orderId}
+                          {row.referenceId}
                         </Link>
                       </td>
                       <td className="px-5 py-3.5">
@@ -313,13 +313,13 @@ export default function DriverDetailPage({
             <div className="sm:hidden divide-y divide-border">
               {historySlice.map(row => (
                 <Link
-                  key={row.orderId}
-                  href={`/orders/${row.orderId}`}
+                  key={row.referenceId}
+                  href={`/orders/${row.referenceId}`}
                   className="flex items-center justify-between px-4 py-3.5 hover:bg-surface-elevated transition-colors gap-3"
                 >
                   <div className="min-w-0">
                     <p className="font-mono text-xs font-semibold text-primary-light">
-                      {row.orderId}
+                      {row.referenceId}
                     </p>
                     <p className="text-sm font-medium text-text-primary mt-0.5">
                       {row.recipientName}
@@ -388,12 +388,12 @@ export default function DriverDetailPage({
               ) : (
                 driver.assignments.map(a => (
                   <div
-                    key={a.orderId}
+                    key={a.referenceId}
                     className={`px-4 py-3.5 border-l-[3px] ${STATUS_BORDER[a.status] ?? 'border-l-border'}`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <span className="font-mono text-xs font-semibold text-primary-light">
-                        {a.orderId}
+                        {a.referenceId}
                       </span>
                       <span
                         className={`text-[10px] font-bold uppercase tracking-wider ${STATUS_COLOR[a.status] ?? 'text-text-muted'}`}
@@ -412,7 +412,7 @@ export default function DriverDetailPage({
                         {DRIVER_DETAIL.ETA_PREFIX} {a.eta}
                       </span>
                       <Link
-                        href={`/orders/${a.orderId}`}
+                        href={`/orders/${a.referenceId}`}
                         className="text-xs font-semibold text-primary-light hover:underline"
                       >
                         {DRIVER_DETAIL.VIEW_ORDER}

@@ -15,7 +15,7 @@ export type DriverAlert = {
 };
 
 export type DeliveryHistoryItem = {
-  orderId: string;
+  referenceId: string;
   date: string;
   recipientName: string;
   address: string;
@@ -48,7 +48,7 @@ export type DriverProfileData = {
 };
 
 export type MapStop = {
-  orderId: string;
+  referenceId: string;
   recipientName: string;
   address: string;
   timeWindow: string;

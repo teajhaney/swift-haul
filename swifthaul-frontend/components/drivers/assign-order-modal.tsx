@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { X, Search, Check, MapPin } from 'lucide-react';
 import { MOCK_ORDERS } from '@/constants/orders-mock';
-import { PRIORITY_STYLES } from '@/constants/orders-mock';
+import { PRIORITY_STYLES, PRIORITY_LABELS } from '@/constants/orders';
 import type { Order } from '@/types/order';
 
 interface AssignOrderModalProps {
@@ -28,7 +28,7 @@ export function AssignOrderModal({ driverName, onConfirm, onClose }: AssignOrder
     const q = search.toLowerCase();
     return candidates.filter(
       o =>
-        o.id.toLowerCase().includes(q) ||
+        o.referenceId.toLowerCase().includes(q) ||
         o.recipient.toLowerCase().includes(q) ||
         o.destination.toLowerCase().includes(q)
     );
@@ -84,9 +84,9 @@ export function AssignOrderModal({ driverName, onConfirm, onClose }: AssignOrder
           ) : (
             <ul className="space-y-1">
               {filtered.map(order => {
-                const isSelected = selected?.id === order.id;
+                const isSelected = selected?.referenceId === order.referenceId;
                 return (
-                  <li key={order.id}>
+                  <li key={order.referenceId}>
                     <button
                       onClick={() => setSelected(isSelected ? null : order)}
                       className={`w-full flex items-start gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
@@ -95,9 +95,9 @@ export function AssignOrderModal({ driverName, onConfirm, onClose }: AssignOrder
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="font-mono text-sm font-semibold text-primary-light">{order.id}</span>
+                          <span className="font-mono text-sm font-semibold text-primary-light">{order.referenceId}</span>
                           <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${PRIORITY_STYLES[order.priority]}`}>
-                            {order.priority}
+                            {PRIORITY_LABELS[order.priority]}
                           </span>
                         </div>
                         <p className="text-sm font-medium text-text-primary">{order.recipient}</p>
@@ -124,7 +124,7 @@ export function AssignOrderModal({ driverName, onConfirm, onClose }: AssignOrder
         {/* Footer */}
         <div className="modal-footer justify-between">
           <p className="text-xs text-text-muted">
-            {selected ? `Selected: ${selected.id}` : 'No order selected'}
+            {selected ? `Selected: ${selected.referenceId}` : 'No order selected'}
           </p>
           <div className="flex items-center gap-2">
             <button onClick={onClose} className="btn-secondary">Cancel</button>
