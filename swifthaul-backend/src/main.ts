@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const cookieParser = require('cookie-parser') as typeof import('cookie-parser');
@@ -34,8 +34,6 @@ async function bootstrap() {
 
   app.useGlobalFilters(new GlobalExceptionFilter());
 
-  const reflector = app.get(Reflector);
-  void reflector;
   app.useGlobalInterceptors(
     new LoggingInterceptor(),
     new ResponseInterceptor(),

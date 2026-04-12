@@ -6,7 +6,6 @@ import {
   Clock,
   TrendingUp,
   Package,
-  DollarSign,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -53,7 +52,7 @@ export default function DriverHistoryPage() {
         </h1>
 
         {/* ── Stats row ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary-subtle flex items-center justify-center shrink-0">
               <Package className="w-4 h-4 text-primary-light" />
@@ -93,19 +92,6 @@ export default function DriverHistoryPage() {
               </p>
             </div>
           </div>
-          <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center shrink-0">
-              <DollarSign className="w-4 h-4 text-accent" />
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                Earned
-              </p>
-              <p className="text-xl font-bold text-text-primary">
-                {HISTORY_STATS.weekEarnings}
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* ── Filter tabs ── */}
@@ -142,16 +128,10 @@ export default function DriverHistoryPage() {
                   Recipient
                 </th>
                 <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Address
+                </th>
+                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                   Status
-                </th>
-                <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                  Distance
-                </th>
-                <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                  Duration
-                </th>
-                <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                  Earned
                 </th>
               </tr>
             </thead>
@@ -174,7 +154,9 @@ export default function DriverHistoryPage() {
                       <p className="font-semibold text-text-primary">
                         {item.recipientName}
                       </p>
-                      <p className="text-xs text-text-muted truncate max-w-[160px]">
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-xs text-text-secondary truncate max-w-[220px]">
                         {item.address}
                       </p>
                     </td>
@@ -185,17 +167,6 @@ export default function DriverHistoryPage() {
                         <Icon className="w-3 h-3" />
                         {item.status}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-right text-text-secondary">
-                      {item.distanceMi}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-right text-text-secondary">
-                      {item.duration}
-                    </td>
-                    <td
-                      className={`px-4 py-3 text-xs text-right font-semibold ${item.status === 'DELIVERED' ? 'text-success' : 'text-text-muted'}`}
-                    >
-                      {item.earning}
                     </td>
                   </tr>
                 );
@@ -234,18 +205,8 @@ export default function DriverHistoryPage() {
                   <MapPin className="w-3 h-3 shrink-0" />
                   <span className="truncate">{item.address}</span>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-text-muted border-t border-border pt-2">
-                  <span>{item.date}</span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {item.duration}
-                  </span>
-                  <span>{item.distanceMi}</span>
-                  <span
-                    className={`ml-auto font-semibold ${item.status === 'DELIVERED' ? 'text-success' : 'text-text-muted'}`}
-                  >
-                    {item.earning}
-                  </span>
+                <div className="text-xs text-text-muted border-t border-border pt-2">
+                  {item.date}
                 </div>
               </div>
             );

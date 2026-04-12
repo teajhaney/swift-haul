@@ -7,9 +7,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Alexander Graham',
     address:       '842 N Michigan Ave, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '3.2 mi',
-    duration:      '18 min',
-    earning:       '$4.80',
   },
   {
     referenceId:       'SH-005p12c3',
@@ -17,9 +14,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Patricia Moore',
     address:       '310 W Superior St, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '1.4 mi',
-    duration:      '11 min',
-    earning:       '$2.10',
   },
   {
     referenceId:       'SH-774g33k8',
@@ -27,9 +21,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'James Walker',
     address:       '1100 S Wabash Ave, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '4.8 mi',
-    duration:      '29 min',
-    earning:       '$7.20',
   },
   {
     referenceId:       'SH-391b55n1',
@@ -37,9 +28,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Olivia Hernandez',
     address:       '501 N Clark St, Chicago',
     status:        'FAILED',
-    distanceMi:   '2.1 mi',
-    duration:      '24 min',
-    earning:       '$0.00',
   },
   {
     referenceId:       'SH-882k14w7',
@@ -47,9 +35,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'William Foster',
     address:       '200 E Randolph St, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '0.9 mi',
-    duration:      '8 min',
-    earning:       '$1.35',
   },
   {
     referenceId:       'SH-220v90j4',
@@ -57,9 +42,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Sophia Chang',
     address:       '730 N Michigan Ave, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '2.7 mi',
-    duration:      '15 min',
-    earning:       '$4.05',
   },
   {
     referenceId:       'SH-556d72a9',
@@ -67,9 +49,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Daniel Kim',
     address:       '1600 N Damen Ave, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '5.3 mi',
-    duration:      '33 min',
-    earning:       '$7.95',
   },
   {
     referenceId:       'SH-114z09q5',
@@ -77,9 +56,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Emma Johnson',
     address:       '3100 N Lincoln Ave, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '6.1 mi',
-    duration:      '38 min',
-    earning:       '$9.15',
   },
   {
     referenceId:       'SH-441k77m3',
@@ -87,9 +63,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Marcus Williams',
     address:       '800 N Michigan Ave, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '1.8 mi',
-    duration:      '12 min',
-    earning:       '$2.70',
   },
   {
     referenceId:       'SH-663p41s6',
@@ -97,9 +70,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Rachel Torres',
     address:       '455 N Cityfront Plaza Dr, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '3.4 mi',
-    duration:      '22 min',
-    earning:       '$5.10',
   },
   {
     referenceId:       'SH-887a19d0',
@@ -107,9 +77,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Steven Park',
     address:       '233 S Wacker Dr, Chicago',
     status:        'FAILED',
-    distanceMi:   '2.9 mi',
-    duration:      '31 min',
-    earning:       '$0.00',
   },
   {
     referenceId:       'SH-329r82e5',
@@ -117,9 +84,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'Linda Carter',
     address:       '1 S Dearborn St, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '0.6 mi',
-    duration:      '6 min',
-    earning:       '$0.90',
   },
   {
     referenceId:       'SH-754w63c1',
@@ -127,9 +91,6 @@ export const MOCK_DELIVERY_HISTORY: DeliveryHistoryItem[] = [
     recipientName: 'James Okafor',
     address:       '401 N Wabash Ave, Chicago',
     status:        'DELIVERED',
-    distanceMi:   '4.2 mi',
-    duration:      '27 min',
-    earning:       '$6.30',
   },
 ];
 
@@ -137,5 +98,4 @@ export const HISTORY_STATS = {
   totalDeliveries: 847,
   thisWeek:        23,
   successRate:     96.2,
-  weekEarnings:    '$38.45',
 };

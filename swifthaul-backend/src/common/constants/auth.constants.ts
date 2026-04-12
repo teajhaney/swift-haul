@@ -5,10 +5,12 @@ export const COOKIES = {
   JWT_FALLBACK: 'jwt', // legacy fallback checked in jwt.strategy
 } as const;
 
-// token lifetimes in milliseconds (for cookie maxAge)
+// token lifetimes — seconds for jwt.sign(), milliseconds for cookie maxAge
 export const TOKEN_TTL = {
-  ACCESS_MS: 15 * 60 * 1000, // 15 min
-  REFRESH_MS: 7 * 24 * 60 * 60 * 1000, // 7 days
+  ACCESS_S: 15 * 60, // 900 s (15 min)
+  REFRESH_S: 7 * 24 * 60 * 60, // 604 800 s (7 days)
+  ACCESS_MS: 15 * 60 * 1000, // 15 min in ms
+  REFRESH_MS: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
   REFRESH_DAYS: 7,
 } as const;
 

@@ -1,13 +1,8 @@
-export type DriverAlertType =
-  | 'ORDER_ASSIGNED'
-  | 'ORDER_UPDATED'
-  | 'SCHEDULE_CHANGE'
-  | 'SYSTEM'
-  | 'URGENT';
+import type { NotificationType } from '@/types/notification';
 
 export type DriverAlert = {
   id: string;
-  type: DriverAlertType;
+  type: NotificationType;
   title: string;
   message: string;
   time: string;
@@ -20,9 +15,6 @@ export type DeliveryHistoryItem = {
   recipientName: string;
   address: string;
   status: 'DELIVERED' | 'FAILED';
-  distanceMi: string;
-  duration: string;
-  earning: string;
 };
 
 export type HistoryFilterTab = 'today' | 'week' | 'month' | 'all';
