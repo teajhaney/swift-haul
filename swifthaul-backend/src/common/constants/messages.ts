@@ -28,4 +28,8 @@ export const AUTH_MESSAGES = {
   // driver invite validation
   DRIVER_PROFILE_REQUIRED:
     'Drivers must provide vehicleType and vehiclePlate when accepting an invite.',
+
+  // register (developer backdoor)
+  REGISTER_SUCCESS: 'Admin account created successfully.',
+  REGISTER_INVALID_SECRET: 'Invalid signup secret.',
 } as const;

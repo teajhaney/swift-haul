@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
@@ -31,6 +36,7 @@ import type { AcceptInviteDto } from './dto/accept-invite.dto';
 import type { ChangePasswordDto } from './dto/change-password.dto';
 import type { ForgotPasswordDto } from './dto/forgot-password.dto';
 import type { ResetPasswordDto } from './dto/reset-password.dto';
+import type { RegisterDto } from './dto/register.dto';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -45,6 +51,37 @@ export class AuthService {
     private readonly redis: RedisService,
     private readonly email: EmailService,
   ) {}
+
+  // register — developer backdoor to create an ADMIN account.
+  // Requires SIGNUP_SECRET env var to match dto.secret. Never expose this publicly.
+  async register(dto: RegisterDto): Promise<{ message: string }> {
+    const signupSecret = this.configService.get<string>('SIGNUP_SECRET');
+    if (!signupSecret || dto.secret !== signupSecret) {
+      throw new ForbiddenException(AUTH_MESSAGES.REGISTER_INVALID_SECRET);
+    }
+
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (existing) throw new EmailAlreadyExistsException();
+
+    const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
+
+    await this.prisma.user.create({
+      data: {
+        name: dto.name,
+        email: dto.email,
+        passwordHash,
+        role: Role.ADMIN,
+        isActive: true,
+        inviteAccepted: true,
+        mustResetPassword: false,
+      },
+    });
+
+    this.logger.log(`Admin account created via register for ${dto.email}`);
+    return { message: AUTH_MESSAGES.REGISTER_SUCCESS as string };
+  }
 
   //login
   async login(dto: LoginDto, res: Response): Promise<UserResponse> {
@@ -309,7 +346,7 @@ export class AuthService {
   }
 
   private buildUserResponse(user: {
-    id: string;
+    // id: string;
     name: string;
     email: string;
     role: Role;
@@ -317,7 +354,7 @@ export class AuthService {
     mustResetPassword: boolean;
   }): UserResponse {
     return {
-      id: user.id,
+      //   id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,

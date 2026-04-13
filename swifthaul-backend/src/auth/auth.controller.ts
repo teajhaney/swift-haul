@@ -16,6 +16,7 @@ import { AcceptInviteDto } from './dto/accept-invite.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RegisterDto } from './dto/register.dto';
 import type {
   RefreshTokenRequest,
   UserResponse,
@@ -107,5 +108,13 @@ export class AuthController {
     @Body() dto: ResetPasswordDto,
   ): Promise<{ message: string }> {
     return this.authService.resetPassword(dto);
+  }
+
+  // POST /auth/register — developer backdoor to create an ADMIN account.
+  // Requires SIGNUP_SECRET in the request body. Not for public use.
+  @Post('register')
+  @Public()
+  async register(@Body() dto: RegisterDto): Promise<{ message: string }> {
+    return this.authService.register(dto);
   }
 }
