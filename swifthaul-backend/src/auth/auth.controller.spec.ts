@@ -4,7 +4,11 @@ import type { Response } from 'express';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import type { JwtPayload, RefreshTokenRequest, UserResponse } from './types/jwt-payload.type';
+import type {
+  JwtPayload,
+  RefreshTokenRequest,
+  UserResponse,
+} from './types/jwt-payload.type';
 
 const mockUserResponse: UserResponse = {
   name: 'Admin User',
@@ -14,7 +18,10 @@ const mockUserResponse: UserResponse = {
   mustResetPassword: false,
 };
 
-const mockRes = { cookie: jest.fn(), clearCookie: jest.fn() } as unknown as Response;
+const mockRes = {
+  cookie: jest.fn(),
+  clearCookie: jest.fn(),
+} as unknown as Response;
 
 const mockUser: JwtPayload = {
   sub: 'user-1',
@@ -62,7 +69,12 @@ describe('AuthController', () => {
   // register
   describe('register', () => {
     it('delegates to authService.register and returns the result', async () => {
-      const dto = { name: 'Admin', email: 'new@test.com', password: 'pass', secret: 'sec' };
+      const dto = {
+        name: 'Admin',
+        email: 'new@test.com',
+        password: 'pass',
+        secret: 'sec',
+      };
       const expected = { message: 'Admin account created successfully.' };
       service.register.mockResolvedValue(expected);
       const result = await controller.register(dto);
@@ -156,7 +168,9 @@ describe('AuthController', () => {
   describe('forgotPassword', () => {
     it('delegates to authService.forgotPassword and returns the result', async () => {
       const dto = { email: 'admin@test.com' };
-      const expected = { message: 'If that email is registered, a reset code has been sent.' };
+      const expected = {
+        message: 'If that email is registered, a reset code has been sent.',
+      };
       service.forgotPassword.mockResolvedValue(expected);
       const result = await controller.forgotPassword(dto);
       expect(service.forgotPassword).toHaveBeenCalledWith(dto);
@@ -167,7 +181,11 @@ describe('AuthController', () => {
   // reset password
   describe('resetPassword', () => {
     it('delegates to authService.resetPassword and returns the result', async () => {
-      const dto = { email: 'admin@test.com', otp: '123456', newPassword: 'newpass' };
+      const dto = {
+        email: 'admin@test.com',
+        otp: '123456',
+        newPassword: 'newpass',
+      };
       const expected = { message: 'Password reset successfully.' };
       service.resetPassword.mockResolvedValue(expected);
       const result = await controller.resetPassword(dto);

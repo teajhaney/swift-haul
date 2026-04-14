@@ -119,10 +119,7 @@ describe('OrdersService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        OrdersService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [OrdersService, { provide: PrismaService, useValue: prisma }],
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);
@@ -175,7 +172,7 @@ describe('OrdersService', () => {
   });
 
   describe('findAll', () => {
-    it('scopes the query to the caller\'s driverId for DRIVER role', async () => {
+    it("scopes the query to the caller's driverId for DRIVER role", async () => {
       prisma.order.findMany.mockResolvedValue([]);
       prisma.order.count.mockResolvedValue(0);
       await service.findAll({}, driverUser);
@@ -190,7 +187,9 @@ describe('OrdersService', () => {
       prisma.order.findMany.mockResolvedValue([]);
       prisma.order.count.mockResolvedValue(0);
       await service.findAll({}, adminUser);
-      const call = prisma.order.findMany.mock.calls[0][0] as { where: Record<string, unknown> };
+      const call = prisma.order.findMany.mock.calls[0][0] as {
+        where: Record<string, unknown>;
+      };
       expect(call.where.driverId).toBeUndefined();
     });
 
@@ -211,7 +210,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('throws ForbiddenResourceException when DRIVER accesses another driver\'s order', async () => {
+    it("throws ForbiddenResourceException when DRIVER accesses another driver's order", async () => {
       prisma.order.findUnique.mockResolvedValue({
         ...baseOrderFull,
         driverId: 'other-driver',
@@ -241,7 +240,9 @@ describe('OrdersService', () => {
   describe('update', () => {
     it('throws OrderNotFoundException when order does not exist', async () => {
       prisma.order.findUnique.mockResolvedValue(null);
-      await expect(service.update('SH-NOTFOUND', {})).rejects.toThrow(OrderNotFoundException);
+      await expect(service.update('SH-NOTFOUND', {})).rejects.toThrow(
+        OrderNotFoundException,
+      );
     });
 
     it('throws OrderNotEditableException for non-editable statuses', async () => {
@@ -292,11 +293,15 @@ describe('OrdersService', () => {
     it('throws OrderNotFoundException when order does not exist', async () => {
       prisma.order.findUnique.mockResolvedValue(null);
       await expect(
-        service.updateStatus('SH-NOTFOUND', { status: OrderStatus.CANCELLED }, adminUser),
+        service.updateStatus(
+          'SH-NOTFOUND',
+          { status: OrderStatus.CANCELLED },
+          adminUser,
+        ),
       ).rejects.toThrow(OrderNotFoundException);
     });
 
-    it('throws ForbiddenResourceException when DRIVER updates another driver\'s order', async () => {
+    it("throws ForbiddenResourceException when DRIVER updates another driver's order", async () => {
       prisma.order.findUnique.mockResolvedValue({
         ...baseOrderRaw,
         driverId: 'other-driver',
@@ -355,7 +360,11 @@ describe('OrdersService', () => {
     it('throws OrderNotFoundException when order does not exist', async () => {
       prisma.order.findUnique.mockResolvedValue(null);
       await expect(
-        service.assignDriver('SH-NOTFOUND', { driverId: 'driver-1' }, adminUser),
+        service.assignDriver(
+          'SH-NOTFOUND',
+          { driverId: 'driver-1' },
+          adminUser,
+        ),
       ).rejects.toThrow(OrderNotFoundException);
     });
 
@@ -381,7 +390,10 @@ describe('OrdersService', () => {
       prisma.order.findUnique.mockResolvedValue(baseOrderRaw);
       prisma.user.findFirst.mockResolvedValue({
         ...mockDriver,
-        driverProfile: { ...mockDriverProfile, availability: Availability.OFFLINE },
+        driverProfile: {
+          ...mockDriverProfile,
+          availability: Availability.OFFLINE,
+        },
       });
       await expect(
         service.assignDriver('SH-ABC1234', { driverId: 'driver-1' }, adminUser),
@@ -405,7 +417,11 @@ describe('OrdersService', () => {
       prisma.order.count.mockResolvedValue(2); // under capacity
       prisma.order.update.mockResolvedValue(baseOrderFull);
       prisma.orderStatusLog.create.mockResolvedValue({});
-      await service.assignDriver('SH-ABC1234', { driverId: 'driver-1' }, adminUser);
+      await service.assignDriver(
+        'SH-ABC1234',
+        { driverId: 'driver-1' },
+        adminUser,
+      );
       expect(prisma.order.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -421,7 +437,9 @@ describe('OrdersService', () => {
   describe('remove', () => {
     it('throws OrderNotFoundException when order does not exist', async () => {
       prisma.order.findUnique.mockResolvedValue(null);
-      await expect(service.remove('SH-NOTFOUND')).rejects.toThrow(OrderNotFoundException);
+      await expect(service.remove('SH-NOTFOUND')).rejects.toThrow(
+        OrderNotFoundException,
+      );
     });
 
     it('throws CannotDeleteActiveOrderException for non-terminal statuses', async () => {
@@ -448,7 +466,9 @@ describe('OrdersService', () => {
       });
       prisma.order.delete.mockResolvedValue(baseOrderRaw);
       const result = await service.remove('SH-ABC1234');
-      expect(prisma.order.delete).toHaveBeenCalledWith({ where: { id: baseOrderRaw.id } });
+      expect(prisma.order.delete).toHaveBeenCalledWith({
+        where: { id: baseOrderRaw.id },
+      });
       expect(result.message).toBeDefined();
     });
 
@@ -479,7 +499,10 @@ describe('OrdersService', () => {
       const result = await service.findByTrackingToken('track-token-1');
       expect(result.referenceId).toBe(baseOrderFull.referenceId);
       expect(result.status).toBe(baseOrderFull.status);
-      expect(result.driver).toMatchObject({ name: 'Driver One', vehicleType: 'CAR' });
+      expect(result.driver).toMatchObject({
+        name: 'Driver One',
+        vehicleType: 'CAR',
+      });
     });
   });
 });

@@ -159,7 +159,10 @@ describe('AuthService', () => {
     });
 
     it('throws AccountInactiveException when account is inactive', async () => {
-      prisma.user.findUnique.mockResolvedValue({ ...mockUser, isActive: false });
+      prisma.user.findUnique.mockResolvedValue({
+        ...mockUser,
+        isActive: false,
+      });
       await expect(
         service.login({ email: 'admin@test.com', password: 'pass' }, mockRes),
       ).rejects.toThrow(AccountInactiveException);
@@ -181,7 +184,10 @@ describe('AuthService', () => {
         mockRes,
       );
       expect(mockRes.cookie).toHaveBeenCalledTimes(2);
-      expect(result).toMatchObject({ email: mockUser.email, role: mockUser.role });
+      expect(result).toMatchObject({
+        email: mockUser.email,
+        role: mockUser.role,
+      });
     });
   });
 
@@ -200,7 +206,10 @@ describe('AuthService', () => {
         email: 'admin@test.com',
         role: Role.ADMIN,
       });
-      expect(result).toMatchObject({ email: mockUser.email, role: mockUser.role });
+      expect(result).toMatchObject({
+        email: mockUser.email,
+        role: mockUser.role,
+      });
     });
   });
 
@@ -228,10 +237,16 @@ describe('AuthService', () => {
       prisma.user.findUnique.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue({ ...mockUser, isActive: false });
       config.getOrThrow.mockReturnValue('http://localhost:3000');
-      const result = await service.invite({ email: 'driver@test.com', role: Role.DRIVER });
+      const result = await service.invite({
+        email: 'driver@test.com',
+        role: Role.DRIVER,
+      });
       expect(prisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ isActive: false, inviteAccepted: false }),
+          data: expect.objectContaining({
+            isActive: false,
+            inviteAccepted: false,
+          }),
         }),
       );
       expect(email.send).toHaveBeenCalled();
@@ -243,12 +258,19 @@ describe('AuthService', () => {
     it('throws InvalidInviteTokenException when token is not found', async () => {
       prisma.user.findFirst.mockResolvedValue(null);
       await expect(
-        service.acceptInvite({ token: 'bad-token', name: 'Test', password: 'pass' }),
+        service.acceptInvite({
+          token: 'bad-token',
+          name: 'Test',
+          password: 'pass',
+        }),
       ).rejects.toThrow(InvalidInviteTokenException);
     });
 
     it('throws InvalidInviteTokenException when invite was already accepted', async () => {
-      prisma.user.findFirst.mockResolvedValue({ ...mockUser, inviteAccepted: true });
+      prisma.user.findFirst.mockResolvedValue({
+        ...mockUser,
+        inviteAccepted: true,
+      });
       await expect(
         service.acceptInvite({ token: 'tok', name: 'Test', password: 'pass' }),
       ).rejects.toThrow(InvalidInviteTokenException);
@@ -262,7 +284,11 @@ describe('AuthService', () => {
         inviteAccepted: false,
       });
       await expect(
-        service.acceptInvite({ token: 'tok', name: 'Driver', password: 'pass' }),
+        service.acceptInvite({
+          token: 'tok',
+          name: 'Driver',
+          password: 'pass',
+        }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -311,7 +337,10 @@ describe('AuthService', () => {
     it('throws UserNotFoundException when user does not exist', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
       await expect(
-        service.changePassword({ currentPassword: 'old', newPassword: 'new' }, 'missing'),
+        service.changePassword(
+          { currentPassword: 'old', newPassword: 'new' },
+          'missing',
+        ),
       ).rejects.toThrow(UserNotFoundException);
     });
 
@@ -319,7 +348,10 @@ describe('AuthService', () => {
       prisma.user.findUnique.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValueOnce(false);
       await expect(
-        service.changePassword({ currentPassword: 'wrong', newPassword: 'new' }, 'user-1'),
+        service.changePassword(
+          { currentPassword: 'wrong', newPassword: 'new' },
+          'user-1',
+        ),
       ).rejects.toThrow(PasswordMismatchException);
     });
 
@@ -331,7 +363,9 @@ describe('AuthService', () => {
         'user-1',
       );
       expect(prisma.user.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ mustResetPassword: false }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({ mustResetPassword: false }),
+        }),
       );
       expect(result.message).toBeDefined();
     });
@@ -340,7 +374,9 @@ describe('AuthService', () => {
   describe('forgotPassword', () => {
     it('returns success without storing OTP when email is not found', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      const result = await service.forgotPassword({ email: 'unknown@test.com' });
+      const result = await service.forgotPassword({
+        email: 'unknown@test.com',
+      });
       expect(redis.set).not.toHaveBeenCalled();
       expect(email.send).not.toHaveBeenCalled();
       expect(result.message).toBeDefined();
@@ -363,7 +399,11 @@ describe('AuthService', () => {
     it('throws InvalidOtpException when no OTP exists in Redis', async () => {
       redis.get.mockResolvedValue(null);
       await expect(
-        service.resetPassword({ email: 'admin@test.com', otp: '123456', newPassword: 'new' }),
+        service.resetPassword({
+          email: 'admin@test.com',
+          otp: '123456',
+          newPassword: 'new',
+        }),
       ).rejects.toThrow(InvalidOtpException);
     });
 
@@ -371,7 +411,11 @@ describe('AuthService', () => {
       redis.get.mockResolvedValue('hashed_otp');
       (bcrypt.compare as jest.Mock).mockResolvedValueOnce(false);
       await expect(
-        service.resetPassword({ email: 'admin@test.com', otp: 'wrong', newPassword: 'new' }),
+        service.resetPassword({
+          email: 'admin@test.com',
+          otp: 'wrong',
+          newPassword: 'new',
+        }),
       ).rejects.toThrow(InvalidOtpException);
     });
 

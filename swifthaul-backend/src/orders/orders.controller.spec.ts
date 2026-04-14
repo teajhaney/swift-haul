@@ -156,8 +156,16 @@ describe('OrdersController', () => {
     it('delegates to ordersService.updateStatus with referenceId, dto, and user', async () => {
       const dto = { status: OrderStatus.CANCELLED };
       service.updateStatus.mockResolvedValue(mockOrderDetail);
-      const result = await controller.updateStatus('SH-ABC1234', dto, adminUser);
-      expect(service.updateStatus).toHaveBeenCalledWith('SH-ABC1234', dto, adminUser);
+      const result = await controller.updateStatus(
+        'SH-ABC1234',
+        dto,
+        adminUser,
+      );
+      expect(service.updateStatus).toHaveBeenCalledWith(
+        'SH-ABC1234',
+        dto,
+        adminUser,
+      );
       expect(result).toEqual(mockOrderDetail);
     });
   });
@@ -167,8 +175,16 @@ describe('OrdersController', () => {
     it('delegates to ordersService.assignDriver with referenceId, dto, and user', async () => {
       const dto = { driverId: 'driver-1' };
       service.assignDriver.mockResolvedValue(mockOrderDetail);
-      const result = await controller.assignDriver('SH-ABC1234', dto, adminUser);
-      expect(service.assignDriver).toHaveBeenCalledWith('SH-ABC1234', dto, adminUser);
+      const result = await controller.assignDriver(
+        'SH-ABC1234',
+        dto,
+        adminUser,
+      );
+      expect(service.assignDriver).toHaveBeenCalledWith(
+        'SH-ABC1234',
+        dto,
+        adminUser,
+      );
       expect(result).toEqual(mockOrderDetail);
     });
   });

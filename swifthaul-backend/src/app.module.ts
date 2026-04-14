@@ -8,6 +8,7 @@ import { RedisModule } from './redis/redis.module';
 import { EmailModule } from './email/email.module';
 import { AuthModule } from './auth/auth.module';
 import { OrdersModule } from './orders/orders.module';
+import { DriversModule } from './drivers/drivers.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -16,7 +17,6 @@ import { RolesGuard } from './common/guards/roles.guard';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
 
     // three tiers: burst (1s), per-minute, sustained — auth endpoints override with stricter limits
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     ThrottlerModule.forRoot([
       { name: 'short', ttl: 1_000, limit: 20 },
       { name: 'medium', ttl: 60_000, limit: 100 },
@@ -28,6 +28,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     EmailModule,
     AuthModule,
     OrdersModule,
+    DriversModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
