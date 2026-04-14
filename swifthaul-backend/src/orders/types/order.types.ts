@@ -1,0 +1,87 @@
+import { OrderStatus, Priority, VehicleType } from '@prisma/client';
+
+export interface OrderDriverInfo {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+export interface OrderDriverDetailInfo extends OrderDriverInfo {
+  vehicleType: VehicleType | null;
+  vehiclePlate: string | null;
+}
+
+export interface OrderDispatcherInfo {
+  id: string;
+  name: string;
+}
+
+export interface StatusLogEntry {
+  id: string;
+  fromStatus: OrderStatus;
+  toStatus: OrderStatus;
+  changedBy: { id: string; name: string };
+  note: string | null;
+  createdAt: Date;
+}
+
+export interface OrderListItem {
+  referenceId: string;
+  status: OrderStatus;
+  priority: Priority;
+  senderName: string;
+  senderPhone: string;
+  recipientName: string;
+  recipientPhone: string;
+  deliveryAddress: string;
+  driver: OrderDriverInfo | null;
+  dispatcher: OrderDispatcherInfo;
+  estimatedDelivery: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OrderDetail extends OrderListItem {
+  trackingToken: string;
+  recipientEmail: string | null;
+  pickupAddress: string;
+  pickupLat: number | null;
+  pickupLng: number | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
+  packageDescription: string;
+  weightKg: number | null;
+  dimensions: string | null;
+  notes: string | null;
+  scheduledPickupTime: Date | null;
+  failedAttempts: number;
+  maxRetries: number;
+  driver: OrderDriverDetailInfo | null;
+  statusLogs: StatusLogEntry[];
+}
+
+export interface PaginatedOrders {
+  data: OrderListItem[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+}
+
+export interface PublicTrackingResponse {
+  referenceId: string;
+  status: OrderStatus;
+  recipientName: string;
+  deliveryAddress: string;
+  estimatedDelivery: Date | null;
+  driver: {
+    name: string;
+    vehicleType: VehicleType | null;
+  } | null;
+  statusLogs: Array<{
+    fromStatus: OrderStatus;
+    toStatus: OrderStatus;
+    createdAt: Date;
+  }>;
+}

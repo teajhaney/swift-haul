@@ -45,6 +45,7 @@ import {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // login
   @Post('login')
   @Public()
   @ApiLogin()
@@ -55,12 +56,14 @@ export class AuthController {
     return this.authService.login(dto, res);
   }
 
+  // current user
   @Get('me')
   @ApiMe()
   async me(@CurrentUser() user: JwtPayload): Promise<UserResponse> {
     return this.authService.me(user);
   }
 
+  // refresh token
   @Post('refresh')
   @Public()
   @UseGuards(JwtRefreshGuard)
@@ -72,6 +75,7 @@ export class AuthController {
     return this.authService.refresh(req, res);
   }
 
+  // logout
   @Post('logout')
   @ApiLogout()
   async logout(
@@ -81,6 +85,7 @@ export class AuthController {
     return this.authService.logout(user.sub, res);
   }
 
+  // invite user
   @Post('invite')
   @AdminOnly()
   @ApiInvite()
@@ -88,6 +93,7 @@ export class AuthController {
     return this.authService.invite(dto);
   }
 
+  // accept invite
   @Post('accept-invite')
   @Public()
   @ApiAcceptInvite()
@@ -97,6 +103,7 @@ export class AuthController {
     return this.authService.acceptInvite(dto);
   }
 
+  // change password
   @Post('change-password')
   @ApiChangePassword()
   async changePassword(
@@ -106,6 +113,7 @@ export class AuthController {
     return this.authService.changePassword(dto, user.sub);
   }
 
+  // forgot password
   @Post('forgot-password')
   @Public()
   @ApiForgotPassword()
@@ -115,6 +123,7 @@ export class AuthController {
     return this.authService.forgotPassword(dto);
   }
 
+  // reset password
   @Post('reset-password')
   @Public()
   @ApiResetPassword()
@@ -124,6 +133,7 @@ export class AuthController {
     return this.authService.resetPassword(dto);
   }
 
+  // register
   @Post('register')
   @Public()
   @ApiRegister()

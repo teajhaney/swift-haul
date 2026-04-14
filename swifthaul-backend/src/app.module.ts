@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { EmailModule } from './email/email.module';
 import { AuthModule } from './auth/auth.module';
+import { OrdersModule } from './orders/orders.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -26,6 +27,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     RedisModule,
     EmailModule,
     AuthModule,
+    OrdersModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

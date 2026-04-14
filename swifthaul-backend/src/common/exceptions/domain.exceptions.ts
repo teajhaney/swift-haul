@@ -169,6 +169,26 @@ export class DriverAtCapacityException extends BaseException {
   }
 }
 
+export class CannotDeleteActiveOrderException extends BaseException {
+  constructor() {
+    super(
+      'CANNOT_DELETE_ACTIVE_ORDER',
+      'Only cancelled or delivered orders can be deleted.',
+      HttpStatus.UNPROCESSABLE_ENTITY,
+    );
+  }
+}
+
+export class OrderNotEditableException extends BaseException {
+  constructor() {
+    super(
+      'ORDER_NOT_EDITABLE',
+      'Order details can only be edited while the order is pending, assigned, or rescheduled.',
+      HttpStatus.UNPROCESSABLE_ENTITY,
+    );
+  }
+}
+
 export class PodAlreadyExistsException extends BaseException {
   constructor() {
     super(
