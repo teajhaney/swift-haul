@@ -10,13 +10,54 @@ export interface TimelineEvent {
   isCurrent: boolean;
 }
 
+// Driver shape returned by the order detail endpoint
 export interface Driver {
   id: string;
   name: string;
-  phone: string;
-  vehicle: string;
-  avatarInitials: string;
-  isAvailable: boolean;
+  avatarUrl: string | null;
+  vehicleType: string | null;
+  vehiclePlate: string | null;
+}
+
+// API response types for the order detail endpoint
+export interface ApiStatusLog {
+  id: string;
+  fromStatus: string;
+  toStatus: string;
+  changedBy: { id: string; name: string };
+  note: string | null;
+  createdAt: string;
+}
+
+export interface ApiOrderDetail {
+  referenceId: string;
+  status: OrderStatus;
+  priority: Priority;
+  senderName: string;
+  senderPhone: string;
+  recipientName: string;
+  recipientPhone: string;
+  recipientEmail: string | null;
+  deliveryAddress: string;
+  pickupAddress: string;
+  pickupLat: number | null;
+  pickupLng: number | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
+  packageDescription: string;
+  weightKg: number | null;
+  dimensions: string | null;
+  notes: string | null;
+  scheduledPickupTime: string | null;
+  estimatedDelivery: string | null;
+  failedAttempts: number;
+  maxRetries: number;
+  trackingToken: string;
+  driver: Driver | null;
+  dispatcher: { id: string; name: string };
+  statusLogs: ApiStatusLog[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProofOfDelivery {
@@ -37,22 +78,29 @@ export interface OrderDetail {
   status: OrderStatus;
   priority: Priority;
   createdAt: string;
-  estimatedDelivery: string;
+  estimatedDelivery: string | null;
+
+  // Sender
+  senderName: string;
+  senderPhone: string;
 
   // Recipient
-  recipient: string;
+  recipientName: string;
   recipientPhone: string;
-  recipientEmail: string;
+  recipientEmail: string | null;
 
   // Addresses
   pickupAddress: string;
   deliveryAddress: string;
 
   // Package
-  weightKg: string;
-  dimensions: string;
-  description: string;
-  notes?: string;
+  weightKg: number | null;
+  dimensions: string | null;
+  packageDescription: string;
+  notes?: string | null;
+
+  // Tracking
+  trackingToken: string;
 
   // Assignment
   driver: Driver | null;

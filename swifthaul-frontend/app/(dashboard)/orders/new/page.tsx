@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { toast } from 'sonner';
 import {
   ChevronRight,
   Loader2,
@@ -24,29 +22,11 @@ import {
 import { AddressAutocomplete } from '@/components/orders/address-autocomplete';
 import { RouteVisualization } from '@/components/orders/order-form-map';
 import { ORDER_FORM, type FormPriority } from '@/constants/order-form';
-import {
-  generateOrderId,
-  MOCK_SUBMIT_DELAY_MS,
-} from '@/constants/order-form-mock';
+import { orderSchema, type OrderFormData } from '@/lib/validations/orders';
+import { useCreateOrder } from '@/hooks/orders/use-create-order';
 
 // ── Zod schema ────────────────────────────────────────────────────────────────
-
-const orderSchema = z.object({
-  senderName: z.string().min(2, ORDER_FORM.ERR_SENDER_NAME),
-  senderPhone: z.string().min(7, ORDER_FORM.ERR_SENDER_PHONE),
-  pickupAddress: z.string().min(5, ORDER_FORM.ERR_PICKUP),
-  recipient: z.string().min(2, ORDER_FORM.ERR_NAME),
-  recipientEmail: z.string().optional(),
-  recipientPhone: z.string().min(7, ORDER_FORM.ERR_RECIP_PHONE),
-  deliveryAddress: z.string().min(5, ORDER_FORM.ERR_DELIVERY),
-  description: z.string().min(2, ORDER_FORM.ERR_DESCRIPTION),
-  weight: z.string().min(1, ORDER_FORM.ERR_WEIGHT),
-  priority: z.enum(['STANDARD', 'EXPRESS', 'SAME_DAY']),
-  additionalInstructions: z.string().optional(),
-  scheduledPickupTime: z.string().optional(),
-});
-
-type OrderFormData = z.infer<typeof orderSchema>;
+// Moved to lib/validations/orders.ts
 
 // ── Section card ──────────────────────────────────────────────────────────────
 
@@ -121,8 +101,8 @@ function inputCls(hasError: boolean) {
 
 export default function NewOrderPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [deliveryPinned, setDeliveryPinned] = useState(false);
+  const createOrder = useCreateOrder();
 
   const {
     register,
@@ -135,15 +115,44 @@ export default function NewOrderPage() {
     defaultValues: { priority: 'STANDARD' },
   });
 
-  const watchedPickup   = useWatch({ control, name: 'pickupAddress',   defaultValue: '' });
-  const watchedDelivery = useWatch({ control, name: 'deliveryAddress', defaultValue: '' });
-  const watchedPriority = useWatch({ control, name: 'priority',        defaultValue: 'STANDARD' });
+  const watchedPickup = useWatch({
+    control,
+    name: 'pickupAddress',
+    defaultValue: '',
+  });
+  const watchedDelivery = useWatch({
+    control,
+    name: 'deliveryAddress',
+    defaultValue: '',
+  });
+  const watchedPriority = useWatch({
+    control,
+    name: 'priority',
+    defaultValue: 'STANDARD',
+  });
 
-  async function onSubmit() {
-    setIsLoading(true);
-    await new Promise<void>(r => setTimeout(r, MOCK_SUBMIT_DELAY_MS));
-    toast.success(ORDER_FORM.TOAST_SUCCESS(generateOrderId()));
-    router.push('/orders');
+  function onSubmit(data: OrderFormData) {
+    createOrder.mutate(
+      {
+        senderName: data.senderName,
+        senderPhone: data.senderPhone,
+        recipientName: data.recipientName,
+        recipientPhone: data.recipientPhone,
+        recipientEmail: data.recipientEmail || undefined,
+        pickupAddress: data.pickupAddress,
+        deliveryAddress: data.deliveryAddress,
+        packageDescription: data.packageDescription,
+        weightKg: data.weight ? parseFloat(data.weight) : undefined,
+        priority: data.priority,
+        notes: data.notes || undefined,
+        scheduledPickupTime: data.scheduledPickupTime || undefined,
+      },
+      {
+        onSuccess: () => {
+          router.push('/orders');
+        },
+      }
+    );
   }
 
   return (
@@ -170,7 +179,7 @@ export default function NewOrderPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
         {/* ════════════════════════ LEFT: Form ════════════════════════ */}
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(data => onSubmit(data))}
           noValidate
           className="space-y-5"
         >
@@ -242,18 +251,18 @@ export default function NewOrderPage() {
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field
-                id="recipient"
+                id="recipientName"
                 label={ORDER_FORM.LABEL_RECIPIENT}
                 required
-                error={errors.recipient?.message}
+                error={errors.recipientName?.message}
               >
                 <input
-                  id="recipient"
+                  id="recipientName"
                   type="text"
                   placeholder={ORDER_FORM.PH_RECIPIENT}
-                  aria-invalid={!!errors.recipient}
-                  className={inputCls(!!errors.recipient)}
-                  {...register('recipient')}
+                  aria-invalid={!!errors.recipientName}
+                  className={inputCls(!!errors.recipientName)}
+                  {...register('recipientName')}
                 />
               </Field>
 
@@ -320,18 +329,18 @@ export default function NewOrderPage() {
             {/* Description + Weight */}
             <div className="grid grid-cols-[1fr_110px] gap-4 items-start">
               <Field
-                id="description"
+                id="packageDescription"
                 label={ORDER_FORM.LABEL_DESCRIPTION}
                 required
-                error={errors.description?.message}
+                error={errors.packageDescription?.message}
               >
                 <textarea
-                  id="description"
+                  id="packageDescription"
                   rows={2}
                   placeholder={ORDER_FORM.PH_DESCRIPTION}
-                  aria-invalid={!!errors.description}
-                  className={`form-input resize-none ${errors.description ? 'border-error focus:border-error focus:ring-error/20' : ''}`}
-                  {...register('description')}
+                  aria-invalid={!!errors.packageDescription}
+                  className={`form-input resize-none ${errors.packageDescription ? 'border-error focus:border-error focus:ring-error/20' : ''}`}
+                  {...register('packageDescription')}
                 />
               </Field>
 
@@ -417,16 +426,13 @@ export default function NewOrderPage() {
           {/* 4 ── Additional ── */}
           <div className="bg-surface rounded-xl border border-border shadow-sm p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field
-                id="additionalInstructions"
-                label={ORDER_FORM.LABEL_INSTRUCTIONS}
-              >
+              <Field id="notes" label={ORDER_FORM.LABEL_INSTRUCTIONS}>
                 <textarea
-                  id="additionalInstructions"
+                  id="notes"
                   rows={3}
                   placeholder={ORDER_FORM.PH_INSTRUCTIONS}
                   className="form-input resize-none"
-                  {...register('additionalInstructions')}
+                  {...register('notes')}
                 />
               </Field>
 
@@ -452,15 +458,17 @@ export default function NewOrderPage() {
           <div className="flex items-center gap-3">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={createOrder.isPending}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-light hover:bg-primary-hover text-white text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {createOrder.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <PlusCircle className="w-4 h-4" />
               )}
-              {isLoading ? ORDER_FORM.BTN_LOADING : ORDER_FORM.BTN_SUBMIT}
+              {createOrder.isPending
+                ? ORDER_FORM.BTN_LOADING
+                : ORDER_FORM.BTN_SUBMIT}
             </button>
             <Link
               href="/orders"

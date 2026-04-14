@@ -11,13 +11,13 @@ import type { OrderStatus } from '@/types/order';
 // ── Available drivers ─────────────────────────────────────────────────────────
 
 export const MOCK_DRIVERS: Driver[] = [
-  { id: 'DRV-001', name: 'Marcus Chen',     phone: '+1 (206) 555-0201', vehicle: 'Toyota Camry · WA-4821-X',   avatarInitials: 'MC', isAvailable: true  },
-  { id: 'DRV-002', name: 'Elena Rodriguez', phone: '+1 (206) 555-0202', vehicle: 'Honda CR-V · WA-7234-B',     avatarInitials: 'ER', isAvailable: false },
-  { id: 'DRV-003', name: 'James Wilson',    phone: '+1 (206) 555-0203', vehicle: 'Ford Transit · WA-9012-C',   avatarInitials: 'JW', isAvailable: true  },
-  { id: 'DRV-004', name: 'Priya Sharma',    phone: '+1 (206) 555-0204', vehicle: 'Nissan Leaf · WA-3456-D',    avatarInitials: 'PS', isAvailable: true  },
-  { id: 'DRV-005', name: 'Tom Nguyen',      phone: '+1 (206) 555-0205', vehicle: 'Chevy Spark · WA-5678-E',    avatarInitials: 'TN', isAvailable: false },
-  { id: 'DRV-006', name: 'Aisha Okonkwo',   phone: '+1 (206) 555-0206', vehicle: 'Tesla Model 3 · WA-2345-F',  avatarInitials: 'AO', isAvailable: true  },
-  { id: 'DRV-007', name: 'Carlos Mendez',   phone: '+1 (206) 555-0207', vehicle: 'Ram ProMaster · WA-6789-G',  avatarInitials: 'CM', isAvailable: true  },
+  { id: 'DRV-001', name: 'Marcus Chen',     avatarUrl: null, vehicleType: 'CAR',   vehiclePlate: 'WA-4821-X' },
+  { id: 'DRV-002', name: 'Elena Rodriguez', avatarUrl: null, vehicleType: 'VAN',   vehiclePlate: 'WA-7234-B' },
+  { id: 'DRV-003', name: 'James Wilson',    avatarUrl: null, vehicleType: 'TRUCK', vehiclePlate: 'WA-9012-C' },
+  { id: 'DRV-004', name: 'Priya Sharma',    avatarUrl: null, vehicleType: 'CAR',   vehiclePlate: 'WA-3456-D' },
+  { id: 'DRV-005', name: 'Tom Nguyen',      avatarUrl: null, vehicleType: 'BIKE',  vehiclePlate: 'WA-5678-E' },
+  { id: 'DRV-006', name: 'Aisha Okonkwo',   avatarUrl: null, vehicleType: 'CAR',   vehiclePlate: 'WA-2345-F' },
+  { id: 'DRV-007', name: 'Carlos Mendez',   avatarUrl: null, vehicleType: 'VAN',   vehiclePlate: 'WA-6789-G' },
 ];
 
 // ── Timeline builder ──────────────────────────────────────────────────────────
@@ -85,10 +85,9 @@ function findDriver(name: string | null): Driver | null {
   return MOCK_DRIVERS.find((d) => d.name === name) ?? {
     id: 'DRV-000',
     name,
-    phone: '+1 (206) 555-0200',
-    vehicle: 'Vehicle on file',
-    avatarInitials: name.split(' ').map((p) => p[0]).join('').toUpperCase().slice(0, 2),
-    isAvailable: false,
+    avatarUrl: null,
+    vehicleType: null,
+    vehiclePlate: null,
   };
 }
 
@@ -107,17 +106,21 @@ export function getOrderDetail(id: string): OrderDetail | null {
     createdAt:         `${order.date} at ${order.time}`,
     estimatedDelivery: `${order.date} by 18:00`,
 
-    recipient:      order.recipient,
+    senderName:  'Mock Sender',
+    senderPhone: '+1 (206) 555-0000',
+
+    recipientName:  order.recipient,
     recipientPhone: '+1 (206) 555-0100',
     recipientEmail: `${order.recipient.split(' ')[0].toLowerCase()}@example.com`,
 
     pickupAddress:   '1420 5th Ave, Seattle, WA 98101',
     deliveryAddress: order.destination,
 
-    weightKg:    '2.4 kg',
-    dimensions:  '30 × 20 × 15 cm',
-    description: 'Standard parcel — fragile contents',
+    weightKg:           2.4,
+    dimensions:         '30 × 20 × 15 cm',
+    packageDescription: 'Standard parcel — fragile contents',
     notes: order.priority === 'SAME_DAY' ? 'Handle with care. Signature required.' : undefined,
+    trackingToken: `mock-token-${order.referenceId}`,
 
     driver,
     timeline: buildTimeline(order.status, order.date, order.time),
@@ -125,7 +128,7 @@ export function getOrderDetail(id: string): OrderDetail | null {
     pod: order.status === 'DELIVERED'
       ? { signedBy: order.recipient, photoUrl: '/mock-pod-photo.jpg', uploadedAt: `${order.date} at ${order.time}` }
       : order.status === 'FAILED'
-      ? { failReason: 'NOT_HOME', failureNotes: 'Delivery attempted — no one present.', uploadedAt: `${order.date} at ${order.time}` }
+      ? { failReason: 'NOT_HOME' as const, failureNotes: 'Delivery attempted — no one present.', uploadedAt: `${order.date} at ${order.time}` }
       : undefined,
   };
 }

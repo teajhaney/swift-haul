@@ -2,44 +2,29 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, ChevronLeft, ChevronRight, UserRoundPlus, Users } from 'lucide-react';
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  UserRoundPlus,
+  Users,
+} from 'lucide-react';
 
 import { DriverAvailabilityBadge } from '@/components/drivers/driver-availability-badge';
 import { DRIVERS } from '@/constants/drivers';
 import { AVAILABILITY_STYLES } from '@/constants/drivers-mock';
 import { useDrivers } from '@/hooks/drivers/use-drivers';
-import type { DriverAvailabilityFilter, VehicleType } from '@/types/driver';
-
-const VEHICLE_LABELS: Record<VehicleType, string> = {
-  BIKE: 'Bike',
-  CAR: 'Car',
-  VAN: 'Van',
-  TRUCK: 'Truck',
-};
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((w) => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function getPageNumbers(current: number, total: number): (number | '...')[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
-  if (current >= total - 3)
-    return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
-  return [1, '...', current - 1, current, current + 1, '...', total];
-}
+import { getInitials, getPageNumbers, VEHICLE_LABELS } from '@/lib/utils';
+import type { DriverAvailabilityFilter } from '@/types/driver';
+import Image from 'next/image';
 
 export default function DriversPage() {
-  const [search, setSearch]           = useState('');
+  const [search, setSearch] = useState('');
   const [debouncedSearch, setDebounced] = useState('');
-  const [availFilter, setAvailFilter] = useState<DriverAvailabilityFilter>('ALL');
-  const [page, setPage]               = useState(1);
-  const debounceRef                   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [availFilter, setAvailFilter] =
+    useState<DriverAvailabilityFilter>('ALL');
+  const [page, setPage] = useState(1);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounce search — avoids firing on every keystroke
   useEffect(() => {
@@ -57,26 +42,39 @@ export default function DriversPage() {
     availability: availFilter,
   });
 
-  const drivers    = data?.data ?? [];
-  const total      = data?.meta.total ?? 0;
+  const drivers = data?.data ?? [];
+  const total = data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / DRIVERS.PAGE_SIZE));
-  const from       = total === 0 ? 0 : (page - 1) * DRIVERS.PAGE_SIZE + 1;
-  const to         = Math.min(page * DRIVERS.PAGE_SIZE, total);
+  const from = total === 0 ? 0 : (page - 1) * DRIVERS.PAGE_SIZE + 1;
+  const to = Math.min(page * DRIVERS.PAGE_SIZE, total);
   const pageNumbers = getPageNumbers(page, totalPages);
 
   const hasActiveFilters = search !== '' || availFilter !== 'ALL';
 
-  function updateSearch(val: string) { setSearch(val); setPage(1); }
-  function updateFilter(val: DriverAvailabilityFilter) { setAvailFilter(val); setPage(1); }
-  function clearFilters() { setSearch(''); setAvailFilter('ALL'); setPage(1); }
+  function updateSearch(val: string) {
+    setSearch(val);
+    setPage(1);
+  }
+  function updateFilter(val: DriverAvailabilityFilter) {
+    setAvailFilter(val);
+    setPage(1);
+  }
+  function clearFilters() {
+    setSearch('');
+    setAvailFilter('ALL');
+    setPage(1);
+  }
 
   return (
     <div className="space-y-5">
-
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">{DRIVERS.PAGE_HEADING}</h1>
-        <p className="text-sm text-text-secondary mt-0.5">{DRIVERS.PAGE_SUBHEADING}</p>
+        <h1 className="text-2xl font-bold text-text-primary">
+          {DRIVERS.PAGE_HEADING}
+        </h1>
+        <p className="text-sm text-text-secondary mt-0.5">
+          {DRIVERS.PAGE_SUBHEADING}
+        </p>
       </div>
 
       {/* Search + filter */}
@@ -96,12 +94,19 @@ export default function DriversPage() {
         <div className="relative">
           <select
             value={availFilter}
-            onChange={e => updateFilter(e.target.value as DriverAvailabilityFilter)}
+            onChange={e =>
+              updateFilter(e.target.value as DriverAvailabilityFilter)
+            }
             className="h-9 pl-3 pr-8 rounded-lg text-sm text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary-light/20 transition-colors cursor-pointer"
-            style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+            style={{
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+            }}
           >
             {DRIVERS.AVAILABILITY_OPTIONS.map(({ label, value }) => (
-              <option key={value} value={value}>{label}</option>
+              <option key={value} value={value}>
+                {label}
+              </option>
             ))}
           </select>
           <ChevronRight className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none rotate-90" />
@@ -110,25 +115,35 @@ export default function DriversPage() {
 
       {/* Table / Cards */}
       <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
-
         {isLoading ? (
           <div className="flex flex-col gap-3 p-5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-12 rounded-lg bg-surface-elevated animate-pulse" />
+              <div
+                key={i}
+                className="h-12 rounded-lg bg-surface-elevated animate-pulse"
+              />
             ))}
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-            <p className="text-base font-semibold text-text-primary mb-1">Failed to load drivers</p>
-            <p className="text-sm text-text-secondary">Check your connection and try again</p>
+            <p className="text-base font-semibold text-text-primary mb-1">
+              Failed to load drivers
+            </p>
+            <p className="text-sm text-text-secondary">
+              Check your connection and try again
+            </p>
           </div>
         ) : drivers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
             <div className="w-12 h-12 rounded-full bg-surface-elevated flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-text-muted" />
             </div>
-            <p className="text-base font-semibold text-text-primary mb-1">{DRIVERS.NO_RESULTS}</p>
-            <p className="text-sm text-text-secondary mb-5">{DRIVERS.NO_RESULTS_HINT}</p>
+            <p className="text-base font-semibold text-text-primary mb-1">
+              {DRIVERS.NO_RESULTS}
+            </p>
+            <p className="text-sm text-text-secondary mb-5">
+              {DRIVERS.NO_RESULTS_HINT}
+            </p>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
@@ -165,55 +180,79 @@ export default function DriversPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {drivers.map(driver => {
-                    const successPct  = Math.round(driver.successRate);
-                    const barColor    = successPct >= 90 ? 'bg-success' : successPct >= 70 ? 'bg-warning' : 'bg-error';
-                    const isOffline   = driver.availability === 'OFFLINE';
-                    const initials    = getInitials(driver.name);
-                    const vehicle     = VEHICLE_LABELS[driver.vehicleType];
+                    const successPct = Math.round(driver.successRate);
+                    const barColor =
+                      successPct >= 90
+                        ? 'bg-success'
+                        : successPct >= 70
+                          ? 'bg-warning'
+                          : 'bg-error';
+                    const isOffline = driver.availability === 'OFFLINE';
+                    const initials = getInitials(driver.name);
+                    const vehicle = VEHICLE_LABELS[driver.vehicleType];
 
                     return (
-                      <tr key={driver.id} className="hover:bg-surface-elevated transition-colors">
+                      <tr
+                        key={driver.id}
+                        className="hover:bg-surface-elevated transition-colors"
+                      >
                         {/* Driver */}
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
                             {driver.avatarUrl ? (
-                              <img
+                              <Image
                                 src={driver.avatarUrl}
                                 alt={driver.name}
                                 className="w-9 h-9 rounded-full object-cover shrink-0"
                               />
                             ) : (
                               <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center shrink-0">
-                                <span className="text-xs font-bold text-white">{initials}</span>
+                                <span className="text-xs font-bold text-white">
+                                  {initials}
+                                </span>
                               </div>
                             )}
                             <div>
-                              <p className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
+                              <p
+                                className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}
+                              >
                                 {driver.name}
                               </p>
-                              <p className="text-xs text-text-muted">{driver.email}</p>
+                              <p className="text-xs text-text-muted">
+                                {driver.email}
+                              </p>
                             </div>
                           </div>
                         </td>
 
                         {/* Contact & Vehicle */}
                         <td className="px-5 py-3.5">
-                          <p className={`text-sm ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
+                          <p
+                            className={`text-sm ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}
+                          >
                             {driver.phone ?? '—'}
                           </p>
                           <div className="flex items-center gap-1.5 mt-1">
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap ${isOffline ? 'bg-surface-elevated text-text-muted' : 'bg-primary-subtle text-primary-light'}`}>
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap ${isOffline ? 'bg-surface-elevated text-text-muted' : 'bg-primary-subtle text-primary-light'}`}
+                            >
                               {vehicle}
                             </span>
-                            <span className="text-xs font-mono text-text-muted">{driver.vehiclePlate}</span>
+                            <span className="text-xs font-mono text-text-muted">
+                              {driver.vehiclePlate}
+                            </span>
                           </div>
                         </td>
 
                         {/* Status */}
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full shrink-0 ${AVAILABILITY_STYLES[driver.availability].dot}`} />
-                            <span className={`text-sm font-medium ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
+                            <span
+                              className={`w-2 h-2 rounded-full shrink-0 ${AVAILABILITY_STYLES[driver.availability].dot}`}
+                            />
+                            <span
+                              className={`text-sm font-medium ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}
+                            >
                               {AVAILABILITY_STYLES[driver.availability].label}
                             </span>
                           </div>
@@ -223,16 +262,25 @@ export default function DriversPage() {
                         <td className="px-5 py-3.5 min-w-[150px]">
                           {isOffline ? (
                             <p className="text-sm text-text-muted">
-                              {driver.completedToday === 0 ? DRIVERS.IN_ACTIVE : DRIVERS.SHIFT_ENDED}
+                              {driver.completedToday === 0
+                                ? DRIVERS.IN_ACTIVE
+                                : DRIVERS.SHIFT_ENDED}
                             </p>
                           ) : (
                             <>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-text-primary">Success rate</span>
-                                <span className="text-xs text-text-muted">{successPct}%</span>
+                                <span className="text-sm text-text-primary">
+                                  Success rate
+                                </span>
+                                <span className="text-xs text-text-muted">
+                                  {successPct}%
+                                </span>
                               </div>
                               <div className="w-full h-1.5 rounded-full bg-surface-elevated overflow-hidden">
-                                <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${successPct}%` }} />
+                                <div
+                                  className={`h-full rounded-full transition-all ${barColor}`}
+                                  style={{ width: `${successPct}%` }}
+                                />
                               </div>
                             </>
                           )}
@@ -240,14 +288,18 @@ export default function DriversPage() {
 
                         {/* Completed Today */}
                         <td className="px-5 py-3.5">
-                          <span className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
+                          <span
+                            className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}
+                          >
                             {driver.completedToday}
                           </span>
                         </td>
 
                         {/* Rating */}
                         <td className="px-5 py-3.5">
-                          <span className={`text-sm ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
+                          <span
+                            className={`text-sm ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}
+                          >
                             ★ {driver.rating.toFixed(1)}
                           </span>
                         </td>
@@ -272,10 +324,15 @@ export default function DriversPage() {
             <div className="lg:hidden divide-y divide-border">
               {drivers.map(driver => {
                 const successPct = Math.round(driver.successRate);
-                const barColor   = successPct >= 90 ? 'bg-success' : successPct >= 70 ? 'bg-warning' : 'bg-error';
-                const isOffline  = driver.availability === 'OFFLINE';
-                const initials   = getInitials(driver.name);
-                const vehicle    = VEHICLE_LABELS[driver.vehicleType];
+                const barColor =
+                  successPct >= 90
+                    ? 'bg-success'
+                    : successPct >= 70
+                      ? 'bg-warning'
+                      : 'bg-error';
+                const isOffline = driver.availability === 'OFFLINE';
+                const initials = getInitials(driver.name);
+                const vehicle = VEHICLE_LABELS[driver.vehicleType];
 
                 return (
                   <Link
@@ -287,20 +344,26 @@ export default function DriversPage() {
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="relative shrink-0">
                           {driver.avatarUrl ? (
-                            <img
+                            <Image
                               src={driver.avatarUrl}
                               alt={driver.name}
                               className="w-10 h-10 rounded-full object-cover"
                             />
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
-                              <span className="text-xs font-bold text-white">{initials}</span>
+                              <span className="text-xs font-bold text-white">
+                                {initials}
+                              </span>
                             </div>
                           )}
-                          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface ${AVAILABILITY_STYLES[driver.availability].dot}`} />
+                          <span
+                            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface ${AVAILABILITY_STYLES[driver.availability].dot}`}
+                          />
                         </div>
                         <div className="min-w-0">
-                          <p className={`text-sm font-semibold truncate ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
+                          <p
+                            className={`text-sm font-semibold truncate ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}
+                          >
                             {driver.name}
                           </p>
                           <p className="text-xs text-text-secondary mt-0.5">
@@ -308,17 +371,26 @@ export default function DriversPage() {
                           </p>
                         </div>
                       </div>
-                      <DriverAvailabilityBadge availability={driver.availability} />
+                      <DriverAvailabilityBadge
+                        availability={driver.availability}
+                      />
                     </div>
 
                     {/* Success rate bar */}
                     <div className="mb-3">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">Success rate</span>
-                        <span className="text-xs text-text-muted">{successPct}%</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                          Success rate
+                        </span>
+                        <span className="text-xs text-text-muted">
+                          {successPct}%
+                        </span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-surface-elevated overflow-hidden">
-                        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${successPct}%` }} />
+                        <div
+                          className={`h-full rounded-full ${barColor}`}
+                          style={{ width: `${successPct}%` }}
+                        />
                       </div>
                     </div>
 
@@ -327,13 +399,19 @@ export default function DriversPage() {
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-0.5">
                           Completed today
                         </p>
-                        <p className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
+                        <p
+                          className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}
+                        >
                           {driver.completedToday}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-0.5">Total</p>
-                        <p className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-0.5">
+                          Total
+                        </p>
+                        <p
+                          className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}
+                        >
                           {driver.totalDeliveries}
                         </p>
                       </div>
@@ -364,7 +442,12 @@ export default function DriversPage() {
 
               {pageNumbers.map((p, i) =>
                 p === '...' ? (
-                  <span key={`ellipsis-${i}`} className="w-8 text-center text-xs text-text-muted">…</span>
+                  <span
+                    key={`ellipsis-${i}`}
+                    className="w-8 text-center text-xs text-text-muted"
+                  >
+                    …
+                  </span>
                 ) : (
                   <button
                     key={p}

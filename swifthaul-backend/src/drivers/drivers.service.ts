@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { JwtPayload } from '../auth/types/jwt-payload.type';
 import type { ListDriversDto } from './dto/list-drivers.dto';
 import type { UpdateAvailabilityDto } from './dto/update-availability.dto';
+import type { UpdateDriverDto } from './dto/update-driver.dto';
 import type {
   DriverDetail,
   DriverListItem,
@@ -113,6 +114,82 @@ export class DriversService {
     });
 
     return this.findOne(id, user);
+  }
+
+  // update driver profile
+  async update(
+    id: string,
+    dto: UpdateDriverDto,
+    user: JwtPayload,
+  ): Promise<DriverDetail> {
+    if (user.sub !== id) {
+      throw new ForbiddenResourceException();
+    }
+
+    const driver = await this.prisma.user.findFirst({
+      where: { id, role: Role.DRIVER, isActive: true },
+      include: { driverProfile: true },
+    });
+
+    if (!driver?.driverProfile) throw new DriverNotFoundException();
+
+    // Update user fields
+    const userUpdateData: Prisma.UserUpdateInput = {};
+    if (dto.name !== undefined) userUpdateData.name = dto.name;
+    if (dto.email !== undefined) userUpdateData.email = dto.email;
+    if (dto.phone !== undefined) userUpdateData.phone = dto.phone;
+    if (dto.avatarUrl !== undefined) userUpdateData.avatarUrl = dto.avatarUrl;
+
+    // Update driver profile fields
+    const profileUpdateData: Prisma.DriverProfileUpdateInput = {};
+    if (dto.vehicleType !== undefined)
+      profileUpdateData.vehicleType = dto.vehicleType;
+    if (dto.vehiclePlate !== undefined)
+      profileUpdateData.vehiclePlate = dto.vehiclePlate;
+    if (dto.maxConcurrentOrders !== undefined)
+      profileUpdateData.maxConcurrentOrders = dto.maxConcurrentOrders;
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id },
+        data: userUpdateData,
+      }),
+      this.prisma.driverProfile.update({
+        where: { userId: id },
+        data: profileUpdateData,
+      }),
+    ]);
+
+    return this.findOne(id, user);
+  }
+
+  // delete driver (admin only)
+  async remove(id: string, user: JwtPayload): Promise<void> {
+    if (user.role !== Role.ADMIN) {
+      throw new ForbiddenResourceException();
+    }
+
+    const driver = await this.prisma.user.findFirst({
+      where: { id, role: Role.DRIVER, isActive: true },
+      include: { driverProfile: true },
+    });
+
+    if (!driver?.driverProfile) throw new DriverNotFoundException();
+
+    // Check if driver has active orders
+    const activeOrders = await this.prisma.order.count({
+      where: { driverId: id, status: { in: ACTIVE_ORDER_STATUSES } },
+    });
+
+    if (activeOrders > 0) {
+      throw new ForbiddenResourceException();
+    }
+
+    // Soft delete by setting isActive to false
+    await this.prisma.user.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
   //driver list result mapper

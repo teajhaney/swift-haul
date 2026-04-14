@@ -6,13 +6,16 @@ import { LogOut, Plus } from 'lucide-react';
 import { NAV_SECTIONS, SIDEBAR } from '@/constants/navigation';
 import { LogoIcon } from '@/components/shared/logo';
 import { useLogout } from '@/hooks/auth/use-logout';
+import { useAuthStore } from '@/stores/auth.store';
 
-/** Placeholder user — replaced by auth store once backend is wired. */
-const PLACEHOLDER_USER = {
-  name: 'Alex Morgan',
-  role: 'ADMIN',
-  initials: 'AM',
-};
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(p => p[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 function NavItem({
   label,
@@ -36,6 +39,7 @@ function NavItem({
 export function Sidebar() {
   const pathname = usePathname();
   const logout = useLogout();
+  const user = useAuthStore(s => s.user);
 
   const isActive = (href: string) =>
     pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
@@ -90,15 +94,17 @@ export function Sidebar() {
         {/* User + logout */}
         <div className="px-4 py-4 mt-auto border-t border-white/[0.08] flex items-center gap-3">
           {/* Avatar */}
-          <div className="user-avatar w-9 h-9">{PLACEHOLDER_USER.initials}</div>
+          <div className="user-avatar w-9 h-9">
+            {user ? getInitials(user.name) : '??'}
+          </div>
 
           {/* Name + role */}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white truncate">
-              {PLACEHOLDER_USER.name}
+              {user?.name ?? 'Loading...'}
             </p>
             <span className="inline-block text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-accent text-white">
-              {PLACEHOLDER_USER.role}
+              {user?.role ?? ''}
             </span>
           </div>
 

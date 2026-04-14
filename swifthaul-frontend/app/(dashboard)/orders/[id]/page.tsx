@@ -16,6 +16,9 @@ import {
   Clock,
   User,
   Truck,
+  Loader2,
+  Copy,
+  ExternalLink,
 } from 'lucide-react';
 
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
@@ -24,13 +27,32 @@ import { OrderMap } from '@/components/orders/order-map';
 import { PodViewer } from '@/components/orders/pod-viewer';
 import { AssignDriverModal } from '@/components/orders/assign-driver-modal';
 import { CancelOrderModal } from '@/components/orders/cancel-order-modal';
+import { EditOrderModal } from '@/components/orders/edit-order-modal';
 import { ORDER_DETAIL } from '@/constants/order-detail';
-import { toast } from 'sonner';
-import { getOrderDetail } from '@/constants/order-detail-mock';
 import { PRIORITY_STYLES, PRIORITY_LABELS } from '@/constants/orders';
-import type { Driver } from '@/types/order-detail';
+import { useOrder } from '@/hooks/orders/use-order';
+import { useUpdateStatus } from '@/hooks/orders/use-update-status';
+import { toast } from 'sonner';
 
 type Props = { params: Promise<{ id: string }> };
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(p => p[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
 
 // ── Shared section card wrapper ───────────────────────────────────────────────
 
@@ -70,7 +92,7 @@ function InfoRow({
       <div className="min-w-0 flex-1">
         <p className="text-xs text-text-secondary">{label}</p>
         <p className="text-sm font-medium text-text-primary mt-0.5 break-words">
-          {value}
+          {value ?? '—'}
         </p>
       </div>
     </div>
@@ -80,15 +102,62 @@ function InfoRow({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function OrderDetailPage({ params }: Props) {
-  const { id } = use(params);
-  const initial = getOrderDetail(id);
+  const { id: referenceId } = use(params);
+  const { data: detail, isLoading, isError } = useOrder(referenceId);
+  const updateStatus = useUpdateStatus();
 
-  const [detail, setDetail] = useState(initial);
   const [modalOpen, setModalOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
-  // ── Not found ──────────────────────────────────────────────────────────────
-  if (!detail) {
+  // ── Loading ────────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="space-y-5 animate-pulse">
+        {/* Header row */}
+        <div className="h-4 w-28 bg-border rounded" />
+        <div className="flex items-center gap-3">
+          <div className="h-7 w-32 bg-border rounded" />
+          <div className="h-6 w-20 bg-border rounded-full" />
+          <div className="h-6 w-16 bg-border rounded-full" />
+        </div>
+
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start">
+          {/* Left */}
+          <div className="space-y-5">
+            {[200, 180, 140].map((h, i) => (
+              <div key={i} className="bg-surface rounded-xl border border-border shadow-sm p-5">
+                <div className="h-3 w-24 bg-surface-elevated rounded mb-4" />
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <div key={j} className="h-4 bg-surface-elevated rounded" style={{ width: `${60 + j * 10}%` }} />
+                  ))}
+                </div>
+                <div className="mt-4" style={{ height: h - 100 }} />
+              </div>
+            ))}
+          </div>
+          {/* Right */}
+          <div className="space-y-5">
+            {[160, 140].map((h, i) => (
+              <div key={i} className="bg-surface rounded-xl border border-border shadow-sm p-5" style={{ height: h }}>
+                <div className="h-3 w-20 bg-surface-elevated rounded mb-4" />
+                <div className="space-y-3">
+                  <div className="h-4 bg-surface-elevated rounded w-3/4" />
+                  <div className="h-4 bg-surface-elevated rounded w-1/2" />
+                  <div className="h-4 bg-surface-elevated rounded w-2/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Error / Not found ──────────────────────────────────────────────────────
+  if (isError || !detail) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <Package className="w-12 h-12 text-text-muted mb-4" />
@@ -111,18 +180,27 @@ export default function OrderDetailPage({ params }: Props) {
 
   const isEnRoute =
     detail.status === 'IN_TRANSIT' || detail.status === 'OUT_FOR_DELIVERY';
-  const canAssign = !['DELIVERED', 'CANCELLED', 'FAILED'].includes(
-    detail.status
-  );
 
-  function handleAssign(driver: Driver) {
-    setDetail(prev => (prev ? { ...prev, driver } : prev));
-  }
+  const canAssign = !['DELIVERED', 'CANCELLED', 'FAILED'].includes(detail.status);
 
   function handleCancel() {
-    const orderId = detail?.referenceId;
-    setDetail(prev => (prev ? { ...prev, status: 'CANCELLED' } : prev));
-    toast.success(`Order ${orderId} has been cancelled`);
+    updateStatus.mutate(
+      { referenceId, status: 'CANCELLED' },
+      {
+        onSuccess: () => {
+          setCancelOpen(false);
+          toast.success(`Order ${referenceId} has been cancelled`);
+        },
+      },
+    );
+  }
+
+  function copyTrackingLink() {
+    if (!detail) return;
+    const url = `${window.location.origin}/track/${detail.trackingToken}`;
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success('Tracking link copied');
+    });
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -154,23 +232,42 @@ export default function OrderDetailPage({ params }: Props) {
             </span>
           </div>
 
-          {/* Action buttons — only for non-terminal orders */}
-          {canAssign && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => toast.info('Edit Order coming soon')}
-                className="px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors"
-              >
-                {ORDER_DETAIL.ACTION_EDIT}
-              </button>
-              <button
-                onClick={() => setCancelOpen(true)}
-                className="px-3 py-1.5 rounded-lg border border-red-200 text-sm font-medium text-error hover:bg-red-50 transition-colors"
-              >
-                {ORDER_DETAIL.ACTION_CANCEL}
-              </button>
-            </div>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Tracking link */}
+            <button
+              onClick={copyTrackingLink}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              Copy tracking link
+            </button>
+            <Link
+              href={`/track/${detail.trackingToken}`}
+              target="_blank"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Tracking page
+            </Link>
+
+            {/* Action buttons — only for non-terminal orders */}
+            {canAssign && (
+              <>
+                <button
+                  onClick={() => setEditOpen(true)}
+                  className="px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors"
+                >
+                  {ORDER_DETAIL.ACTION_EDIT}
+                </button>
+                <button
+                  onClick={() => setCancelOpen(true)}
+                  className="px-3 py-1.5 rounded-lg border border-red-200 text-sm font-medium text-error hover:bg-red-50 transition-colors"
+                >
+                  {ORDER_DETAIL.ACTION_CANCEL}
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* ── Two-column layout ── */}
@@ -181,19 +278,31 @@ export default function OrderDetailPage({ params }: Props) {
             <Section title={ORDER_DETAIL.SECTION_ORDER_INFO}>
               <InfoRow
                 icon={User}
+                label="Sender"
+                value={detail.senderName}
+              />
+              <InfoRow
+                icon={Phone}
+                label="Sender Phone"
+                value={detail.senderPhone}
+              />
+              <InfoRow
+                icon={User}
                 label={ORDER_DETAIL.LABEL_RECIPIENT}
-                value={detail.recipient}
+                value={detail.recipientName}
               />
               <InfoRow
                 icon={Phone}
                 label={ORDER_DETAIL.LABEL_PHONE}
                 value={detail.recipientPhone}
               />
-              <InfoRow
-                icon={Mail}
-                label={ORDER_DETAIL.LABEL_EMAIL}
-                value={detail.recipientEmail}
-              />
+              {detail.recipientEmail && (
+                <InfoRow
+                  icon={Mail}
+                  label={ORDER_DETAIL.LABEL_EMAIL}
+                  value={detail.recipientEmail}
+                />
+              )}
               <InfoRow
                 icon={MapPin}
                 label={ORDER_DETAIL.LABEL_PICKUP}
@@ -204,20 +313,24 @@ export default function OrderDetailPage({ params }: Props) {
                 label={ORDER_DETAIL.LABEL_DELIVERY}
                 value={detail.deliveryAddress}
               />
-              <InfoRow
-                icon={Weight}
-                label={ORDER_DETAIL.LABEL_WEIGHT}
-                value={detail.weightKg}
-              />
-              <InfoRow
-                icon={Ruler}
-                label={ORDER_DETAIL.LABEL_DIMENSIONS}
-                value={detail.dimensions}
-              />
+              {detail.weightKg != null && (
+                <InfoRow
+                  icon={Weight}
+                  label={ORDER_DETAIL.LABEL_WEIGHT}
+                  value={`${detail.weightKg} kg`}
+                />
+              )}
+              {detail.dimensions && (
+                <InfoRow
+                  icon={Ruler}
+                  label={ORDER_DETAIL.LABEL_DIMENSIONS}
+                  value={detail.dimensions}
+                />
+              )}
               <InfoRow
                 icon={Package}
                 label={ORDER_DETAIL.LABEL_DESCRIPTION}
-                value={detail.description}
+                value={detail.packageDescription}
               />
               {detail.notes && (
                 <InfoRow
@@ -250,17 +363,17 @@ export default function OrderDetailPage({ params }: Props) {
               <InfoRow
                 icon={Star}
                 label={ORDER_DETAIL.LABEL_PRIORITY}
-                value={detail.priority}
+                value={PRIORITY_LABELS[detail.priority]}
               />
               <InfoRow
                 icon={Calendar}
                 label={ORDER_DETAIL.LABEL_CREATED}
-                value={detail.createdAt}
+                value={formatDate(detail.createdAt)}
               />
               <InfoRow
                 icon={Clock}
                 label={ORDER_DETAIL.LABEL_EST_DELIVERY}
-                value={detail.estimatedDelivery}
+                value={formatDate(detail.estimatedDelivery)}
               />
             </Section>
 
@@ -277,32 +390,19 @@ export default function OrderDetailPage({ params }: Props) {
                     {/* Avatar + name */}
                     <div className="flex items-center gap-3">
                       <div className="w-11 h-11 rounded-full bg-primary-subtle flex items-center justify-center text-sm font-bold text-primary-light shrink-0">
-                        {detail.driver.avatarInitials}
+                        {getInitials(detail.driver.name)}
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-text-primary">
                           {detail.driver.name}
                         </p>
-                        <p className="text-xs text-text-secondary mt-0.5 flex items-center gap-1">
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${detail.driver.isAvailable ? 'bg-success' : 'bg-border-strong'}`}
-                          />
-                          {detail.driver.isAvailable
-                            ? ORDER_DETAIL.MODAL_AVAILABLE
-                            : ORDER_DETAIL.MODAL_BUSY}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Driver details */}
-                    <div className="space-y-2 text-xs">
-                      <div className="flex items-center gap-2 text-text-secondary">
-                        <Phone className="w-3.5 h-3.5 shrink-0" />
-                        <span>{detail.driver.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-text-secondary">
-                        <Truck className="w-3.5 h-3.5 shrink-0" />
-                        <span>{detail.driver.vehicle}</span>
+                        {detail.driver.vehicleType && (
+                          <p className="text-xs text-text-secondary mt-0.5 flex items-center gap-1">
+                            <Truck className="w-3 h-3" />
+                            {detail.driver.vehicleType}
+                            {detail.driver.vehiclePlate ? ` · ${detail.driver.vehiclePlate}` : ''}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -353,8 +453,9 @@ export default function OrderDetailPage({ params }: Props) {
       {/* Assign driver modal */}
       {modalOpen && (
         <AssignDriverModal
+          referenceId={referenceId}
           currentDriverId={detail.driver?.id ?? null}
-          onConfirm={handleAssign}
+          onSuccess={() => {}}
           onClose={() => setModalOpen(false)}
         />
       )}
@@ -366,6 +467,22 @@ export default function OrderDetailPage({ params }: Props) {
           onConfirm={handleCancel}
           onClose={() => setCancelOpen(false)}
         />
+      )}
+
+      {/* Edit order modal */}
+      {editOpen && (
+        <EditOrderModal
+          order={detail}
+          referenceId={referenceId}
+          onClose={() => setEditOpen(false)}
+        />
+      )}
+
+      {/* Cancel loading overlay */}
+      {updateStatus.isPending && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+          <Loader2 className="w-8 h-8 animate-spin text-white" />
+        </div>
       )}
     </>
   );

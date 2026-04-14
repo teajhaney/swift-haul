@@ -89,7 +89,8 @@ export async function middleware(request: NextRequest) {
     }
 
     // Admin/Dispatcher trying to access the driver app
-    if (pathname.startsWith('/driver') && role !== 'DRIVER') {
+    // Use '/driver/' prefix (with slash) so '/drivers' is not accidentally matched
+    if ((pathname === '/driver' || pathname.startsWith('/driver/')) && role !== 'DRIVER') {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 

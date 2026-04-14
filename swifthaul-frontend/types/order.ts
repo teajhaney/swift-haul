@@ -37,3 +37,67 @@ export interface Order {
 
 export type OrderFilterStatus = 'ALL' | OrderStatus;
 export type PriorityFilter = 'ALL' | Priority;
+
+// ── Hook Types ───────────────────────────────────────────────────────────────
+
+export interface OrderFilters {
+  page?: number;
+  limit?: number;
+  status?: OrderStatus;
+  search?: string;
+  driverId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface UpdateOrderPayload {
+  senderName?: string;
+  senderPhone?: string;
+  recipientName?: string;
+  recipientPhone?: string;
+  recipientEmail?: string;
+  pickupAddress?: string;
+  deliveryAddress?: string;
+  packageDescription?: string;
+  weightKg?: number;
+  dimensions?: string;
+  priority?: Priority;
+  notes?: string;
+  scheduledPickupTime?: string;
+  estimatedDelivery?: string;
+}
+
+export interface AssignDriverPayload {
+  referenceId: string;
+  driverId: string;
+  note?: string;
+}
+
+// ── API Response Types ───────────────────────────────────────────────────────
+
+export interface ApiOrderDriver {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+export interface ApiOrderListItem {
+  referenceId: string;
+  status: OrderStatus;
+  priority: Priority;
+  senderName: string;
+  senderPhone: string;
+  recipientName: string;
+  recipientPhone: string;
+  deliveryAddress: string;
+  driver: ApiOrderDriver | null;
+  dispatcher: { id: string; name: string };
+  estimatedDelivery: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiOrderListResponse {
+  data: ApiOrderListItem[];
+  meta: { total: number; page: number; limit: number };
+}
