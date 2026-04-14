@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const cookieParser = require('cookie-parser') as typeof import('cookie-parser');
 
@@ -39,9 +40,21 @@ async function bootstrap() {
     new ResponseInterceptor(),
   );
 
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('SwiftHaul API')
+    .setDescription('SwiftHaul logistics & delivery platform API')
+    .setVersion('1.0')
+    .addCookieAuth('accessToken')
+    .addCookieAuth('refreshToken')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, document);
+
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
   console.log(`SwiftHaul API running on http://localhost:${port}/api`);
+  console.log(`Swagger docs at http://localhost:${port}/docs`);
 }
 
 bootstrap().catch((err: unknown) => {
