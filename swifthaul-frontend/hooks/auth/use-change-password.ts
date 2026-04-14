@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getBackendErrorMessage } from '@/lib/errors';
 import { useAuthStore } from '@/stores/auth.store';
 
 interface ChangePasswordPayload {
@@ -13,8 +14,8 @@ interface ChangePasswordPayload {
 
 export function useChangePassword() {
   const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser);
-  const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore(s => s.setUser);
+  const user = useAuthStore(s => s.user);
 
   return useMutation({
     mutationFn: (data: ChangePasswordPayload) =>
@@ -27,8 +28,10 @@ export function useChangePassword() {
       toast.success('Password updated');
       router.push('/dashboard');
     },
-    onError: () => {
-      toast.error('Current password is incorrect');
+    onError: error => {
+      toast.error(
+        getBackendErrorMessage(error) ?? 'Current password is incorrect'
+      );
     },
   });
 }

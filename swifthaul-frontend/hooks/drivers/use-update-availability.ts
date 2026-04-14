@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getBackendErrorMessage } from '@/lib/errors';
 import type { DriverAvailability } from '@/types/driver';
 
 interface UpdateAvailabilityPayload {
@@ -21,8 +22,10 @@ export function useUpdateAvailability() {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
       toast.success('Availability updated');
     },
-    onError: () => {
-      toast.error('Failed to update availability');
+    onError: error => {
+      toast.error(
+        getBackendErrorMessage(error) ?? 'Failed to update availability'
+      );
     },
   });
 }

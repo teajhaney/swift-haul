@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getBackendErrorMessage } from '@/lib/errors';
 import type { AcceptInviteFormData } from '@/types/auth';
 
 interface AcceptInvitePayload extends AcceptInviteFormData {
@@ -27,8 +28,11 @@ export function useAcceptInvite() {
       toast.success('Account created — please sign in');
       router.push('/login');
     },
-    onError: () => {
-      toast.error('This invite link is invalid or has expired');
+    onError: error => {
+      toast.error(
+        getBackendErrorMessage(error) ??
+          'This invite link is invalid or has expired'
+      );
     },
   });
 }

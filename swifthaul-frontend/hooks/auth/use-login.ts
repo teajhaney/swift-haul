@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getBackendErrorMessage } from '@/lib/errors';
 import { useAuthStore } from '@/stores/auth.store';
 import type { AuthUser, LoginFormData } from '@/types/auth';
 
@@ -13,7 +14,7 @@ interface LoginResponse {
 
 export function useLogin() {
   const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser);
+  const setUser = useAuthStore(s => s.setUser);
 
   return useMutation({
     mutationFn: (data: LoginFormData) =>
@@ -21,7 +22,7 @@ export function useLogin() {
         email: data.email,
         password: data.password,
       }),
-    onSuccess: (res) => {
+    onSuccess: res => {
       const user = res.data.data;
       setUser(user);
 
@@ -36,8 +37,8 @@ export function useLogin() {
         router.push('/dashboard');
       }
     },
-    onError: () => {
-      toast.error('Invalid email or password');
+    onError: error => {
+      toast.error(getBackendErrorMessage(error) ?? 'Invalid email or password');
     },
   });
 }

@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getBackendErrorMessage } from '@/lib/errors';
 import type { ResetPasswordFormData } from '@/types/auth';
 
 interface ResetPasswordPayload extends ResetPasswordFormData {
@@ -24,8 +25,11 @@ export function useResetPassword() {
       toast.success('Password reset — please sign in');
       setTimeout(() => router.push('/login'), 200);
     },
-    onError: () => {
-      toast.error('Invalid or expired OTP. Please try again.');
+    onError: error => {
+      toast.error(
+        getBackendErrorMessage(error) ??
+          'Invalid or expired OTP. Please try again.'
+      );
     },
   });
 }

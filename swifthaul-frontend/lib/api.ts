@@ -1,7 +1,4 @@
-import axios, {
-  type AxiosError,
-  type InternalAxiosRequestConfig,
-} from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
   baseURL: '/api',
@@ -14,11 +11,29 @@ const api = axios.create({
 let refreshPromise: Promise<void> | null = null;
 
 api.interceptors.response.use(
-  (response) => response,
+  response => response,
   async (error: AxiosError) => {
     const original = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
+
+    if (axios.isAxiosError(error)) {
+      const responseData = error.response?.data;
+
+      if (
+        typeof responseData === 'object' &&
+        responseData !== null &&
+        'error' in responseData &&
+        typeof (responseData as Record<string, unknown>).error === 'object' &&
+        (responseData as Record<string, unknown>).error !== null &&
+        typeof (responseData as { error: { message?: unknown } }).error
+          .message === 'string'
+      ) {
+        error.message = (
+          responseData as { error: { message: string } }
+        ).error.message;
+      }
+    }
 
     // Only attempt refresh once per request; skip non-401s
     if (error.response?.status !== 401 || original._retry) {
@@ -49,7 +64,7 @@ api.interceptors.response.use(
       }
       return Promise.reject(error);
     }
-  },
+  }
 );
 
 export default api;
