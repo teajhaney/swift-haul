@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Shield, Circle } from "lucide-react";
@@ -12,11 +11,12 @@ import { AuthFooter } from "@/components/auth/auth-footer";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Logo } from "@/components/shared/logo";
 import { loginSchema } from "@/lib/validations/auth";
+import { useLogin } from "@/hooks/auth/use-login";
 import type { LoginFormData } from "@/types/auth";
 import { LOGIN } from "@/constants/auth";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const login = useLogin();
 
   const {
     register,
@@ -31,9 +31,8 @@ export default function LoginPage() {
 
   const rememberDevice = useWatch({ control, name: "rememberDevice" });
 
-  const onSubmit = async () => {
-    // Backend integration later
-    router.push("/dashboard");
+  const onSubmit = (data: LoginFormData) => {
+    login.mutate(data);
   };
 
   return (
@@ -103,8 +102,8 @@ export default function LoginPage() {
               </Label>
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="auth-submit-btn">
-              {isSubmitting ? "Signing in…" : LOGIN.SUBMIT}
+            <button type="submit" disabled={isSubmitting || login.isPending} className="auth-submit-btn">
+              {(isSubmitting || login.isPending) ? "Signing in…" : LOGIN.SUBMIT}
             </button>
           </form>
 

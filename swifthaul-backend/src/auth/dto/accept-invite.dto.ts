@@ -10,6 +10,11 @@ export class AcceptInviteDto {
   @MinLength(1)
   name!: string;
 
+  @IsOptional()
+  @IsString()
+  @MinLength(7)
+  phone?: string;
+
   @IsString()
   @MinLength(8)
   password!: string;

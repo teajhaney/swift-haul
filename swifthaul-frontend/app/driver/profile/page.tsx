@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
+import { useLogout } from '@/hooks/auth/use-logout';
 import {
   MOCK_DRIVER_PROFILE,
   AVAILABILITY_OPTIONS,
@@ -28,6 +29,7 @@ export default function DriverProfilePage() {
   const [availability, setAvailability] = useState<DriverAvailabilityStatus>(
     profile.availability
   );
+  const logout = useLogout();
 
   return (
     <>
@@ -190,7 +192,11 @@ export default function DriverProfilePage() {
         </div>
 
         {/* ── Sign out ── */}
-        <button className="w-full flex items-center justify-center gap-2 h-11 rounded-xl border border-error/30 text-error text-sm font-semibold hover:bg-error/5 transition-colors">
+        <button
+          onClick={() => logout.mutate()}
+          disabled={logout.status === 'pending'}
+          className="w-full flex items-center justify-center gap-2 h-11 rounded-xl border border-error/30 text-error text-sm font-semibold hover:bg-error/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <LogOut className="w-4 h-4" />
           Sign Out
         </button>

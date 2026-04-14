@@ -12,3 +12,12 @@ export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 export type AcceptInviteFormData = z.infer<typeof acceptInviteSchema>;
 
 export type PasswordStrength = "weak" | "fair" | "good" | "strong";
+
+// Authenticated user shape returned by /auth/me and /auth/login
+export interface AuthUser {
+  name: string;
+  email: string;
+  role: "ADMIN" | "DISPATCHER" | "DRIVER";
+  avatarUrl: string | null;
+  mustResetPassword: boolean;
+}

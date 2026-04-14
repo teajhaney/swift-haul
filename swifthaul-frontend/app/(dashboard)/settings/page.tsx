@@ -17,6 +17,7 @@ import {
   ROLE_STYLES,
   STATUS_STYLES,
 } from '@/constants/settings-mock';
+import { useInvite } from '@/hooks/auth/use-invite';
 import type { TeamMember, UserRole, MemberStatus } from '@/types/settings';
 
 export default function SettingsPage() {
@@ -38,24 +39,18 @@ export default function SettingsPage() {
   const to = Math.min(safePage * SETTINGS.PAGE_SIZE, total);
   const pageSlice = members.slice(from - 1, to);
 
+  const invite = useInvite();
+
   function handleInvite(email: string, role: UserRole) {
-    const newMember: TeamMember = {
-      id: `usr-${Date.now()}`,
-      name: email.split('@')[0],
-      email,
-      role,
-      status: 'INVITED',
-      joinedDate: new Date().toLocaleDateString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-      }),
-      title: role === 'DISPATCHER' ? 'Dispatcher' : 'Driver',
-      avatarInitials: email.slice(0, 2).toUpperCase(),
-    };
-    setMembers(prev => [newMember, ...prev]);
-    setShowInvite(false);
-    toast.success(`Invite sent to ${email}`);
+    invite.mutate(
+      { email, role },
+      {
+        onSuccess: () => {
+          setShowInvite(false);
+          toast.success(`Invite sent to ${email}`);
+        },
+      }
+    );
   }
 
   function toggleStatus(id: string, current: MemberStatus) {
@@ -363,6 +358,7 @@ export default function SettingsPage() {
         <InviteModal
           onClose={() => setShowInvite(false)}
           onSubmit={handleInvite}
+          isSubmitting={invite.isPending}
         />
       )}
     </>

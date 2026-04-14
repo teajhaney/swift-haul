@@ -15,32 +15,35 @@ import {
 } from 'lucide-react';
 
 import { DRIVER_DETAIL } from '@/constants/driver-detail';
-import { getDriverDetail } from '@/constants/driver-detail-mock';
 import { AVAILABILITY_STYLES } from '@/constants/drivers-mock';
 import { AssignOrderModal } from '@/components/drivers/assign-order-modal';
+import { useDriver } from '@/hooks/drivers/use-driver';
 import type { Order } from '@/types/order';
+import type { VehicleType } from '@/types/driver';
 import { toast } from 'sonner';
 
-const STATUS_COLOR: Record<string, string> = {
-  'IN TRANSIT': 'text-primary-light',
-  'PICKED UP': 'text-warning',
-  ACCEPTED: 'text-success',
-  ASSIGNED: 'text-info',
+const VEHICLE_LABELS: Record<VehicleType, string> = {
+  BIKE: 'Bike',
+  CAR: 'Car',
+  VAN: 'Van',
+  TRUCK: 'Truck',
 };
 
-const STATUS_BORDER: Record<string, string> = {
-  'IN TRANSIT': 'border-l-primary-light',
-  'PICKED UP': 'border-l-warning',
-  ACCEPTED: 'border-l-success',
-  ASSIGNED: 'border-l-info',
-};
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
 
-const DOT_COLOR: Record<string, string> = {
-  green: 'bg-success',
-  blue: 'bg-primary-light',
-  amber: 'bg-warning',
-  gray: 'bg-border-strong',
-};
+function formatMemberSince(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  });
+}
 
 export default function DriverDetailPage({
   params,
@@ -48,16 +51,29 @@ export default function DriverDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const driver = getDriverDetail(id);
-
-  const [historyPage, setHistoryPage]   = useState(1);
+  const { data: driver, isLoading, isError } = useDriver(id);
   const [showAssignOrder, setShowAssignOrder] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
 
   function handleOrderAssigned(order: Order) {
     toast.success(`Order ${order.referenceId} assigned to ${driver?.name}`);
   }
 
-  if (!driver) {
+  if (isLoading) {
+    return (
+      <div className="space-y-5 animate-pulse">
+        <div className="h-6 w-40 rounded bg-surface-elevated" />
+        <div className="h-48 rounded-xl bg-surface-elevated" />
+        <div className="grid grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-28 rounded-xl bg-surface-elevated" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !driver) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <p className="text-base font-semibold text-text-primary mb-1">
@@ -66,81 +82,74 @@ export default function DriverDetailPage({
         <p className="text-sm text-text-secondary mb-5">
           {DRIVER_DETAIL.NOT_FOUND_HINT}
         </p>
-        <Link
-          href="/drivers"
-          className="text-sm font-semibold text-primary-light hover:underline"
-        >
+        <Link href="/drivers" className="text-sm font-semibold text-primary-light hover:underline">
           {DRIVER_DETAIL.BACK_TO_DRIVERS}
         </Link>
       </div>
     );
   }
 
-  const avail = AVAILABILITY_STYLES[driver.availability];
-  const successPct = driver.successRate;
+  const avail      = AVAILABILITY_STYLES[driver.availability];
+  const successPct = Math.round(driver.successRate);
+  const initials   = getInitials(driver.name);
+  const vehicle    = VEHICLE_LABELS[driver.vehicleType];
 
-  // History pagination
-  const historyTotal = driver.totalHistoryCount;
-  const historyPages = Math.max(
-    1,
-    Math.ceil(historyTotal / DRIVER_DETAIL.HISTORY_PAGE_SIZE)
-  );
-  const safeHPage = Math.min(historyPage, historyPages);
-  const hFrom = (safeHPage - 1) * DRIVER_DETAIL.HISTORY_PAGE_SIZE;
-  const hTo = hFrom + DRIVER_DETAIL.HISTORY_PAGE_SIZE;
-  const historySlice = driver.deliveryHistory.slice(hFrom, hTo);
+  // History pagination — delivery history requires a separate endpoint (not yet built)
+  // These are placeholders so the UI structure stays intact
+  const historyTotal  = 0;
+  const historyPages  = 1;
+  const safeHPage     = historyPage;
+  const hFrom         = 0;
+  const hTo           = 0;
 
   return (
     <>
     <div className="space-y-5">
-      {/* ── Breadcrumb ── */}
+      {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-text-secondary">
-        <Link
-          href="/drivers"
-          className="hover:text-text-primary transition-colors"
-        >
+        <Link href="/drivers" className="hover:text-text-primary transition-colors">
           {DRIVER_DETAIL.BREADCRUMB_PARENT}
         </Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-text-primary font-medium">{driver.name}</span>
       </nav>
 
-      {/* ── Two-column layout ── */}
+      {/* Two-column layout */}
       <div className="flex flex-col xl:flex-row gap-5 items-start">
-        {/* ════ LEFT COLUMN ════ */}
+
+        {/* LEFT COLUMN */}
         <div className="flex-1 min-w-0 space-y-5">
-          {/* ── Profile card ── */}
+
+          {/* Profile card */}
           <div className="bg-surface rounded-xl border border-border shadow-sm p-6">
             <div className="flex flex-col sm:flex-row sm:items-start gap-5">
               {/* Avatar */}
               <div className="relative shrink-0">
-                <div className="w-20 h-20 rounded-xl bg-primary-light flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">
-                    {driver.avatarInitials}
-                  </span>
-                </div>
-                <span
-                  className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-surface ${avail.dot}`}
-                />
+                {driver.avatarUrl ? (
+                  <img
+                    src={driver.avatarUrl}
+                    alt={driver.name}
+                    className="w-20 h-20 rounded-xl object-cover"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-xl bg-primary-light flex items-center justify-center">
+                    <span className="text-2xl font-bold text-white">{initials}</span>
+                  </div>
+                )}
+                <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-surface ${avail.dot}`} />
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                   <div>
-                    <h1 className="text-2xl font-bold text-text-primary">
-                      {driver.name}
-                    </h1>
+                    <h1 className="text-2xl font-bold text-text-primary">{driver.name}</h1>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="px-2 py-0.5 rounded text-xs font-semibold bg-surface-elevated text-text-secondary border border-border tracking-wide">
                         {DRIVER_DETAIL.DRIVER_ROLE_BADGE}
                       </span>
-                      <span
-                        className={`flex items-center gap-1 text-xs font-medium ${avail.badge.includes('text-') ? '' : ''}`}
-                      >
+                      <span className="flex items-center gap-1 text-xs font-medium">
                         <span className={`w-2 h-2 rounded-full ${avail.dot}`} />
-                        <span className="text-text-secondary">
-                          {avail.label}
-                        </span>
+                        <span className="text-text-secondary">{avail.label}</span>
                       </span>
                     </div>
                   </div>
@@ -161,24 +170,22 @@ export default function DriverDetailPage({
                   </div>
                   <div className="flex items-center gap-2 text-sm text-text-secondary">
                     <Phone className="w-4 h-4 text-text-muted shrink-0" />
-                    <span>{driver.phone}</span>
+                    <span>{driver.phone ?? '—'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-text-secondary">
                     <Truck className="w-4 h-4 text-text-muted shrink-0" />
-                    <span>
-                      {driver.vehicle} · {driver.vehiclePlate}
-                    </span>
+                    <span>{vehicle} · {driver.vehiclePlate}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-text-secondary">
                     <CalendarDays className="w-4 h-4 text-text-muted shrink-0" />
-                    <span>Member since {driver.memberSince}</span>
+                    <span>Member since {formatMemberSince(driver.memberSince)}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ── Stat cards ── */}
+          {/* Stat cards */}
           <div className="grid grid-cols-2 gap-4">
             {/* Total Deliveries */}
             <div className="bg-surface rounded-xl border border-border shadow-sm p-5">
@@ -190,7 +197,7 @@ export default function DriverDetailPage({
               </p>
               <p className="text-xs font-medium text-success flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
-                {driver.monthlyChange}
+                {driver.completedToday} today
               </p>
             </div>
 
@@ -203,41 +210,38 @@ export default function DriverDetailPage({
                 {successPct}%
               </p>
               <div className="w-full h-1.5 rounded-full bg-surface-elevated overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-success"
-                  style={{ width: `${successPct}%` }}
-                />
+                <div className="h-full rounded-full bg-success" style={{ width: `${successPct}%` }} />
               </div>
             </div>
 
-            {/* Failed Deliveries */}
+            {/* Active Orders */}
             <div className="bg-surface rounded-xl border border-border shadow-sm p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-2">
                 {DRIVER_DETAIL.STAT_FAILED_DELIVERIES}
               </p>
               <p className="text-3xl font-bold text-text-primary leading-none mb-2">
-                {driver.failedDeliveries}
+                {driver.activeOrders}
               </p>
               <p className="text-xs text-text-secondary">
-                {DRIVER_DETAIL.FAILED_REASON_PREFIX} {driver.failedReason}
+                of {driver.maxConcurrentOrders} max concurrent
               </p>
             </div>
 
-            {/* Avg Delivery Time */}
+            {/* Rating */}
             <div className="bg-surface rounded-xl border border-border shadow-sm p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-2">
                 {DRIVER_DETAIL.STAT_AVG_TIME}
               </p>
               <p className="text-3xl font-bold text-text-primary leading-none mb-2">
-                {driver.avgDeliveryTime}
+                ★ {driver.rating.toFixed(1)}
               </p>
               <p className="text-xs font-medium text-success">
-                {DRIVER_DETAIL.TOP_PERFORMER}
+                {successPct >= 90 ? DRIVER_DETAIL.TOP_PERFORMER : 'Good standing'}
               </p>
             </div>
           </div>
 
-          {/* ── Delivery History ── */}
+          {/* Delivery History — requires separate endpoint (coming in Phase 3) */}
           <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h3 className="text-base font-semibold text-text-primary">
@@ -251,100 +255,16 @@ export default function DriverDetailPage({
               </button>
             </div>
 
-            {/* Desktop table */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-surface-elevated border-b border-border">
-                    {[
-                      DRIVER_DETAIL.COL_TRACKING_ID,
-                      DRIVER_DETAIL.COL_STATUS,
-                      DRIVER_DETAIL.COL_RECIPIENT,
-                      DRIVER_DETAIL.COL_COMPLETED_AT,
-                    ].map(col => (
-                      <th
-                        key={col}
-                        className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-5 py-3"
-                      >
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {historySlice.map(row => (
-                    <tr
-                      key={row.referenceId}
-                      className="hover:bg-surface-elevated transition-colors"
-                    >
-                      <td className="px-5 py-3.5">
-                        <Link
-                          href={`/orders/${row.referenceId}`}
-                          className="font-mono text-sm font-semibold text-primary-light hover:underline"
-                        >
-                          {row.referenceId}
-                        </Link>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span
-                          className={`text-xs font-semibold ${row.status === 'DELIVERED' ? 'text-success' : 'text-error'}`}
-                        >
-                          {row.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <p className="text-sm font-medium text-text-primary">
-                          {row.recipientName}
-                        </p>
-                        <p className="text-xs text-text-secondary truncate max-w-[180px]">
-                          {row.recipientAddress}
-                        </p>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-text-secondary whitespace-nowrap">
-                        {row.completedAt}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile list */}
-            <div className="sm:hidden divide-y divide-border">
-              {historySlice.map(row => (
-                <Link
-                  key={row.referenceId}
-                  href={`/orders/${row.referenceId}`}
-                  className="flex items-center justify-between px-4 py-3.5 hover:bg-surface-elevated transition-colors gap-3"
-                >
-                  <div className="min-w-0">
-                    <p className="font-mono text-xs font-semibold text-primary-light">
-                      {row.referenceId}
-                    </p>
-                    <p className="text-sm font-medium text-text-primary mt-0.5">
-                      {row.recipientName}
-                    </p>
-                    <p className="text-xs text-text-secondary">
-                      {row.completedAt}
-                    </p>
-                  </div>
-                  <span
-                    className={`text-xs font-semibold shrink-0 ${row.status === 'DELIVERED' ? 'text-success' : 'text-error'}`}
-                  >
-                    {row.status}
-                  </span>
-                </Link>
-              ))}
+            <div className="flex flex-col items-center justify-center py-12 text-center px-6">
+              <p className="text-sm text-text-muted">
+                Delivery history will be available once the orders module is connected.
+              </p>
             </div>
 
             {/* Pagination footer */}
             <div className="flex items-center justify-between px-5 py-3 border-t border-border gap-4">
               <p className="text-xs text-text-secondary">
-                {DRIVER_DETAIL.HISTORY_SHOWING(
-                  hFrom + 1,
-                  Math.min(hTo, historyTotal),
-                  historyTotal
-                )}
+                {DRIVER_DETAIL.HISTORY_SHOWING(hFrom, hTo, historyTotal)}
               </p>
               <div className="flex items-center gap-1">
                 <button
@@ -356,9 +276,7 @@ export default function DriverDetailPage({
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() =>
-                    setHistoryPage(p => Math.min(historyPages, p + 1))
-                  }
+                  onClick={() => setHistoryPage(p => Math.min(historyPages, p + 1))}
                   disabled={safeHPage === historyPages}
                   className="icon-btn disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Next"
@@ -370,9 +288,10 @@ export default function DriverDetailPage({
           </div>
         </div>
 
-        {/* ════ RIGHT COLUMN ════ */}
+        {/* RIGHT COLUMN */}
         <div className="w-full xl:w-80 shrink-0 space-y-5">
-          {/* ── Current Assignments ── */}
+
+          {/* Current Assignments — requires orders module (coming in Phase 3) */}
           <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="px-4 py-3.5 border-b border-border">
               <h3 className="text-sm font-semibold text-text-primary">
@@ -380,47 +299,10 @@ export default function DriverDetailPage({
               </h3>
             </div>
 
-            <div className="divide-y divide-border">
-              {driver.assignments.length === 0 ? (
-                <p className="px-4 py-4 text-sm text-text-muted">
-                  No active assignments.
-                </p>
-              ) : (
-                driver.assignments.map(a => (
-                  <div
-                    key={a.referenceId}
-                    className={`px-4 py-3.5 border-l-[3px] ${STATUS_BORDER[a.status] ?? 'border-l-border'}`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="font-mono text-xs font-semibold text-primary-light">
-                        {a.referenceId}
-                      </span>
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-wider ${STATUS_COLOR[a.status] ?? 'text-text-muted'}`}
-                      >
-                        {a.status}
-                      </span>
-                    </div>
-                    <p className="text-sm font-semibold text-text-primary">
-                      {a.recipientName}
-                    </p>
-                    <p className="text-xs text-text-secondary mt-0.5 truncate">
-                      {a.address}
-                    </p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-text-secondary">
-                        {DRIVER_DETAIL.ETA_PREFIX} {a.eta}
-                      </span>
-                      <Link
-                        href={`/orders/${a.referenceId}`}
-                        className="text-xs font-semibold text-primary-light hover:underline"
-                      >
-                        {DRIVER_DETAIL.VIEW_ORDER}
-                      </Link>
-                    </div>
-                  </div>
-                ))
-              )}
+            <div className="px-4 py-4">
+              <p className="text-sm text-text-muted">
+                Active assignments will appear here once the orders module is connected.
+              </p>
             </div>
 
             {/* Assign new order */}
@@ -435,47 +317,17 @@ export default function DriverDetailPage({
             </div>
           </div>
 
-          {/* ── Today's Activity ── */}
+          {/* Today's Activity — requires status log endpoint (coming in Phase 3) */}
           <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="px-4 py-3.5 border-b border-border">
               <h3 className="text-sm font-semibold text-text-primary">
                 {DRIVER_DETAIL.ACTIVITY_HEADING}
               </h3>
             </div>
-
-            <div className="p-4 space-y-4">
-              {driver.activity.map((event, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <div className="flex flex-col items-center gap-1 shrink-0 mt-0.5">
-                    <span
-                      className={`w-2.5 h-2.5 rounded-full ${DOT_COLOR[event.dotColor]}`}
-                    />
-                    {idx < driver.activity.length - 1 && (
-                      <span className="w-px flex-1 bg-border min-h-[16px]" />
-                    )}
-                  </div>
-                  <div className="pb-1">
-                    <p className="text-xs text-text-muted mb-0.5">
-                      {event.time}
-                    </p>
-                    <p className="text-sm font-semibold text-text-primary">
-                      {event.title}
-                    </p>
-                    <p className="text-xs text-text-secondary mt-0.5">
-                      {event.subtitle}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="px-4 pb-4">
-              <button
-                onClick={() => toast.info('Full activity log coming soon')}
-                className="text-sm font-semibold text-primary-light hover:text-primary-hover transition-colors"
-              >
-                {DRIVER_DETAIL.VIEW_FULL_LOG}
-              </button>
+            <div className="px-4 py-4">
+              <p className="text-sm text-text-muted">
+                Activity log will appear here once the orders module is connected.
+              </p>
             </div>
           </div>
         </div>

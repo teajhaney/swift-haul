@@ -155,7 +155,7 @@ export class AuthService {
     return { message: AUTH_MESSAGES.LOGOUT_SUCCESS };
   }
 
-  //inite
+  //invite
   async invite(dto: InviteDto): Promise<{ message: string }> {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -180,13 +180,15 @@ export class AuthService {
     const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
     const inviteUrl = `${frontendUrl}/accept-invite/${inviteToken}`;
 
-    await this.email.send({
+    void this.email.send({
       to: dto.email,
       subject: AUTH_MESSAGES.INVITE_EMAIL_SUBJECT,
       html: AUTH_MESSAGES.INVITE_EMAIL_BODY(inviteUrl),
     });
 
-    this.logger.log(`Invite sent to ${dto.email} with role ${dto.role}`);
+    this.logger.log(
+      'Invite entry created for ' + dto.email + ' with role ' + dto.role,
+    );
     return { message: AUTH_MESSAGES.INVITE_SENT };
   }
 
@@ -207,15 +209,21 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
 
     await this.prisma.$transaction(async (tx) => {
+      const updateData: { [key: string]: unknown } = {
+        name: dto.name,
+        passwordHash,
+        isActive: true,
+        inviteToken: null,
+        inviteAccepted: true,
+      };
+
+      if (dto.phone) {
+        updateData.phone = dto.phone;
+      }
+
       await tx.user.update({
         where: { id: user.id },
-        data: {
-          name: dto.name,
-          passwordHash,
-          isActive: true,
-          inviteToken: null,
-          inviteAccepted: true,
-        },
+        data: updateData,
       });
 
       if (user.role === Role.DRIVER && dto.vehicleType && dto.vehiclePlate) {

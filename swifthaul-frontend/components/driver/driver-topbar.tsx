@@ -197,6 +197,7 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
           {/* Avatar */}
           <Link
             href="/driver/profile"
+            aria-label="View profile"
             className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center shrink-0 hover:opacity-90 transition-opacity"
           >
             <span className="text-xs font-bold text-white">JD</span>

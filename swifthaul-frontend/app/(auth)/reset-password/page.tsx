@@ -1,21 +1,25 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Shield } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { AuthFooter } from "@/components/auth/auth-footer";
-import { PasswordInput } from "@/components/auth/password-input";
-import { OtpInput } from "@/components/auth/otp-input";
-import { Logo } from "@/components/shared/logo";
-import { resetPasswordSchema } from "@/lib/validations/auth";
-import type { ResetPasswordFormData } from "@/types/auth";
-import { RESET_PASSWORD } from "@/constants/auth";
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Shield } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { AuthFooter } from '@/components/auth/auth-footer';
+import { PasswordInput } from '@/components/auth/password-input';
+import { OtpInput } from '@/components/auth/otp-input';
+import { Logo } from '@/components/shared/logo';
+import { resetPasswordSchema } from '@/lib/validations/auth';
+import { useResetPassword } from '@/hooks/auth/use-reset-password';
+import type { ResetPasswordFormData } from '@/types/auth';
+import { RESET_PASSWORD } from '@/constants/auth';
 
-export default function ResetPasswordPage() {
-  const router = useRouter();
+function ResetPasswordForm() {
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email') ?? '';
+  const resetPassword = useResetPassword();
 
   const {
     register,
@@ -24,12 +28,11 @@ export default function ResetPasswordPage() {
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
-    defaultValues: { otp: "", newPassword: "", confirmPassword: "" },
+    defaultValues: { otp: '', newPassword: '', confirmPassword: '' },
   });
 
-  const onSubmit = async (_data: ResetPasswordFormData) => {
-    // Backend integration later
-    router.push("/login");
+  const onSubmit = (data: ResetPasswordFormData) => {
+    resetPassword.mutate({ ...data, email });
   };
 
   return (
@@ -49,7 +52,11 @@ export default function ResetPasswordPage() {
             {RESET_PASSWORD.SUBHEADING}
           </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+            className="space-y-5"
+          >
             {/* OTP — controlled because it's a custom multi-input */}
             <div className="form-field">
               <Label className="text-sm font-medium text-[#1E293B]">
@@ -60,8 +67,8 @@ export default function ResetPasswordPage() {
                 control={control}
                 render={({ field }) => (
                   <OtpInput
-                    value={field.value.split("")}
-                    onChange={(digits) => field.onChange(digits.join(""))}
+                    value={field.value.split('')}
+                    onChange={digits => field.onChange(digits.join(''))}
                   />
                 )}
               />
@@ -72,7 +79,7 @@ export default function ResetPasswordPage() {
                   <span />
                 )}
                 <p className="text-xs text-[#94A3B8]">
-                  {RESET_PASSWORD.RESEND_TEXT}{" "}
+                  {RESET_PASSWORD.RESEND_TEXT}{' '}
                   <button
                     type="button"
                     className="text-[#1A6FB5] hover:text-[#145A94] font-medium transition-colors"
@@ -85,14 +92,17 @@ export default function ResetPasswordPage() {
 
             {/* New password */}
             <div className="form-field">
-              <Label htmlFor="newPassword" className="text-sm font-medium text-[#1E293B]">
+              <Label
+                htmlFor="newPassword"
+                className="text-sm font-medium text-[#1E293B]"
+              >
                 {RESET_PASSWORD.NEW_PASSWORD_LABEL}
               </Label>
               <PasswordInput
                 id="newPassword"
                 placeholder={RESET_PASSWORD.NEW_PASSWORD_PLACEHOLDER}
                 autoComplete="new-password"
-                {...register("newPassword")}
+                {...register('newPassword')}
               />
               {errors.newPassword && (
                 <p className="field-error">{errors.newPassword.message}</p>
@@ -101,22 +111,31 @@ export default function ResetPasswordPage() {
 
             {/* Confirm password */}
             <div className="form-field">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium text-[#1E293B]">
+              <Label
+                htmlFor="confirmPassword"
+                className="text-sm font-medium text-[#1E293B]"
+              >
                 {RESET_PASSWORD.CONFIRM_PASSWORD_LABEL}
               </Label>
               <PasswordInput
                 id="confirmPassword"
                 placeholder={RESET_PASSWORD.CONFIRM_PASSWORD_PLACEHOLDER}
                 autoComplete="new-password"
-                {...register("confirmPassword")}
+                {...register('confirmPassword')}
               />
               {errors.confirmPassword && (
                 <p className="field-error">{errors.confirmPassword.message}</p>
               )}
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="auth-submit-btn">
-              {isSubmitting ? "Resetting…" : RESET_PASSWORD.SUBMIT}
+            <button
+              type="submit"
+              disabled={isSubmitting || resetPassword.isPending}
+              className="auth-submit-btn"
+            >
+              {isSubmitting || resetPassword.isPending
+                ? 'Resetting…'
+                : RESET_PASSWORD.SUBMIT}
             </button>
           </form>
 
@@ -143,5 +162,13 @@ export default function ResetPasswordPage() {
         <AuthFooter />
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

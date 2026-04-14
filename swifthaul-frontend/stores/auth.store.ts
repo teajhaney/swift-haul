@@ -1,0 +1,18 @@
+import { create } from 'zustand';
+import type { AuthUser } from '@/types/auth';
+
+interface AuthStore {
+  user: AuthUser | null;
+  isLoading: boolean;
+  setUser: (user: AuthUser | null) => void;
+  setLoading: (loading: boolean) => void;
+  clear: () => void;
+}
+
+export const useAuthStore = create<AuthStore>((set) => ({
+  user: null,
+  isLoading: true,
+  setUser: (user) => set({ user, isLoading: false }),
+  setLoading: (isLoading) => set({ isLoading }),
+  clear: () => set({ user: null, isLoading: false }),
+}));

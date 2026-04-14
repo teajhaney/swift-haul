@@ -1,15 +1,30 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Search, ChevronLeft, ChevronRight, UserRoundPlus, Users } from 'lucide-react';
 
 import { DriverAvailabilityBadge } from '@/components/drivers/driver-availability-badge';
 import { DRIVERS } from '@/constants/drivers';
-import { MOCK_DRIVERS, AVAILABILITY_STYLES } from '@/constants/drivers-mock';
-import type { DriverAvailabilityFilter } from '@/types/driver';
+import { AVAILABILITY_STYLES } from '@/constants/drivers-mock';
+import { useDrivers } from '@/hooks/drivers/use-drivers';
+import type { DriverAvailabilityFilter, VehicleType } from '@/types/driver';
 
-// ── Pagination helpers ────────────────────────────────────────────────────────
+const VEHICLE_LABELS: Record<VehicleType, string> = {
+  BIKE: 'Bike',
+  CAR: 'Car',
+  VAN: 'Van',
+  TRUCK: 'Truck',
+};
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 function getPageNumbers(current: number, total: number): (number | '...')[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -19,54 +34,52 @@ function getPageNumbers(current: number, total: number): (number | '...')[] {
   return [1, '...', current - 1, current, current + 1, '...', total];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 export default function DriversPage() {
-  const [search, setSearch]       = useState('');
+  const [search, setSearch]           = useState('');
+  const [debouncedSearch, setDebounced] = useState('');
   const [availFilter, setAvailFilter] = useState<DriverAvailabilityFilter>('ALL');
-  const [page, setPage]           = useState(1);
+  const [page, setPage]               = useState(1);
+  const debounceRef                   = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce search — avoids firing on every keystroke
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebounced(search), 400);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [search]);
+
+  const { data, isLoading, isError } = useDrivers({
+    page,
+    limit: DRIVERS.PAGE_SIZE,
+    search: debouncedSearch || undefined,
+    availability: availFilter,
+  });
+
+  const drivers    = data?.data ?? [];
+  const total      = data?.meta.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / DRIVERS.PAGE_SIZE));
+  const from       = total === 0 ? 0 : (page - 1) * DRIVERS.PAGE_SIZE + 1;
+  const to         = Math.min(page * DRIVERS.PAGE_SIZE, total);
+  const pageNumbers = getPageNumbers(page, totalPages);
+
+  const hasActiveFilters = search !== '' || availFilter !== 'ALL';
 
   function updateSearch(val: string) { setSearch(val); setPage(1); }
   function updateFilter(val: DriverAvailabilityFilter) { setAvailFilter(val); setPage(1); }
   function clearFilters() { setSearch(''); setAvailFilter('ALL'); setPage(1); }
 
-  const hasActiveFilters = search !== '' || availFilter !== 'ALL';
-
-  // ── Filtering ──────────────────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    return MOCK_DRIVERS.filter(driver => {
-      if (availFilter !== 'ALL' && driver.availability !== availFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        return (
-          driver.name.toLowerCase().includes(q) ||
-          driver.id.toLowerCase().includes(q) ||
-          driver.vehicle.toLowerCase().includes(q) ||
-          driver.vehiclePlate.toLowerCase().includes(q)
-        );
-      }
-      return true;
-    });
-  }, [search, availFilter]);
-
-  // ── Pagination ─────────────────────────────────────────────────────────────
-  const totalPages  = Math.max(1, Math.ceil(filtered.length / DRIVERS.PAGE_SIZE));
-  const safePage    = Math.min(page, totalPages);
-  const from        = filtered.length === 0 ? 0 : (safePage - 1) * DRIVERS.PAGE_SIZE + 1;
-  const to          = Math.min(safePage * DRIVERS.PAGE_SIZE, filtered.length);
-  const paginated   = filtered.slice(from - 1, to);
-  const pageNumbers = getPageNumbers(safePage, totalPages);
-
   return (
     <div className="space-y-5">
 
-      {/* ── Page header ── */}
+      {/* Page header */}
       <div>
         <h1 className="text-2xl font-bold text-text-primary">{DRIVERS.PAGE_HEADING}</h1>
         <p className="text-sm text-text-secondary mt-0.5">{DRIVERS.PAGE_SUBHEADING}</p>
       </div>
 
-      {/* ── Search + filter ── */}
+      {/* Search + filter */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
@@ -95,10 +108,21 @@ export default function DriversPage() {
         </div>
       </div>
 
-      {/* ── Table / Cards ── */}
+      {/* Table / Cards */}
       <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col gap-3 p-5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-12 rounded-lg bg-surface-elevated animate-pulse" />
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+            <p className="text-base font-semibold text-text-primary mb-1">Failed to load drivers</p>
+            <p className="text-sm text-text-secondary">Check your connection and try again</p>
+          </div>
+        ) : drivers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
             <div className="w-12 h-12 rounded-full bg-surface-elevated flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-text-muted" />
@@ -116,7 +140,7 @@ export default function DriversPage() {
           </div>
         ) : (
           <>
-            {/* ── Desktop table ── */}
+            {/* Desktop table */}
             <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -140,28 +164,34 @@ export default function DriversPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {paginated.map(driver => {
-                    const loadPct = driver.maxLoad > 0
-                      ? Math.round((driver.currentLoad / driver.maxLoad) * 100)
-                      : 0;
-                    const barColor =
-                      loadPct === 100 ? 'bg-error' :
-                      loadPct >= 50   ? 'bg-warning' : 'bg-primary-light';
-                    const isOffline = driver.availability === 'OFFLINE';
+                  {drivers.map(driver => {
+                    const successPct  = Math.round(driver.successRate);
+                    const barColor    = successPct >= 90 ? 'bg-success' : successPct >= 70 ? 'bg-warning' : 'bg-error';
+                    const isOffline   = driver.availability === 'OFFLINE';
+                    const initials    = getInitials(driver.name);
+                    const vehicle     = VEHICLE_LABELS[driver.vehicleType];
 
                     return (
                       <tr key={driver.id} className="hover:bg-surface-elevated transition-colors">
                         {/* Driver */}
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center shrink-0">
-                              <span className="text-xs font-bold text-white">{driver.avatarInitials}</span>
-                            </div>
+                            {driver.avatarUrl ? (
+                              <img
+                                src={driver.avatarUrl}
+                                alt={driver.name}
+                                className="w-9 h-9 rounded-full object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center shrink-0">
+                                <span className="text-xs font-bold text-white">{initials}</span>
+                              </div>
+                            )}
                             <div>
                               <p className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
                                 {driver.name}
                               </p>
-                              <p className="text-xs font-mono text-text-muted">{driver.id}</p>
+                              <p className="text-xs text-text-muted">{driver.email}</p>
                             </div>
                           </div>
                         </td>
@@ -169,11 +199,11 @@ export default function DriversPage() {
                         {/* Contact & Vehicle */}
                         <td className="px-5 py-3.5">
                           <p className={`text-sm ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
-                            {driver.phone}
+                            {driver.phone ?? '—'}
                           </p>
                           <div className="flex items-center gap-1.5 mt-1">
                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap ${isOffline ? 'bg-surface-elevated text-text-muted' : 'bg-primary-subtle text-primary-light'}`}>
-                              {driver.vehicle}
+                              {vehicle}
                             </span>
                             <span className="text-xs font-mono text-text-muted">{driver.vehiclePlate}</span>
                           </div>
@@ -189,7 +219,7 @@ export default function DriversPage() {
                           </div>
                         </td>
 
-                        {/* Current Load */}
+                        {/* Success Rate (replaces currentLoad — not in list endpoint) */}
                         <td className="px-5 py-3.5 min-w-[150px]">
                           {isOffline ? (
                             <p className="text-sm text-text-muted">
@@ -198,11 +228,11 @@ export default function DriversPage() {
                           ) : (
                             <>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-text-primary">{driver.currentLoad}/{driver.maxLoad} orders</span>
-                                <span className="text-xs text-text-muted">{loadPct}%</span>
+                                <span className="text-sm text-text-primary">Success rate</span>
+                                <span className="text-xs text-text-muted">{successPct}%</span>
                               </div>
                               <div className="w-full h-1.5 rounded-full bg-surface-elevated overflow-hidden">
-                                <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${loadPct}%` }} />
+                                <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${successPct}%` }} />
                               </div>
                             </>
                           )}
@@ -215,10 +245,10 @@ export default function DriversPage() {
                           </span>
                         </td>
 
-                        {/* Avg Delivery Time */}
+                        {/* Rating */}
                         <td className="px-5 py-3.5">
                           <span className={`text-sm ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
-                            {driver.avgDeliveryTime}
+                            ★ {driver.rating.toFixed(1)}
                           </span>
                         </td>
 
@@ -238,16 +268,14 @@ export default function DriversPage() {
               </table>
             </div>
 
-            {/* ── Mobile cards ── */}
+            {/* Mobile cards */}
             <div className="lg:hidden divide-y divide-border">
-              {paginated.map(driver => {
-                const loadPct = driver.maxLoad > 0
-                  ? Math.round((driver.currentLoad / driver.maxLoad) * 100)
-                  : 0;
-                const barColor =
-                  loadPct === 100 ? 'bg-error' :
-                  loadPct >= 50   ? 'bg-warning' : 'bg-primary-light';
-                const isOffline = driver.availability === 'OFFLINE';
+              {drivers.map(driver => {
+                const successPct = Math.round(driver.successRate);
+                const barColor   = successPct >= 90 ? 'bg-success' : successPct >= 70 ? 'bg-warning' : 'bg-error';
+                const isOffline  = driver.availability === 'OFFLINE';
+                const initials   = getInitials(driver.name);
+                const vehicle    = VEHICLE_LABELS[driver.vehicleType];
 
                 return (
                   <Link
@@ -258,9 +286,17 @@ export default function DriversPage() {
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="relative shrink-0">
-                          <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
-                            <span className="text-xs font-bold text-white">{driver.avatarInitials}</span>
-                          </div>
+                          {driver.avatarUrl ? (
+                            <img
+                              src={driver.avatarUrl}
+                              alt={driver.name}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
+                              <span className="text-xs font-bold text-white">{initials}</span>
+                            </div>
+                          )}
                           <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface ${AVAILABILITY_STYLES[driver.availability].dot}`} />
                         </div>
                         <div className="min-w-0">
@@ -268,37 +304,37 @@ export default function DriversPage() {
                             {driver.name}
                           </p>
                           <p className="text-xs text-text-secondary mt-0.5">
-                            {driver.vehicle} · ★ {driver.rating}
+                            {vehicle} · ★ {driver.rating.toFixed(1)}
                           </p>
                         </div>
                       </div>
                       <DriverAvailabilityBadge availability={driver.availability} />
                     </div>
 
-                    {/* Capacity bar */}
+                    {/* Success rate bar */}
                     <div className="mb-3">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">Capacity</span>
-                        <span className="text-xs text-text-muted">{loadPct}%</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">Success rate</span>
+                        <span className="text-xs text-text-muted">{successPct}%</span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-surface-elevated overflow-hidden">
-                        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${loadPct}%` }} />
+                        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${successPct}%` }} />
                       </div>
                     </div>
 
                     <div className="flex items-center gap-6">
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-0.5">
-                          {isOffline ? 'Last Active' : 'Current Load'}
+                          Completed today
                         </p>
                         <p className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
-                          {isOffline ? '4h ago' : `${driver.currentLoad} / ${driver.maxLoad} Orders`}
+                          {driver.completedToday}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-0.5">Avg Time</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-0.5">Total</p>
                         <p className={`text-sm font-semibold ${isOffline ? 'text-text-muted' : 'text-text-primary'}`}>
-                          {driver.avgDeliveryTime}
+                          {driver.totalDeliveries}
                         </p>
                       </div>
                     </div>
@@ -309,17 +345,17 @@ export default function DriversPage() {
           </>
         )}
 
-        {/* ── Pagination footer ── */}
-        {filtered.length > 0 && (
+        {/* Pagination footer */}
+        {total > 0 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-border gap-4">
             <p className="text-xs text-text-secondary shrink-0">
-              {DRIVERS.SHOWING(from, to, filtered.length)}
+              {DRIVERS.SHOWING(from, to, total)}
             </p>
 
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={safePage === 1}
+                disabled={page === 1}
                 className="icon-btn disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Previous page"
               >
@@ -334,7 +370,7 @@ export default function DriversPage() {
                     key={p}
                     onClick={() => setPage(p)}
                     className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                      p === safePage
+                      p === page
                         ? 'bg-primary text-white'
                         : 'text-text-secondary hover:bg-surface-elevated'
                     }`}
@@ -346,7 +382,7 @@ export default function DriversPage() {
 
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={safePage === totalPages}
+                disabled={page === totalPages}
                 className="icon-btn disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Next page"
               >
@@ -357,7 +393,7 @@ export default function DriversPage() {
         )}
       </div>
 
-      {/* ── FAB — mobile only ── */}
+      {/* FAB — mobile only */}
       <button
         className="fixed bottom-20 right-4 w-14 h-14 rounded-full bg-accent hover:bg-accent-hover text-white shadow-lg flex items-center justify-center transition-colors z-10 lg:hidden"
         aria-label={DRIVERS.ADD_DRIVER_LABEL}

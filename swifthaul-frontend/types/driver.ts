@@ -1,4 +1,36 @@
 export type DriverAvailability = 'AVAILABLE' | 'BUSY' | 'OFFLINE';
+export type VehicleType = 'BIKE' | 'CAR' | 'VAN' | 'TRUCK';
+
+// API response types — match the NestJS backend exactly
+export interface ApiDriverListItem {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  avatarUrl: string | null;
+  isActive: boolean;
+  availability: DriverAvailability;
+  vehicleType: VehicleType;
+  vehiclePlate: string;
+  rating: number;
+  totalDeliveries: number;
+  completedToday: number;
+  successRate: number;
+}
+
+export interface ApiDriverDetail extends ApiDriverListItem {
+  currentLat: number | null;
+  currentLng: number | null;
+  locationUpdatedAt: string | null;
+  maxConcurrentOrders: number;
+  memberSince: string;
+  activeOrders: number;
+}
+
+export interface ApiDriverListResponse {
+  data: ApiDriverListItem[];
+  meta: { total: number; page: number; limit: number };
+}
 
 export interface Driver {
   id: string;

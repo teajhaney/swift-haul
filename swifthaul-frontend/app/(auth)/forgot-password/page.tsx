@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RotateCcw } from "lucide-react";
@@ -10,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { AuthFooter } from "@/components/auth/auth-footer";
 import { Logo } from "@/components/shared/logo";
 import { forgotPasswordSchema } from "@/lib/validations/auth";
+import { useForgotPassword } from "@/hooks/auth/use-forgot-password";
 import type { ForgotPasswordFormData } from "@/types/auth";
 import { FORGOT_PASSWORD } from "@/constants/auth";
 
 export default function ForgotPasswordPage() {
-  const router = useRouter();
+  const forgotPassword = useForgotPassword();
 
   const {
     register,
@@ -24,9 +24,8 @@ export default function ForgotPasswordPage() {
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const onSubmit = async (_data: ForgotPasswordFormData) => {
-    // Backend integration later
-    router.push("/reset-password");
+  const onSubmit = (data: ForgotPasswordFormData) => {
+    forgotPassword.mutate(data);
   };
 
   return (
@@ -68,8 +67,8 @@ export default function ForgotPasswordPage() {
               {errors.email && <p className="field-error">{errors.email.message}</p>}
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="auth-submit-btn">
-              {isSubmitting ? "Sending…" : FORGOT_PASSWORD.SUBMIT}
+            <button type="submit" disabled={isSubmitting || forgotPassword.isPending} className="auth-submit-btn">
+              {(isSubmitting || forgotPassword.isPending) ? "Sending…" : FORGOT_PASSWORD.SUBMIT}
             </button>
           </form>
 

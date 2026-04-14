@@ -1,16 +1,17 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LogOut, Plus } from "lucide-react";
-import { NAV_SECTIONS, SIDEBAR } from "@/constants/navigation";
-import { LogoIcon } from "@/components/shared/logo";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { LogOut, Plus } from 'lucide-react';
+import { NAV_SECTIONS, SIDEBAR } from '@/constants/navigation';
+import { LogoIcon } from '@/components/shared/logo';
+import { useLogout } from '@/hooks/auth/use-logout';
 
 /** Placeholder user — replaced by auth store once backend is wired. */
 const PLACEHOLDER_USER = {
-  name: "Alex Morgan",
-  role: "ADMIN",
-  initials: "AM",
+  name: 'Alex Morgan',
+  role: 'ADMIN',
+  initials: 'AM',
 };
 
 function NavItem({
@@ -25,7 +26,7 @@ function NavItem({
   active: boolean;
 }) {
   return (
-    <Link href={href} className={`nav-item ${active ? "nav-item-active" : ""}`}>
+    <Link href={href} className={`nav-item ${active ? 'nav-item-active' : ''}`}>
       <Icon className="w-4 h-4 shrink-0" />
       <span>{label}</span>
     </Link>
@@ -34,14 +35,14 @@ function NavItem({
 
 export function Sidebar() {
   const pathname = usePathname();
+  const logout = useLogout();
 
   const isActive = (href: string) =>
-    pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+    pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
 
   return (
     <aside className="hidden lg:flex flex-col w-64 shrink-0 h-screen sticky top-0 overflow-y-auto">
       <div className="flex flex-col h-full bg-primary">
-
         {/* Brand */}
         <div className="px-5 pt-5 pb-4">
           <Link href="/dashboard" className="flex items-center gap-2.5">
@@ -70,13 +71,13 @@ export function Sidebar() {
 
         {/* Nav sections */}
         <nav className="flex-1 px-3 space-y-6 overflow-y-auto">
-          {NAV_SECTIONS.map((section) => (
+          {NAV_SECTIONS.map(section => (
             <div key={section.title}>
               <p className="px-3 mb-1.5 text-[10px] font-semibold tracking-widest uppercase text-slate-600">
                 {section.title}
               </p>
               <ul className="space-y-0.5">
-                {section.items.map((item) => (
+                {section.items.map(item => (
                   <li key={item.href}>
                     <NavItem {...item} active={isActive(item.href)} />
                   </li>
@@ -89,9 +90,7 @@ export function Sidebar() {
         {/* User + logout */}
         <div className="px-4 py-4 mt-auto border-t border-white/[0.08] flex items-center gap-3">
           {/* Avatar */}
-          <div className="user-avatar w-9 h-9">
-            {PLACEHOLDER_USER.initials}
-          </div>
+          <div className="user-avatar w-9 h-9">{PLACEHOLDER_USER.initials}</div>
 
           {/* Name + role */}
           <div className="flex-1 min-w-0">
@@ -105,13 +104,14 @@ export function Sidebar() {
 
           {/* Logout */}
           <button
-            className="p-1.5 rounded-md transition-colors shrink-0 text-slate-600 hover:text-white"
+            onClick={() => logout.mutate()}
+            disabled={logout.status === 'pending'}
+            className="p-1.5 rounded-md transition-colors shrink-0 text-slate-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label={SIDEBAR.LOGOUT}
           >
             <LogOut className="w-4 h-4" />
           </button>
         </div>
-
       </div>
     </aside>
   );
