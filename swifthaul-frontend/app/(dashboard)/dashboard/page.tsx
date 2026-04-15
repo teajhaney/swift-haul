@@ -6,18 +6,25 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Filter, Download, MoreHorizontal, Calendar } from 'lucide-react';
 
+import {
+  ClipboardList,
+  CheckCircle2,
+  Activity,
+  Truck,
+} from 'lucide-react';
+
 import { KpiCard } from '@/components/analytics/kpi-card';
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
 import { DASHBOARD } from '@/constants/dashboard';
 import {
-  MOCK_KPI_DATA as KPI_DATA,
   MOCK_CHART_DATA as CHART_DATA,
   MOCK_DONUT_DATA as DONUT_DATA,
   PRIORITY_STYLES,
 } from '@/constants/dashboard-mock';
 import { PRIORITY_LABELS } from '@/constants/orders';
 import { useOrders } from '@/hooks/orders/use-orders';
-import type { TimeRange } from '@/types/analytics';
+import { useAnalyticsStats } from '@/hooks/analytics/use-analytics-stats';
+import type { KpiData, TimeRange } from '@/types/analytics';
 import { formatTime } from '@/lib/utils';
 
 const RECENT_LIMIT = 5;
@@ -51,8 +58,46 @@ export default function DashboardPage() {
     limit: RECENT_LIMIT,
     page: 1,
   });
+  const { data: stats, isLoading: statsLoading } = useAnalyticsStats();
   const recentOrders = ordersData?.data ?? [];
   const totalOrders = ordersData?.meta.total ?? 0;
+
+  const kpiData: KpiData[] = stats
+    ? [
+        {
+          id: 'delivered-today',
+          label: DASHBOARD.KPI_DELIVERIES_LABEL,
+          value: stats.deliveredToday.toLocaleString(),
+          icon: ClipboardList,
+          iconBg: 'bg-blue-100',
+          iconColor: 'text-blue-600',
+        },
+        {
+          id: 'success-rate',
+          label: DASHBOARD.KPI_SUCCESS_LABEL,
+          value: `${stats.successRate}%`,
+          icon: CheckCircle2,
+          iconBg: 'bg-green-100',
+          iconColor: 'text-green-600',
+        },
+        {
+          id: 'active-orders',
+          label: DASHBOARD.KPI_ACTIVE_LABEL,
+          value: stats.activeOrders.toLocaleString(),
+          icon: Activity,
+          iconBg: 'bg-orange-100',
+          iconColor: 'text-orange-500',
+        },
+        {
+          id: 'active-drivers',
+          label: DASHBOARD.KPI_DRIVERS_LABEL,
+          value: stats.activeDrivers.toLocaleString(),
+          icon: Truck,
+          iconBg: 'bg-primary-subtle',
+          iconColor: 'text-primary-light',
+        },
+      ]
+    : [];
 
   return (
     <div className="space-y-6">
@@ -91,9 +136,25 @@ export default function DashboardPage() {
 
       {/* ── KPI grid — 2 cols mobile, 4 cols desktop ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {KPI_DATA.map(kpi => (
-          <KpiCard key={kpi.id} data={kpi} />
-        ))}
+        {statsLoading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-surface rounded-xl border border-border p-5 flex flex-col gap-3 shadow-sm animate-pulse"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="w-10 h-10 rounded-lg bg-surface-elevated" />
+                  <div className="w-8 h-3 rounded bg-surface-elevated" />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="h-7 w-20 rounded bg-surface-elevated" />
+                  <div className="h-3 w-28 rounded bg-surface-elevated" />
+                </div>
+              </div>
+            ))
+          : kpiData.map(kpi => (
+              <KpiCard key={kpi.id} data={kpi} />
+            ))}
       </div>
 
       {/* ── Charts — stacked mobile, side by side desktop ── */}

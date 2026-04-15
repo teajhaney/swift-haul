@@ -65,8 +65,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // No token → redirect to login, preserving intended destination
+  // No access token cookie (deleted after maxAge) — try refresh before giving up.
+  // The refresh token cookie lasts 7 days, so the user may still have a valid session.
   if (!token) {
+    const refreshed = await tryRefresh(request);
+    if (refreshed) return refreshed;
+
     const url = new URL('/login', request.url);
     url.searchParams.set('from', pathname);
     return NextResponse.redirect(url);

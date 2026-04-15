@@ -7,15 +7,7 @@ import { NAV_SECTIONS, SIDEBAR } from '@/constants/navigation';
 import { LogoIcon } from '@/components/shared/logo';
 import { useLogout } from '@/hooks/auth/use-logout';
 import { useAuthStore } from '@/stores/auth.store';
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(p => p[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
+import { getInitials } from '@/lib/utils';
 
 function NavItem({
   label,

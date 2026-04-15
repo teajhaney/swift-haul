@@ -27,12 +27,18 @@ export const DRIVERS = {
 
   AVAILABILITY_OPTIONS: [
     { label: 'All Drivers', value: 'ALL' as DriverAvailabilityFilter },
-    { label: 'Available',   value: 'AVAILABLE' as DriverAvailabilityFilter },
-    { label: 'Busy',        value: 'BUSY' as DriverAvailabilityFilter },
-    { label: 'Offline',     value: 'OFFLINE' as DriverAvailabilityFilter },
+    { label: 'Available', value: 'AVAILABLE' as DriverAvailabilityFilter },
+    { label: 'Busy', value: 'BUSY' as DriverAvailabilityFilter },
+    { label: 'Offline', value: 'OFFLINE' as DriverAvailabilityFilter },
   ],
 
   NO_RESULTS: 'No drivers found',
   NO_RESULTS_HINT: 'Try adjusting your search or filter.',
   CLEAR_FILTERS: 'Clear filters',
+
+  // Error messages
+  ACCESS_DENIED: 'Access Denied',
+  ACCESS_DENIED_HINT: 'You don&apos;t have permission to view drivers',
+  FAILED_TO_LOAD: 'Failed to load drivers',
+  FAILED_TO_LOAD_HINT: 'Check your connection and try again',
 } as const;

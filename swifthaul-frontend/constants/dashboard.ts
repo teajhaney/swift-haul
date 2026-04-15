@@ -18,7 +18,7 @@ export const DASHBOARD = {
   // KPI cards
   KPI_DELIVERIES_LABEL: 'Total Deliveries Today',
   KPI_SUCCESS_LABEL:    'Success Rate',
-  KPI_TIME_LABEL:       'Avg Delivery Time',
+  KPI_ACTIVE_LABEL:     'Active Orders',
   KPI_DRIVERS_LABEL:    'Active Drivers',
 
   // Deliveries chart

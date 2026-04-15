@@ -15,6 +15,7 @@ import { DRIVERS } from '@/constants/drivers';
 import { AVAILABILITY_STYLES } from '@/constants/drivers-mock';
 import { useDrivers } from '@/hooks/drivers/use-drivers';
 import { getInitials, getPageNumbers, VEHICLE_LABELS } from '@/lib/utils';
+import { useAuthStore } from '@/stores/auth.store';
 import type { DriverAvailabilityFilter } from '@/types/driver';
 import Image from 'next/image';
 
@@ -41,6 +42,10 @@ export default function DriversPage() {
     search: debouncedSearch || undefined,
     availability: availFilter,
   });
+
+  const { user, isLoading: authLoading } = useAuthStore();
+  const isAuthorized =
+    user && (user.role === 'ADMIN' || user.role === 'DISPATCHER');
 
   const drivers = data?.data ?? [];
   const total = data?.meta.total ?? 0;
@@ -115,7 +120,25 @@ export default function DriversPage() {
 
       {/* Table / Cards */}
       <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
-        {isLoading ? (
+        {authLoading ? (
+          <div className="flex flex-col gap-3 p-5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-12 rounded-lg bg-surface-elevated animate-pulse"
+              />
+            ))}
+          </div>
+        ) : !isAuthorized ? (
+          <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+            <p className="text-base font-semibold text-text-primary mb-1">
+              {DRIVERS.ACCESS_DENIED}
+            </p>
+            <p className="text-sm text-text-secondary">
+              {DRIVERS.ACCESS_DENIED_HINT}
+            </p>
+          </div>
+        ) : isLoading ? (
           <div className="flex flex-col gap-3 p-5">
             {Array.from({ length: 5 }).map((_, i) => (
               <div
@@ -127,10 +150,10 @@ export default function DriversPage() {
         ) : isError ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
             <p className="text-base font-semibold text-text-primary mb-1">
-              Failed to load drivers
+              {DRIVERS.FAILED_TO_LOAD}
             </p>
             <p className="text-sm text-text-secondary">
-              Check your connection and try again
+              {DRIVERS.FAILED_TO_LOAD_HINT}
             </p>
           </div>
         ) : drivers.length === 0 ? (

@@ -38,7 +38,7 @@ export const MOCK_KPI_DATA: KpiData[] = [
   },
   {
     id: 'time',
-    label: DASHBOARD.KPI_TIME_LABEL,
+    label: DASHBOARD.KPI_ACTIVE_LABEL,
     value: '42 min',
     trend: '-4m',
     trendPositive: true,

@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
+import { useAuthStore } from '@/stores/auth.store';
 import type { ApiDriverListResponse, DriverAvailability } from '@/types/driver';
 
 interface UseDriversParams {
@@ -13,6 +14,7 @@ interface UseDriversParams {
 
 export function useDrivers(params: UseDriversParams = {}) {
   const { page = 1, limit = 10, search, availability } = params;
+  const { user, isLoading: authLoading } = useAuthStore();
 
   const queryParams = new URLSearchParams();
   queryParams.set('page', String(page));
@@ -26,10 +28,15 @@ export function useDrivers(params: UseDriversParams = {}) {
     queryKey: ['drivers', { page, limit, search, availability }],
     queryFn: async () => {
       const res = await api.get<ApiDriverListResponse>(
-        `/drivers?${queryParams.toString()}`,
+        `/drivers?${queryParams.toString()}`
       );
       return res.data;
     },
+    enabled:
+      !authLoading &&
+      !!user &&
+      (user.role === 'ADMIN' || user.role === 'DISPATCHER'),
     staleTime: 30 * 1000,
+    retry: 2,
   });
 }

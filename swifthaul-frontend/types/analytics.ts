@@ -1,5 +1,14 @@
 import type { LucideIcon } from 'lucide-react';
 
+export interface DashboardStats {
+  totalOrders: number;
+  pendingOrders: number;
+  activeOrders: number;
+  deliveredToday: number;
+  activeDrivers: number;
+  successRate: number;
+}
+
 export type TimeRange = '7d' | '30d' | '90d' | 'custom';
 
 export interface KpiData {
