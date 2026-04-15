@@ -89,7 +89,6 @@ export function Topbar() {
             <Search className="w-5 h-5" />
           </button>
           <NotificationBell
-            count={3}
             iconClassName="w-5 h-5 text-text-secondary"
           />
         </div>
@@ -123,7 +122,6 @@ export function Topbar() {
 
           {/* Notification bell */}
           <NotificationBell
-            count={3}
             iconClassName="w-5 h-5 text-text-secondary"
           />
 

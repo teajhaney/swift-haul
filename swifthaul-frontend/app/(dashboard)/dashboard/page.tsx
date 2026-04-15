@@ -18,15 +18,9 @@ import {
 import { PRIORITY_LABELS } from '@/constants/orders';
 import { useOrders } from '@/hooks/orders/use-orders';
 import type { TimeRange } from '@/types/analytics';
+import { formatTime } from '@/lib/utils';
 
 const RECENT_LIMIT = 5;
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 // Chart components use ResizeObserver — dynamically imported to avoid SSR mismatch
 const DeliveriesChart = dynamic(

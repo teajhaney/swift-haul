@@ -8,6 +8,7 @@ export interface NotificationItem {
   body: string;
   isRead: boolean;
   orderId: string | null;
+  orderReferenceId: string | null;
   createdAt: Date;
 }
 

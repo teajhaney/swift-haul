@@ -33,71 +33,11 @@ import { PRIORITY_STYLES, PRIORITY_LABELS } from '@/constants/orders';
 import { useOrder } from '@/hooks/orders/use-order';
 import { useUpdateStatus } from '@/hooks/orders/use-update-status';
 import { toast } from 'sonner';
+import { getInitials, formatDateString } from '@/lib/utils';
+import { Section } from '@/components/shared/section';
+import { InfoRow } from '@/components/shared/info-row';
 
 type Props = { params: Promise<{ id: string }> };
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(p => p[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function formatDate(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-// ── Shared section card wrapper ───────────────────────────────────────────────
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-border">
-        <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wide">
-          {title}
-        </h2>
-      </div>
-      <div className="px-5 py-4">{children}</div>
-    </div>
-  );
-}
-
-// ── Info row ──────────────────────────────────────────────────────────────────
-
-function InfoRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-border last:border-0">
-      <Icon className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
-      <div className="min-w-0 flex-1">
-        <p className="text-xs text-text-secondary">{label}</p>
-        <p className="text-sm font-medium text-text-primary mt-0.5 break-words">
-          {value ?? '—'}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -368,12 +308,12 @@ export default function OrderDetailPage({ params }: Props) {
               <InfoRow
                 icon={Calendar}
                 label={ORDER_DETAIL.LABEL_CREATED}
-                value={formatDate(detail.createdAt)}
+                value={formatDateString(detail.createdAt)}
               />
               <InfoRow
                 icon={Clock}
                 label={ORDER_DETAIL.LABEL_EST_DELIVERY}
-                value={formatDate(detail.estimatedDelivery)}
+                value={formatDateString(detail.estimatedDelivery)}
               />
             </Section>
 

@@ -25,3 +25,32 @@ export interface AppNotification {
   isRead: boolean;
   timestamp: string;
 }
+
+// ── API response types ────────────────────────────────────────────────────────
+
+export interface ApiNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  isRead: boolean;
+  orderId: string | null;
+  orderReferenceId: string | null;
+  createdAt: string;
+}
+
+export interface ApiNotificationListResponse {
+  data: ApiNotification[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    unreadCount: number;
+  };
+}
+
+export interface NotificationFilters {
+  page?: number;
+  limit?: number;
+  isRead?: boolean;
+}

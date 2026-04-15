@@ -1,31 +1,33 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import { Bell } from "lucide-react";
+import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
+import { Bell } from 'lucide-react';
 
-import { NotificationIcon } from "@/components/notifications/notification-icon";
-import { NOTIFICATION_BELL } from "@/constants/messages";
-import { MOCK_NOTIFICATIONS } from "@/constants/notifications-mock";
-import type { AppNotification } from "@/types/notification";
+import { NotificationIcon } from '@/components/notifications/notification-icon';
+import { NOTIFICATION_BELL } from '@/constants/messages';
+import { useNotifications } from '@/hooks/notifications/use-notifications';
+import { useMarkAllRead } from '@/hooks/notifications/use-mark-all-read';
+import { formatTimestamp } from '@/lib/utils';
+import type { ApiNotification } from '@/types/notification';
 
 interface NotificationBellProps {
-  count?: number;
   className?: string;
   iconClassName?: string;
 }
 
 export function NotificationBell({
-  count = 0,
-  className = "",
-  iconClassName = "w-5 h-5",
+  className = '',
+  iconClassName = 'w-5 h-5',
 }: NotificationBellProps) {
-  const [open, setOpen]     = useState(false);
-  const [items, setItems]   = useState<AppNotification[]>(MOCK_NOTIFICATIONS);
-  const containerRef         = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const unread = items.filter(n => !n.isRead).length;
-  const preview = items.slice(0, 5);
+  const { data } = useNotifications({ limit: 5, page: 1 });
+  const markAllRead = useMarkAllRead();
+
+  const preview: ApiNotification[] = data?.data ?? [];
+  const unread = data?.meta.unreadCount ?? 0;
 
   useEffect(() => {
     function handleMouseDown(e: MouseEvent) {
@@ -33,13 +35,13 @@ export function NotificationBell({
         setOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
   }, []);
 
-  function markAllRead(e: React.MouseEvent) {
+  function handleMarkAllRead(e: React.MouseEvent) {
     e.stopPropagation();
-    setItems(prev => prev.map(n => ({ ...n, isRead: true })));
+    markAllRead.mutate();
   }
 
   return (
@@ -74,8 +76,9 @@ export function NotificationBell({
             </div>
             {unread > 0 && (
               <button
-                onClick={markAllRead}
-                className="text-xs font-semibold text-primary-light hover:text-primary-hover transition-colors"
+                onClick={handleMarkAllRead}
+                disabled={markAllRead.isPending}
+                className="text-xs font-semibold text-primary-light hover:text-primary-hover transition-colors disabled:opacity-50"
               >
                 Mark all read
               </button>
@@ -84,24 +87,34 @@ export function NotificationBell({
 
           {/* Items */}
           <div className="divide-y divide-border max-h-[360px] overflow-y-auto">
-            {preview.map(n => (
-              <div
-                key={n.id}
-                className={`flex items-start gap-3 px-4 py-3.5 transition-colors hover:bg-surface-elevated ${!n.isRead ? 'bg-primary-subtle/30' : ''}`}
-              >
-                <NotificationIcon type={n.type} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs font-semibold text-text-primary leading-snug">{n.title}</span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="text-[10px] text-text-muted whitespace-nowrap">{n.timestamp}</span>
-                      {!n.isRead && <span className="w-1.5 h-1.5 rounded-full bg-primary-light" />}
-                    </div>
-                  </div>
-                  <p className="text-xs text-text-secondary mt-0.5 leading-relaxed line-clamp-2">{n.message}</p>
-                </div>
+            {preview.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+                <Bell className="w-6 h-6 text-text-muted mb-2" />
+                <p className="text-xs font-semibold text-text-secondary">All caught up!</p>
+                <p className="text-xs text-text-muted mt-0.5">No new notifications.</p>
               </div>
-            ))}
+            ) : (
+              preview.map(n => (
+                <div
+                  key={n.id}
+                  className={`flex items-start gap-3 px-4 py-3.5 transition-colors hover:bg-surface-elevated ${!n.isRead ? 'bg-primary-subtle/30' : ''}`}
+                >
+                  <NotificationIcon type={n.type} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xs font-semibold text-text-primary leading-snug">{n.title}</span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-[10px] text-text-muted whitespace-nowrap">
+                          {formatTimestamp(n.createdAt)}
+                        </span>
+                        {!n.isRead && <span className="w-1.5 h-1.5 rounded-full bg-primary-light" />}
+                      </div>
+                    </div>
+                    <p className="text-xs text-text-secondary mt-0.5 leading-relaxed line-clamp-2">{n.body}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Footer */}

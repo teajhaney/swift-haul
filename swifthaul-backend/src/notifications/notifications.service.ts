@@ -9,7 +9,13 @@ import type {
 } from './types/notification.types';
 import { NotificationNotFoundException } from '../common/exceptions/domain.exceptions';
 
-type NotificationResult = Prisma.NotificationGetPayload<object>;
+const NOTIFICATION_INCLUDE = {
+  order: { select: { referenceId: true } },
+} as const;
+
+type NotificationResult = Prisma.NotificationGetPayload<{
+  include: typeof NOTIFICATION_INCLUDE;
+}>;
 
 @Injectable()
 export class NotificationsService {
@@ -39,6 +45,7 @@ export class NotificationsService {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: NOTIFICATION_INCLUDE,
       }),
       this.prisma.notification.count({ where }),
       this.prisma.notification.count({
@@ -63,6 +70,7 @@ export class NotificationsService {
     const updated = await this.prisma.notification.update({
       where: { id },
       data: { isRead: true },
+      include: NOTIFICATION_INCLUDE,
     });
 
     return this.toNotificationItem(updated);
@@ -88,6 +96,7 @@ export class NotificationsService {
       body: n.body,
       isRead: n.isRead,
       orderId: n.orderId,
+      orderReferenceId: n.order?.referenceId ?? null,
       createdAt: n.createdAt,
     };
   }

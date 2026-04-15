@@ -44,6 +44,32 @@ export function formatDateString(iso: string | null | undefined): string {
   });
 }
 
+export function formatTimestamp(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffMins = Math.floor(diffMs / 60_000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+export function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export function formatMemberSince(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
 // ── Pagination Utilities ────────────────────────────────────────────────────
 
 export function getPageNumbers(

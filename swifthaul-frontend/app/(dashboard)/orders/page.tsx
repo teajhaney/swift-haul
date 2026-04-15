@@ -22,30 +22,11 @@ import { useOrders } from '@/hooks/orders/use-orders';
 import { useDeleteOrder } from '@/hooks/orders/use-delete-order';
 import { useAuthStore } from '@/stores/auth.store';
 import { toast } from 'sonner';
+import { formatDate, getPageNumbers } from '@/lib/utils';
 import type { OrderFilterStatus, PriorityFilter } from '@/types/order';
 
 const DEBOUNCE_MS = 400;
 const PAGE_SIZE = 10;
-
-// ── Pagination helpers ────────────────────────────────────────────────────────
-
-function getPageNumbers(current: number, total: number): (number | '...')[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
-  if (current >= total - 3)
-    return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
-  return [1, '...', current - 1, current, current + 1, '...', total];
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return {
-    date: d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-    time: d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-  };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
   const [searchInput, setSearchInput] = useState('');

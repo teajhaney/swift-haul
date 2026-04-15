@@ -19,17 +19,15 @@ import { AssignOrderModal } from '@/components/drivers/assign-order-modal';
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
 import { useDriver } from '@/hooks/drivers/use-driver';
 import { useOrders } from '@/hooks/orders/use-orders';
-import type { VehicleType } from '@/types/driver';
 import type { ApiOrderListItem, OrderStatus } from '@/types/order';
 import { toast } from 'sonner';
 import Image from 'next/image';
-
-const VEHICLE_LABELS: Record<VehicleType, string> = {
-  BIKE: 'Bike',
-  CAR: 'Car',
-  VAN: 'Van',
-  TRUCK: 'Truck',
-};
+import {
+  getInitials,
+  formatDateString,
+  formatMemberSince,
+  VEHICLE_LABELS,
+} from '@/lib/utils';
 
 const ACTIVE_STATUSES: OrderStatus[] = [
   'ASSIGNED',
@@ -42,30 +40,6 @@ const ACTIVE_STATUSES: OrderStatus[] = [
 const HISTORY_STATUSES: OrderStatus[] = ['DELIVERED', 'FAILED', 'CANCELLED'];
 
 const HISTORY_PAGE_SIZE = DRIVER_DETAIL.HISTORY_PAGE_SIZE;
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(w => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function formatMemberSince(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
 
 export default function DriverDetailPage({
   params,
@@ -443,7 +417,7 @@ export default function DriverDetailPage({
                             {order.recipientName}
                           </td>
                           <td className="px-5 py-3 text-sm text-text-secondary font-mono">
-                            {formatDate(order.updatedAt)}
+                            {formatDateString(order.updatedAt)}
                           </td>
                         </tr>
                       ))}
