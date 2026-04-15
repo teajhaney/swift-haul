@@ -199,6 +199,16 @@ export class PodAlreadyExistsException extends BaseException {
   }
 }
 
+export class CannotModifySelfException extends BaseException {
+  constructor() {
+    super(
+      'CANNOT_MODIFY_SELF',
+      'You cannot perform this action on your own account.',
+      HttpStatus.FORBIDDEN,
+    );
+  }
+}
+
 // ─── 400 Bad Request ──────────────────────────────────────────────────────────
 
 export class PasswordMismatchException extends BaseException {
