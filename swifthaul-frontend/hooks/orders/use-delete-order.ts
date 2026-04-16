@@ -13,6 +13,7 @@ export function useDeleteOrder() {
       api.delete(`/orders/${referenceId}`),
     onSuccess: (_, referenceId) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
       queryClient.removeQueries({ queryKey: ['order', referenceId] });
       toast.success(`Order ${referenceId} deleted`);
     },

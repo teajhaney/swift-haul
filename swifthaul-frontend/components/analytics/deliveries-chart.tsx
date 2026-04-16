@@ -15,6 +15,7 @@ import { DASHBOARD } from '@/constants/dashboard';
 
 interface DeliveriesChartProps {
   data: DeliveryChartPoint[];
+  comparisonLabel?: string;
 }
 
 interface TooltipEntry {
@@ -43,7 +44,7 @@ function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
   );
 }
 
-export function DeliveriesChart({ data }: DeliveriesChartProps) {
+export function DeliveriesChart({ data, comparisonLabel = DASHBOARD.CHART_LINE_LAST }: DeliveriesChartProps) {
   return (
     <ResponsiveContainer width="100%" height={220}>
       <LineChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
@@ -77,7 +78,7 @@ export function DeliveriesChart({ data }: DeliveriesChartProps) {
         <Line
           type="monotone"
           dataKey="lastWeek"
-          name={DASHBOARD.CHART_LINE_LAST}
+          name={comparisonLabel}
           stroke="#CBD5E1"
           strokeWidth={2}
           strokeDasharray="5 4"

@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Filter, Download, MoreHorizontal, Calendar } from 'lucide-react';
+import { Filter, Download, MoreHorizontal, Calendar, ChevronRight } from 'lucide-react';
 
 import {
   ClipboardList,
@@ -16,16 +16,19 @@ import {
 import { KpiCard } from '@/components/analytics/kpi-card';
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
 import { DASHBOARD } from '@/constants/dashboard';
-import {
-  MOCK_CHART_DATA as CHART_DATA,
-  MOCK_DONUT_DATA as DONUT_DATA,
-  PRIORITY_STYLES,
-} from '@/constants/dashboard-mock';
+import { PRIORITY_STYLES } from '@/constants/dashboard-mock';
 import { PRIORITY_LABELS } from '@/constants/orders';
 import { useOrders } from '@/hooks/orders/use-orders';
 import { useAnalyticsStats } from '@/hooks/analytics/use-analytics-stats';
+import { useChartData } from '@/hooks/analytics/use-chart-data';
+import { useStatusBreakdown } from '@/hooks/analytics/use-status-breakdown';
 import type { KpiData, TimeRange } from '@/types/analytics';
 import { formatTime } from '@/lib/utils';
+
+function formatCompact(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return n.toString();
+}
 
 const RECENT_LIMIT = 5;
 
@@ -52,13 +55,32 @@ const StatusDonut = dynamic(
   }
 );
 
+const COMPARISON_LABELS: Record<TimeRange, string> = {
+  '7d':    'Last Week',
+  '30d':   'Prev. 30 Days',
+  '90d':   'Prev. Quarter',
+  'custom': 'Prior Period',
+};
+
 export default function DashboardPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+
   const { data: ordersData, isLoading: ordersLoading } = useOrders({
     limit: RECENT_LIMIT,
     page: 1,
   });
   const { data: stats, isLoading: statsLoading } = useAnalyticsStats();
+
+  // for custom range, only fire when both dates are filled in
+  const isCustomReady = timeRange === 'custom' && !!customStart && !!customEnd;
+  const { data: chartPoints } = useChartData(
+    isCustomReady
+      ? { startDate: customStart, endDate: customEnd }
+      : { range: timeRange === 'custom' ? '7d' : timeRange },
+  );
+  const { data: breakdown } = useStatusBreakdown();
   const recentOrders = ordersData?.data ?? [];
   const totalOrders = ordersData?.meta.total ?? 0;
 
@@ -112,7 +134,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Time range filter ── */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {DASHBOARD.TIME_RANGES.map(({ label, value }) => (
           <button
             key={value}
@@ -127,10 +149,29 @@ export default function DashboardPage() {
           </button>
         ))}
         {timeRange === 'custom' && (
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors ml-1">
-            <Calendar className="w-3.5 h-3.5" />
-            Select dates
-          </button>
+          <div className="flex items-center gap-2 ml-1 flex-wrap">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface text-sm text-text-secondary">
+              <Calendar className="w-3.5 h-3.5 shrink-0" />
+              <input
+                type="date"
+                value={customStart}
+                max={customEnd || undefined}
+                onChange={e => setCustomStart(e.target.value)}
+                className="bg-transparent text-text-primary text-sm outline-none cursor-pointer"
+              />
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-text-muted shrink-0" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface text-sm text-text-secondary">
+              <Calendar className="w-3.5 h-3.5 shrink-0" />
+              <input
+                type="date"
+                value={customEnd}
+                min={customStart || undefined}
+                onChange={e => setCustomEnd(e.target.value)}
+                className="bg-transparent text-text-primary text-sm outline-none cursor-pointer"
+              />
+            </div>
+          </div>
         )}
       </div>
 
@@ -169,7 +210,10 @@ export default function DashboardPage() {
               {DASHBOARD.CHART_SUBHEADING}
             </p>
           </div>
-          <DeliveriesChart data={CHART_DATA} />
+          <DeliveriesChart
+            data={chartPoints ?? []}
+            comparisonLabel={COMPARISON_LABELS[timeRange]}
+          />
         </div>
 
         {/* Status donut */}
@@ -182,7 +226,10 @@ export default function DashboardPage() {
               {DASHBOARD.DONUT_SUBHEADING}
             </p>
           </div>
-          <StatusDonut data={DONUT_DATA} total="4.2k" />
+          <StatusDonut
+            data={breakdown?.slices ?? []}
+            total={breakdown ? formatCompact(breakdown.total) : '—'}
+          />
         </div>
       </div>
 

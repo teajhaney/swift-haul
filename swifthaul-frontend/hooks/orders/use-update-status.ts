@@ -21,6 +21,7 @@ export function useUpdateStatus() {
     onSuccess: (_, { referenceId }) => {
       queryClient.invalidateQueries({ queryKey: ['order', referenceId] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
     },
     onError: (error) => {
       toast.error(

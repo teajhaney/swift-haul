@@ -15,6 +15,7 @@ export function useUpdateOrder(referenceId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['order', referenceId] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
       toast.success('Order updated successfully');
     },
     onError: (error) => {

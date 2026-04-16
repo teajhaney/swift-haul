@@ -33,3 +33,12 @@ export interface StatusSlice {
   value: number;
   color: string;
 }
+
+export interface ChartResponse {
+  points: DeliveryChartPoint[];
+}
+
+export interface StatusBreakdownResponse {
+  slices: StatusSlice[];
+  total: number;
+}

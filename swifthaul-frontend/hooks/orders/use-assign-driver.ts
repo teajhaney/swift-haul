@@ -15,6 +15,7 @@ export function useAssignDriver() {
     onSuccess: (_, { referenceId }) => {
       queryClient.invalidateQueries({ queryKey: ['order', referenceId] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
       toast.success('Driver assigned successfully');
     },
     onError: (error) => {

@@ -39,6 +39,7 @@ export function useCreateOrder() {
     onSuccess: (res) => {
       const referenceId = res.data.data.referenceId;
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
       toast.success(`Order ${referenceId} created successfully`);
     },
     onError: (error) => {
