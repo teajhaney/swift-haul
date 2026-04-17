@@ -32,6 +32,12 @@ export function Sidebar() {
   const pathname = usePathname();
   const logout = useLogout();
   const user = useAuthStore(s => s.user);
+  const navSections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) =>
+      item.href === '/settings' ? user?.role === 'ADMIN' : true
+    ),
+  })).filter((section) => section.items.length > 0);
 
   const isActive = (href: string) =>
     pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
@@ -67,7 +73,7 @@ export function Sidebar() {
 
         {/* Nav sections */}
         <nav className="flex-1 px-3 space-y-6 overflow-y-auto">
-          {NAV_SECTIONS.map(section => (
+          {navSections.map(section => (
             <div key={section.title}>
               <p className="px-3 mb-1.5 text-[10px] font-semibold tracking-widest uppercase text-slate-600">
                 {section.title}

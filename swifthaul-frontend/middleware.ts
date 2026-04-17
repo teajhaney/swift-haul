@@ -100,7 +100,9 @@ export async function middleware(request: NextRequest) {
 
     // Settings is admin-only
     if (pathname.startsWith('/settings') && role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      const redirectUrl = new URL('/dashboard', request.url);
+      redirectUrl.searchParams.set('unauthorized', 'settings');
+      return NextResponse.redirect(redirectUrl);
     }
 
     return NextResponse.next();

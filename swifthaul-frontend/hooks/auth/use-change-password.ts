@@ -26,7 +26,8 @@ export function useChangePassword() {
         setUser({ ...user, mustResetPassword: false });
       }
       toast.success('Password updated');
-      router.push('/dashboard');
+      const home = user?.role === 'DRIVER' ? '/driver/orders' : '/dashboard';
+      router.push(home);
     },
     onError: error => {
       toast.error(

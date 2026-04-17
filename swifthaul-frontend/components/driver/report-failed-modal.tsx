@@ -9,9 +9,11 @@ interface ReportFailedModalProps {
   isOpen: boolean;
   onClose: () => void;
   orderId: string;
+  onSubmit?: (failReason: FailReason, notes: string) => void;
+  isPending?: boolean;
 }
 
-export function ReportFailedModal({ isOpen, onClose, orderId }: ReportFailedModalProps) {
+export function ReportFailedModal({ isOpen, onClose, orderId, onSubmit, isPending }: ReportFailedModalProps) {
   const [selected, setSelected] = useState<FailReason | null>(null);
   const [notes, setNotes] = useState('');
 
@@ -19,8 +21,7 @@ export function ReportFailedModal({ isOpen, onClose, orderId }: ReportFailedModa
 
   function handleSubmit() {
     if (!selected) return;
-    // Swap for API call when backend is ready
-    onClose();
+    onSubmit?.(selected, notes);
     setSelected(null);
     setNotes('');
   }
@@ -105,10 +106,10 @@ export function ReportFailedModal({ isOpen, onClose, orderId }: ReportFailedModa
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selected}
+            disabled={!selected || isPending}
             className="flex-1 h-10 rounded-lg bg-error hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
           >
-            {FAIL_REPORT.SUBMIT}
+            {isPending ? 'Submitting…' : FAIL_REPORT.SUBMIT}
           </button>
         </div>
       </div>

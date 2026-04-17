@@ -11,6 +11,7 @@ import type {
 } from './types/jwt-payload.type';
 
 const mockUserResponse: UserResponse = {
+  id: 'cltest000000000000000000000',
   name: 'Admin User',
   email: 'admin@test.com',
   role: Role.ADMIN,

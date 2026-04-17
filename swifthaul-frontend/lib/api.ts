@@ -9,6 +9,13 @@ const api = axios.create({
 // One in-flight refresh at a time — prevents duplicate refresh calls
 // when multiple requests fail with 401 simultaneously.
 let refreshPromise: Promise<void> | null = null;
+const AUTH_401_BYPASS_PATHS = [
+  '/auth/login',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/accept-invite',
+  '/auth/register',
+];
 
 api.interceptors.response.use(
   response => response,
@@ -33,6 +40,16 @@ api.interceptors.response.use(
           responseData as { error: { message: string } }
         ).error.message;
       }
+    }
+
+    const requestUrl = original.url ?? '';
+    const shouldBypass401Handler = AUTH_401_BYPASS_PATHS.some((path) =>
+      requestUrl.includes(path)
+    );
+
+    // Let auth form hooks handle their own 401/400 errors (showing user-facing toasts).
+    if (shouldBypass401Handler) {
+      return Promise.reject(error);
     }
 
     // Only attempt refresh once per request; skip non-401s

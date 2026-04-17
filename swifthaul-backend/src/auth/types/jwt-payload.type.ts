@@ -19,7 +19,7 @@ export interface RefreshTokenRequest extends Request {
 
 // Safe user fields returned in API responses — never includes password hashes.
 export interface UserResponse {
-  //   id: string;
+  id: string;
   name: string;
   email: string;
   role: Role;

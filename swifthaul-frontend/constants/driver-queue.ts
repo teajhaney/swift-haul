@@ -1,4 +1,5 @@
 import type { DriverOrderStatus } from '@/types/driver-order';
+import type { OrderStatus } from '@/types/order';
 
 export const DRIVER_QUEUE = {
   BRAND: 'SwiftHaul',
@@ -52,12 +53,25 @@ export const QUEUE_PAGE_SIZE = 5;
 
 /** CTA button config for each driver order status on the detail page */
 export const CTA_CONFIG: Record<DriverOrderStatus, { label: string; color: string } | null> = {
-  ASSIGNED:         null,
-  ACCEPTED:         { label: DRIVER_QUEUE.STATUS_ACCEPTED,         color: 'bg-warning hover:bg-amber-600'        },
-  PICKED_UP:        { label: DRIVER_QUEUE.STATUS_MARK_DELIVERED,   color: 'bg-purple-600 hover:bg-purple-700'    },
-  IN_TRANSIT:       { label: DRIVER_QUEUE.STATUS_MARK_DELIVERED,   color: 'bg-purple-600 hover:bg-purple-700'    },
+  ASSIGNED:         { label: DRIVER_QUEUE.STATUS_ASSIGNED,          color: 'bg-blue-500 hover:bg-blue-600'       },
+  ACCEPTED:         { label: DRIVER_QUEUE.STATUS_ACCEPTED,          color: 'bg-amber-500 hover:bg-amber-600'     },
+  PICKED_UP:        { label: DRIVER_QUEUE.STATUS_MARK_DELIVERED,    color: 'bg-cyan-500 hover:bg-cyan-600'       },
+  IN_TRANSIT:       { label: DRIVER_QUEUE.STATUS_MARK_DELIVERED,    color: 'bg-violet-500 hover:bg-violet-600'   },
   OUT_FOR_DELIVERY: { label: DRIVER_QUEUE.STATUS_OUT_FOR_DELIVERY,  color: 'bg-success hover:bg-emerald-600'     },
   DELIVERED:        null,
   FAILED:           null,
   PENDING:          null,
 };
+
+/** Maps the current order status to the next status the driver should transition to */
+export const DRIVER_NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
+  ASSIGNED:   'ACCEPTED',
+  ACCEPTED:   'PICKED_UP',
+  PICKED_UP:  'IN_TRANSIT',
+  IN_TRANSIT: 'OUT_FOR_DELIVERY',
+};
+
+/** Active delivery statuses — order is physically in progress */
+export const DRIVER_ACTIVE_STATUSES: OrderStatus[] = [
+  'ACCEPTED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY',
+];

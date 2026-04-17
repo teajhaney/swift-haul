@@ -354,7 +354,7 @@ export class AuthService {
   }
 
   private buildUserResponse(user: {
-    // id: string;
+    id: string;
     name: string;
     email: string;
     role: Role;
@@ -362,7 +362,7 @@ export class AuthService {
     mustResetPassword: boolean;
   }): UserResponse {
     return {
-      //   id: user.id,
+      id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,

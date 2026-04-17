@@ -15,6 +15,7 @@ export type PasswordStrength = "weak" | "fair" | "good" | "strong";
 
 // Authenticated user shape returned by /auth/me and /auth/login
 export interface AuthUser {
+  id: string;
   name: string;
   email: string;
   role: "ADMIN" | "DISPATCHER" | "DRIVER";

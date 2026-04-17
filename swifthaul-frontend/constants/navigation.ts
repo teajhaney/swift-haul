@@ -58,3 +58,9 @@ export const TOPBAR = {
   USER_MENU_LABEL: 'Open user menu',
   LOG_OUT: 'Log Out',
 } as const;
+
+export const NAV_MESSAGES = {
+  SETTINGS_ADMIN_ONLY_TITLE: 'Not authorized',
+  SETTINGS_ADMIN_ONLY_DESCRIPTION:
+    'Only admins can access Settings.',
+} as const;
