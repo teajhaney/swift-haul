@@ -40,6 +40,7 @@ export const PAGE_META: Record<string, PageMeta> = {
   '/orders/new': { section: 'Orders', title: 'New Order' },
   '/drivers': { section: 'Main', title: 'Drivers' },
   '/notifications': { section: 'Communication', title: 'Notifications' },
+  '/profile': { section: 'Account', title: 'Profile' },
   '/settings': { section: 'Admin', title: 'Settings' },
 };
 

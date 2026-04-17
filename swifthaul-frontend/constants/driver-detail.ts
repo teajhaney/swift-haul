@@ -6,8 +6,8 @@ export const DRIVER_DETAIL = {
   // Stat cards
   STAT_TOTAL_DELIVERIES: 'Total Deliveries',
   STAT_SUCCESS_RATE: 'Success Rate',
-  STAT_FAILED_DELIVERIES: 'Failed Deliveries',
-  STAT_AVG_TIME: 'Avg Delivery Time',
+  STAT_ACTIVE_ASSIGNMENTS: 'Active Assignments',
+  STAT_DRIVER_RATING: 'Driver Rating',
   FAILED_REASON_PREFIX: 'Reason:',
   TOP_PERFORMER: 'Top 10% performance',
 

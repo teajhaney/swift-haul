@@ -13,6 +13,7 @@ import {
   Shield,
   HelpCircle,
 } from 'lucide-react';
+import Link from 'next/link';
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
 import { useLogout } from '@/hooks/auth/use-logout';
@@ -227,6 +228,13 @@ export default function DriverProfilePage() {
         </div>
 
         {/* ── Sign out ── */}
+        <Link
+          href="/change-password"
+          className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-primary-light hover:bg-primary-hover text-white text-sm font-semibold transition-colors"
+        >
+          Change Password
+        </Link>
+
         <button
           onClick={() => logout.mutate()}
           disabled={logout.status === 'pending'}

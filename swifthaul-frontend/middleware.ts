@@ -86,6 +86,7 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/orders') ||
       pathname.startsWith('/drivers') ||
       pathname.startsWith('/notifications') ||
+      pathname.startsWith('/profile') ||
       pathname.startsWith('/settings');
 
     if (isDispatcherRoute && role === 'DRIVER') {

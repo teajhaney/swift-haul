@@ -54,17 +54,17 @@ export default function ChangePasswordPage() {
 
         <div className="auth-card">
           <h1 className="text-2xl font-bold text-[#0F2B46] mb-2">
-            Set your password
+            Change password
           </h1>
           <p className="text-sm text-[#64748B] mb-6 leading-relaxed">
-            This is your first login. Please set a permanent password before continuing.
+            Enter your current password and choose a new one.
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
 
             <div className="form-field">
               <Label htmlFor="currentPassword" className="text-sm font-medium text-[#1E293B]">
-                Temporary password
+                Current password
               </Label>
               <PasswordInput
                 id="currentPassword"
@@ -112,7 +112,7 @@ export default function ChangePasswordPage() {
               disabled={isSubmitting || changePassword.isPending}
               className="auth-submit-btn"
             >
-              {(isSubmitting || changePassword.isPending) ? "Saving…" : "Set password & continue"}
+              {(isSubmitting || changePassword.isPending) ? "Saving…" : "Update password"}
             </button>
           </form>
 

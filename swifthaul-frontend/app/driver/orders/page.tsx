@@ -27,14 +27,20 @@ export default function DriverOrderQueuePage() {
   const [page, setPage] = useState(1);
 
   // backend auto-filters to this driver's orders when role=DRIVER
-  const { data, isLoading } = useOrders({ page: 1, limit: 100 });
-  const allOrders: ApiOrderListItem[] = data?.data ?? [];
+  // backend ListOrdersDto enforces max limit=50
+  const { data, isLoading, isError } = useOrders({ page: 1, limit: 50 });
+  const allOrders: ApiOrderListItem[] = [...(data?.data ?? [])].sort(
+    (a, b) =>
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  );
 
   // split into active (in progress) vs upcoming (assigned, not yet accepted)
   const activeOrder = allOrders.find(o => DRIVER_ACTIVE_STATUSES.includes(o.status));
-  const queue = allOrders.filter(o => o.status === 'ASSIGNED');
+  const queue = allOrders.filter(
+    (o) => o.status === 'ASSIGNED' && o.referenceId !== activeOrder?.referenceId
+  );
 
-  const totalPages = Math.ceil(queue.length / QUEUE_PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(queue.length / QUEUE_PAGE_SIZE));
   const start = (page - 1) * QUEUE_PAGE_SIZE;
   const pageQueue = queue.slice(start, start + QUEUE_PAGE_SIZE);
 
@@ -196,6 +202,10 @@ export default function DriverOrderQueuePage() {
                   <div className="h-3 w-56 bg-surface-elevated rounded" />
                 </div>
               ))}
+            </div>
+          ) : isError ? (
+            <div className="bg-surface rounded-xl border border-border p-5 text-center">
+              <p className="text-sm text-error">Unable to load upcoming deliveries right now.</p>
             </div>
           ) : queue.length === 0 ? (
             <div className="bg-surface rounded-xl border border-border p-5 text-center">

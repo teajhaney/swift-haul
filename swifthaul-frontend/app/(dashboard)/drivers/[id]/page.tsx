@@ -321,7 +321,7 @@ export default function DriverDetailPage({
               {/* Active Orders */}
               <div className="bg-surface rounded-xl border border-border shadow-sm p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  {DRIVER_DETAIL.STAT_FAILED_DELIVERIES}
+                  {DRIVER_DETAIL.STAT_ACTIVE_ASSIGNMENTS}
                 </p>
                 <p className="text-3xl font-bold text-text-primary leading-none mb-2">
                   {driver.activeOrders}
@@ -334,7 +334,7 @@ export default function DriverDetailPage({
               {/* Rating */}
               <div className="bg-surface rounded-xl border border-border shadow-sm p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  {DRIVER_DETAIL.STAT_AVG_TIME}
+                  {DRIVER_DETAIL.STAT_DRIVER_RATING}
                 </p>
                 <p className="text-3xl font-bold text-text-primary leading-none mb-2">
                   ★ {driver.rating.toFixed(1)}

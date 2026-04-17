@@ -10,17 +10,18 @@ import {
   User,
   Settings,
 } from 'lucide-react';
+import Link from 'next/link';
 import { PAGE_META, TOPBAR } from '@/constants/navigation';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { Logo } from '@/components/shared/logo';
 import { useLogout } from '@/hooks/auth/use-logout';
+import { useAuthStore } from '@/stores/auth.store';
+import { getInitials } from '@/lib/utils';
 
-const PLACEHOLDER_USER = {
-  name: 'Alex Reed',
-  initials: 'AR',
-  role: 'Admin',
-  email: 'alex.reed@swifthaul.com',
-};
+function formatRole(role: 'ADMIN' | 'DISPATCHER' | 'DRIVER' | undefined): string {
+  if (!role) return '';
+  return role.charAt(0) + role.slice(1).toLowerCase();
+}
 
 export function Topbar() {
   const pathname = usePathname();
@@ -28,6 +29,9 @@ export function Topbar() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const logout = useLogout();
+  const user = useAuthStore((s) => s.user);
+  const userInitials = user ? getInitials(user.name) : '??';
+  const userRole = formatRole(user?.role);
 
   useEffect(() => {
     function handleMouseDown(e: MouseEvent) {
@@ -62,7 +66,7 @@ export function Topbar() {
             className="user-avatar w-8 h-8"
             aria-label={TOPBAR.USER_MENU_LABEL}
           >
-            {PLACEHOLDER_USER.initials}
+            {userInitials}
           </button>
 
           {userMenuOpen && (
@@ -133,10 +137,10 @@ export function Topbar() {
               aria-label={TOPBAR.USER_MENU_LABEL}
             >
               <div className="user-avatar w-8 h-8">
-                {PLACEHOLDER_USER.initials}
+                {userInitials}
               </div>
               <span className="text-sm font-medium text-text-primary">
-                {PLACEHOLDER_USER.name}
+                {user?.name ?? 'Loading...'}
               </span>
               <ChevronDown
                 className={`w-4 h-4 text-text-muted transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
@@ -148,32 +152,34 @@ export function Topbar() {
                 {/* User info header */}
                 <div className="px-4 py-3 border-b border-border">
                   <p className="text-sm font-semibold text-text-primary">
-                    {PLACEHOLDER_USER.name}
+                    {user?.name ?? 'Loading...'}
                   </p>
                   <p className="text-xs text-text-secondary mt-0.5">
-                    {PLACEHOLDER_USER.email}
+                    {user?.email ?? ''}
                   </p>
                   <span className="inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-white tracking-wide">
-                    {PLACEHOLDER_USER.role}
+                    {userRole}
                   </span>
                 </div>
 
                 {/* Menu items */}
                 <div className="py-1">
-                  <button
+                  <Link
+                    href="/profile"
                     onClick={() => setUserMenuOpen(false)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors text-left"
                   >
                     <User className="w-4 h-4 shrink-0" />
-                    My Profile
-                  </button>
-                  <button
+                    Profile
+                  </Link>
+                  <Link
+                    href="/settings"
                     onClick={() => setUserMenuOpen(false)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors text-left"
                   >
                     <Settings className="w-4 h-4 shrink-0" />
                     Settings
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Sign out */}

@@ -10,6 +10,8 @@ import {
 } from '@/constants/driver-alerts-mock';
 import { DRIVER_DESKTOP_NAV } from '@/constants/driver-navigation';
 import { ALERT_TYPE_ICONS } from '@/constants/driver-alerts';
+import { useAuthStore } from '@/stores/auth.store';
+import { getInitials } from '@/lib/utils';
 
 interface DriverTopbarProps {
   /** If provided, mobile shows a back arrow + title instead of the brand */
@@ -22,6 +24,8 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const onAlerts = pathname === '/driver/alerts';
+  const user = useAuthStore((s) => s.user);
+  const userInitials = user ? getInitials(user.name) : 'DR';
 
   const unread = MOCK_DRIVER_ALERTS.filter(a => !a.isRead).length;
   const preview = MOCK_DRIVER_ALERTS.slice(0, 4);
@@ -98,10 +102,10 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
         <div className="flex items-center gap-3 ml-auto sm:ml-0">
           <div className="hidden sm:flex items-center gap-2 shrink-0">
             <span className="text-sm font-medium text-text-secondary">
-              John Doe
+              {user?.name ?? 'Driver'}
             </span>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary-subtle text-primary-light tracking-wide">
-              DRIVER
+              {user?.role ?? 'DRIVER'}
             </span>
           </div>
 
@@ -200,7 +204,7 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
             aria-label="View profile"
             className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center shrink-0 hover:opacity-90 transition-opacity"
           >
-            <span className="text-xs font-bold text-white">JD</span>
+            <span className="text-xs font-bold text-white">{userInitials}</span>
           </Link>
         </div>
       </div>
