@@ -7,7 +7,10 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -15,6 +18,7 @@ import { ListOrdersDto } from './dto/list-orders.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { AssignDriverDto } from './dto/assign-driver.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { UploadPodDto } from './dto/upload-pod.dto';
 import type { JwtPayload } from '../auth/types/jwt-payload.type';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AdminOnly } from '../common/decorators/admin.decorator';
@@ -30,7 +34,9 @@ import {
   ApiUpdateOrderStatus,
   ApiAssignDriver,
   ApiDeleteOrder,
+  ApiUploadPod,
 } from './orders.swagger';
+import type { UploadedPodFile } from './types/order.types';
 
 @Controller('orders')
 @ApiOrdersController()
@@ -105,6 +111,19 @@ export class OrdersController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.ordersService.assignDriver(referenceId, dto, user);
+  }
+
+  // upload proof of delivery
+  @Post(':referenceId/pod')
+  @UseInterceptors(FileInterceptor('photo'))
+  @ApiUploadPod()
+  async uploadPod(
+    @Param('referenceId') referenceId: string,
+    @UploadedFile() file: UploadedPodFile,
+    @Body() dto: UploadPodDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.ordersService.uploadPod(referenceId, file, dto, user);
   }
 
   // delete order

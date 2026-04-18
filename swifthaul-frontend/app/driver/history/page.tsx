@@ -12,23 +12,45 @@ import {
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
 import {
-  MOCK_DELIVERY_HISTORY,
-  HISTORY_STATS,
-} from '@/constants/driver-history-mock';
-import {
   HISTORY_TABS,
   HISTORY_STATUS_STYLES,
   HISTORY_PAGE_SIZE,
 } from '@/constants/driver-history';
 import type { HistoryFilterTab } from '@/types/driver-pages';
+import { useOrders } from '@/hooks/orders/use-orders';
+import { formatDateString } from '@/lib/utils';
+import type { ApiOrderListItem } from '@/types/order';
+
+type HistoryStatus = 'DELIVERED' | 'FAILED';
+type HistoryOrderItem = ApiOrderListItem & { status: HistoryStatus };
+const HISTORY_RENDER_BASE_MS = Date.now();
+
+function isHistoryOrderItem(order: ApiOrderListItem): order is HistoryOrderItem {
+  return order.status === 'DELIVERED' || order.status === 'FAILED';
+}
 
 export default function DriverHistoryPage() {
   const [activeTab, setActiveTab] = useState<HistoryFilterTab>('week');
   const [page, setPage] = useState(1);
+  const { data, isLoading } = useOrders({ page: 1, limit: 50 });
 
-  // For mock purposes, show all items regardless of tab
-  const items = MOCK_DELIVERY_HISTORY;
-  const totalPages = Math.ceil(items.length / HISTORY_PAGE_SIZE);
+  const allOrders: ApiOrderListItem[] = data?.data ?? [];
+  const historyBase = allOrders.filter(isHistoryOrderItem);
+  const items = historyBase.filter((item) => {
+    const diffDays =
+      (HISTORY_RENDER_BASE_MS - new Date(item.updatedAt).getTime()) /
+      (1000 * 60 * 60 * 24);
+    if (activeTab === 'today') return diffDays < 1;
+    if (activeTab === 'week') return diffDays < 7;
+    if (activeTab === 'month') return diffDays < 30;
+    return true;
+  });
+
+  const deliveredCount = items.filter(
+    item => item.status === 'DELIVERED'
+  ).length;
+  const failedCount = items.filter(item => item.status === 'FAILED').length;
+  const totalPages = Math.max(1, Math.ceil(items.length / HISTORY_PAGE_SIZE));
   const start = (page - 1) * HISTORY_PAGE_SIZE;
   const pageItems = items.slice(start, start + HISTORY_PAGE_SIZE);
 
@@ -62,7 +84,7 @@ export default function DriverHistoryPage() {
                 Total
               </p>
               <p className="text-xl font-bold text-text-primary">
-                {HISTORY_STATS.totalDeliveries}
+                {items.length}
               </p>
             </div>
           </div>
@@ -75,7 +97,12 @@ export default function DriverHistoryPage() {
                 This Week
               </p>
               <p className="text-xl font-bold text-text-primary">
-                {HISTORY_STATS.thisWeek}
+                {historyBase.filter((item) => {
+                  const diffDays =
+                    (HISTORY_RENDER_BASE_MS - new Date(item.updatedAt).getTime()) /
+                    (1000 * 60 * 60 * 24);
+                  return diffDays < 7;
+                }).length}
               </p>
             </div>
           </div>
@@ -88,7 +115,12 @@ export default function DriverHistoryPage() {
                 On-time
               </p>
               <p className="text-xl font-bold text-text-primary">
-                {HISTORY_STATS.successRate}%
+                {deliveredCount + failedCount > 0
+                  ? Math.round(
+                      (deliveredCount / (deliveredCount + failedCount)) * 100
+                    )
+                  : 0}
+                %
               </p>
             </div>
           </div>
@@ -136,6 +168,13 @@ export default function DriverHistoryPage() {
               </tr>
             </thead>
             <tbody>
+              {isLoading && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-4">
+                    <div className="h-24 bg-surface-elevated rounded animate-pulse" />
+                  </td>
+                </tr>
+              )}
               {pageItems.map((item, idx) => {
                 const s = HISTORY_STATUS_STYLES[item.status];
                 const Icon = s.icon;
@@ -148,7 +187,7 @@ export default function DriverHistoryPage() {
                       {item.referenceId}
                     </td>
                     <td className="px-4 py-3 text-xs text-text-secondary">
-                      {item.date}
+                      {formatDateString(item.updatedAt)}
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-semibold text-text-primary">
@@ -157,7 +196,7 @@ export default function DriverHistoryPage() {
                     </td>
                     <td className="px-4 py-3">
                       <p className="text-xs text-text-secondary truncate max-w-[220px]">
-                        {item.address}
+                        {item.deliveryAddress}
                       </p>
                     </td>
                     <td className="px-4 py-3">
@@ -203,10 +242,10 @@ export default function DriverHistoryPage() {
                 </div>
                 <div className="flex items-center gap-1 text-xs text-text-secondary mb-3">
                   <MapPin className="w-3 h-3 shrink-0" />
-                  <span className="truncate">{item.address}</span>
+                  <span className="truncate">{item.deliveryAddress}</span>
                 </div>
                 <div className="text-xs text-text-muted border-t border-border pt-2">
-                  {item.date}
+                  {formatDateString(item.updatedAt)}
                 </div>
               </div>
             );

@@ -33,3 +33,7 @@ export const AUTH_MESSAGES = {
   REGISTER_SUCCESS: 'Admin account created successfully.',
   REGISTER_INVALID_SECRET: 'Invalid signup secret.',
 } as const;
+export const UPLOAD_MESSAGES = {
+  UPLOAD_SUCCESS: 'Upload successful.',
+  UPLOAD_FAILED: 'Upload failed.',
+} as const;

@@ -4,14 +4,13 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, ArrowLeft, ChevronRight } from 'lucide-react';
-import {
-  MOCK_DRIVER_ALERTS,
-  ALERT_TYPE_STYLES,
-} from '@/constants/driver-alerts-mock';
+import { ALERT_TYPE_STYLES } from '@/constants/driver-alerts-mock';
 import { DRIVER_DESKTOP_NAV } from '@/constants/driver-navigation';
 import { ALERT_TYPE_ICONS } from '@/constants/driver-alerts';
 import { useAuthStore } from '@/stores/auth.store';
 import { getInitials } from '@/lib/utils';
+import { useNotifications } from '@/hooks/notifications/use-notifications';
+import { useMarkRead } from '@/hooks/notifications/use-mark-read';
 
 interface DriverTopbarProps {
   /** If provided, mobile shows a back arrow + title instead of the brand */
@@ -26,9 +25,12 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
   const onAlerts = pathname === '/driver/alerts';
   const user = useAuthStore((s) => s.user);
   const userInitials = user ? getInitials(user.name) : 'DR';
+  const { data: notificationsData } = useNotifications({ page: 1, limit: 5 });
+  const markRead = useMarkRead();
+  const notifications = notificationsData?.data ?? [];
 
-  const unread = MOCK_DRIVER_ALERTS.filter(a => !a.isRead).length;
-  const preview = MOCK_DRIVER_ALERTS.slice(0, 4);
+  const unread = notifications.filter((n) => !n.isRead).length;
+  const preview = notifications.slice(0, 4);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -156,7 +158,12 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
                       <Link
                         key={alert.id}
                         href="/driver/alerts"
-                        onClick={() => setOpen(false)}
+                        onClick={() => {
+                          setOpen(false);
+                          if (!alert.isRead) {
+                            markRead.mutate(alert.id);
+                          }
+                        }}
                         className="flex items-start gap-3 px-4 py-3 hover:bg-surface-elevated transition-colors"
                       >
                         <div
@@ -174,10 +181,10 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
                             )}
                           </div>
                           <p className="text-[11px] text-text-secondary line-clamp-2 mt-0.5 leading-relaxed">
-                            {alert.message}
+                            {alert.body}
                           </p>
                           <p className="text-[10px] text-text-muted mt-1">
-                            {alert.time}
+                            {new Date(alert.createdAt).toLocaleString()}
                           </p>
                         </div>
                       </Link>

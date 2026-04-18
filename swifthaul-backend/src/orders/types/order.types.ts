@@ -1,4 +1,4 @@
-import { OrderStatus, Priority, VehicleType } from '@prisma/client';
+import { OrderStatus, Priority, Prisma, VehicleType } from '@prisma/client';
 
 export interface OrderDriverInfo {
   id: string;
@@ -85,3 +85,43 @@ export interface PublicTrackingResponse {
     createdAt: Date;
   }>;
 }
+
+export type UploadedPodFile = { buffer: Buffer } | undefined;
+
+// Prisma payload types used by the private mappers
+export type OrderListResult = Prisma.OrderGetPayload<{
+  include: {
+    driver: { select: { id: true; name: true; avatarUrl: true } };
+    dispatcher: { select: { id: true; name: true } };
+  };
+}>;
+
+export type OrderDetailResult = Prisma.OrderGetPayload<{
+  include: {
+    driver: {
+      select: {
+        id: true;
+        name: true;
+        avatarUrl: true;
+        driverProfile: { select: { vehicleType: true; vehiclePlate: true } };
+      };
+    };
+    dispatcher: { select: { id: true; name: true } };
+    statusLogs: {
+      orderBy: { createdAt: 'asc' };
+      include: { changedBy: { select: { id: true; name: true } } };
+    };
+  };
+}>;
+
+export type OrderTrackingResult = Prisma.OrderGetPayload<{
+  include: {
+    driver: {
+      select: {
+        name: true;
+        driverProfile: { select: { vehicleType: true } };
+      };
+    };
+    statusLogs: { orderBy: { createdAt: 'asc' } };
+  };
+}>;

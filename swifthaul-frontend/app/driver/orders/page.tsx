@@ -21,7 +21,20 @@ import { PRIORITY_COLORS } from '@/constants/driver-queue-mock';
 
 import { useOrders } from '@/hooks/orders/use-orders';
 import { formatTime } from '@/lib/utils';
-import type { ApiOrderListItem } from '@/types/order';
+import type { ApiOrderListItem, OrderStatus } from '@/types/order';
+
+const STATUS_PRIORITY: Record<OrderStatus, number> = {
+  PENDING: 0,
+  ASSIGNED: 1,
+  ACCEPTED: 2,
+  PICKED_UP: 3,
+  IN_TRANSIT: 4,
+  OUT_FOR_DELIVERY: 5,
+  DELIVERED: 6,
+  FAILED: 6,
+  RESCHEDULED: 1,
+  CANCELLED: 6,
+};
 
 export default function DriverOrderQueuePage() {
   const [page, setPage] = useState(1);
@@ -34,11 +47,20 @@ export default function DriverOrderQueuePage() {
       new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   );
 
-  // split into active (in progress) vs upcoming (assigned, not yet accepted)
-  const activeOrder = allOrders.find(o => DRIVER_ACTIVE_STATUSES.includes(o.status));
-  const queue = allOrders.filter(
-    (o) => o.status === 'ASSIGNED' && o.referenceId !== activeOrder?.referenceId
+  // Keep exactly one primary active order; keep additional accepted orders in upcoming.
+  const inProgress = allOrders.filter((order) =>
+    DRIVER_ACTIVE_STATUSES.includes(order.status)
   );
+  const activeOrder = [...inProgress].sort((a, b) => {
+    const statusDelta = STATUS_PRIORITY[b.status] - STATUS_PRIORITY[a.status];
+    if (statusDelta !== 0) return statusDelta;
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  })[0];
+
+  const queue = allOrders.filter((order) => {
+    if (order.referenceId === activeOrder?.referenceId) return false;
+    return order.status === 'ASSIGNED' || order.status === 'ACCEPTED';
+  });
 
   const totalPages = Math.max(1, Math.ceil(queue.length / QUEUE_PAGE_SIZE));
   const start = (page - 1) * QUEUE_PAGE_SIZE;

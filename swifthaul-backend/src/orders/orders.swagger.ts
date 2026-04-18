@@ -13,6 +13,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { AssignDriverDto } from './dto/assign-driver.dto';
+import { UploadPodDto } from './dto/upload-pod.dto';
 
 // Applied to the OrdersController class
 export const ApiOrdersController = () => applyDecorators(ApiTags('Orders'));
@@ -213,5 +214,35 @@ export const ApiAssignDriver = () =>
     ApiResponse({
       status: 422,
       description: 'Driver offline or at max concurrent orders.',
+    }),
+  );
+
+// POST /orders/:referenceId/pod
+export const ApiUploadPod = () =>
+  applyDecorators(
+    ApiCookieAuth('accessToken'),
+    ApiOperation({
+      summary: 'Upload proof of delivery (DRIVER)',
+      description:
+        'Stores delivery photo/signature URLs for an order assigned to the current driver.',
+    }),
+    ApiParam({
+      name: 'referenceId',
+      description: 'Human-readable order reference',
+    }),
+    ApiBody({ type: UploadPodDto }),
+    ApiResponse({
+      status: 201,
+      description: 'Proof of delivery stored.',
+    }),
+    ApiResponse({ status: 401, description: 'Not authenticated.' }),
+    ApiResponse({
+      status: 403,
+      description: "DRIVER accessing another driver's order.",
+    }),
+    ApiResponse({ status: 404, description: 'Order not found.' }),
+    ApiResponse({
+      status: 422,
+      description: 'POD already exists for this order.',
     }),
   );

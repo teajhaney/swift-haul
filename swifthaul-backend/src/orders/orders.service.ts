@@ -1,19 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Availability, OrderStatus, Prisma, Role } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 import type { JwtPayload } from '../auth/types/jwt-payload.type';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { isValidTransition } from './order-state-machine';
 import type { CreateOrderDto } from './dto/create-order.dto';
 import type { UpdateOrderDto } from './dto/update-order.dto';
 import type { ListOrdersDto } from './dto/list-orders.dto';
 import type { UpdateStatusDto } from './dto/update-status.dto';
 import type { AssignDriverDto } from './dto/assign-driver.dto';
+import type { UploadPodDto } from './dto/upload-pod.dto';
 import type {
   OrderDetail,
+  OrderDetailResult,
   OrderListItem,
+  OrderListResult,
+  OrderTrackingResult,
   PaginatedOrders,
   PublicTrackingResponse,
+  UploadedPodFile,
 } from './types/order.types';
 import {
   CannotDeleteActiveOrderException,
@@ -24,11 +30,19 @@ import {
   InvalidTransitionException,
   OrderNotFoundException,
   OrderNotEditableException,
+  PodAlreadyExistsException,
   ReferenceIdConflictException,
 } from '../common/exceptions/domain.exceptions';
 
 const ACTIVE_STATUSES: OrderStatus[] = [
   OrderStatus.ASSIGNED,
+  OrderStatus.ACCEPTED,
+  OrderStatus.PICKED_UP,
+  OrderStatus.IN_TRANSIT,
+  OrderStatus.OUT_FOR_DELIVERY,
+];
+
+const IN_PROGRESS_DRIVER_STATUSES: OrderStatus[] = [
   OrderStatus.ACCEPTED,
   OrderStatus.PICKED_UP,
   OrderStatus.IN_TRANSIT,
@@ -41,47 +55,12 @@ const EDITABLE_STATUSES: OrderStatus[] = [
   OrderStatus.RESCHEDULED,
 ];
 
-// Prisma payload types used by the private mappers
-type OrderListResult = Prisma.OrderGetPayload<{
-  include: {
-    driver: { select: { id: true; name: true; avatarUrl: true } };
-    dispatcher: { select: { id: true; name: true } };
-  };
-}>;
-
-type OrderDetailResult = Prisma.OrderGetPayload<{
-  include: {
-    driver: {
-      select: {
-        id: true;
-        name: true;
-        avatarUrl: true;
-        driverProfile: { select: { vehicleType: true; vehiclePlate: true } };
-      };
-    };
-    dispatcher: { select: { id: true; name: true } };
-    statusLogs: {
-      orderBy: { createdAt: 'asc' };
-      include: { changedBy: { select: { id: true; name: true } } };
-    };
-  };
-}>;
-
-type OrderTrackingResult = Prisma.OrderGetPayload<{
-  include: {
-    driver: {
-      select: {
-        name: true;
-        driverProfile: { select: { vehicleType: true } };
-      };
-    };
-    statusLogs: { orderBy: { createdAt: 'asc' } };
-  };
-}>;
-
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   // create order
   async create(
@@ -305,6 +284,19 @@ export class OrdersService {
       throw new InvalidTransitionException(order.status, dto.status);
     }
 
+    if (user.role === Role.DRIVER && dto.status === OrderStatus.ACCEPTED) {
+      const inProgressCount = await this.prisma.order.count({
+        where: {
+          driverId: user.sub,
+          id: { not: order.id },
+          status: { in: IN_PROGRESS_DRIVER_STATUSES },
+        },
+      });
+      if (inProgressCount > 0) {
+        throw new DriverAtCapacityException();
+      }
+    }
+
     await this.prisma.$transaction(async (tx) => {
       await tx.order.update({
         where: { id: order.id },
@@ -326,6 +318,61 @@ export class OrdersService {
     // Phase 4: queue email notification
 
     return this.findOne(referenceId, user);
+  }
+
+  // upload proof of delivery
+  async uploadPod(
+    referenceId: string,
+    file: UploadedPodFile,
+    dto: UploadPodDto,
+    user: JwtPayload,
+  ): Promise<{ message: string }> {
+    const order = await this.prisma.order.findUnique({
+      where: { referenceId },
+      select: { id: true, driverId: true, status: true },
+    });
+    if (!order) throw new OrderNotFoundException();
+
+    if (user.role === Role.DRIVER && order.driverId !== user.sub) {
+      throw new ForbiddenResourceException();
+    }
+
+    const existingPod = await this.prisma.proofOfDelivery.findUnique({
+      where: { orderId: order.id },
+      select: { id: true },
+    });
+    if (existingPod) throw new PodAlreadyExistsException();
+
+    if (!file?.buffer) {
+      throw new BadRequestException('Delivery photo is required.');
+    }
+
+    const uploadedPhoto = await this.cloudinaryService.uploadStream(
+      file.buffer,
+      'swifthaul/pod/photos',
+    );
+
+    let signatureUrl: string | undefined;
+    const signatureBase64 = this.extractBase64Data(dto.signatureDataUrl);
+    if (signatureBase64) {
+      const signatureBuffer = Buffer.from(signatureBase64, 'base64');
+      const uploadedSignature = await this.cloudinaryService.uploadStream(
+        signatureBuffer,
+        'swifthaul/pod/signatures',
+      );
+      signatureUrl = uploadedSignature.secure_url;
+    }
+
+    await this.prisma.proofOfDelivery.create({
+      data: {
+        orderId: order.id,
+        photoUrl: uploadedPhoto.secure_url,
+        signatureUrl,
+        signedBy: dto.signedBy,
+      },
+    });
+
+    return { message: 'Proof of delivery uploaded.' };
   }
 
   // assign driver
@@ -534,5 +581,12 @@ export class OrdersService {
         createdAt: log.createdAt,
       })),
     };
+  }
+
+  // extract base64 payload from data url
+  private extractBase64Data(value: unknown): string | undefined {
+    if (typeof value !== 'string') return undefined;
+    const splitValue = value.split(',');
+    return splitValue.length > 1 ? splitValue[1] : undefined;
   }
 }
