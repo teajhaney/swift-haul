@@ -11,8 +11,7 @@ import {
 } from 'lucide-react';
 
 import { DriverAvailabilityBadge } from '@/components/drivers/driver-availability-badge';
-import { DRIVERS } from '@/constants/drivers';
-import { AVAILABILITY_STYLES } from '@/constants/drivers-mock';
+import { DRIVERS, AVAILABILITY_STYLES } from '@/constants/drivers';
 import { useDrivers } from '@/hooks/drivers/use-drivers';
 import { getInitials, getPageNumbers, VEHICLE_LABELS } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';

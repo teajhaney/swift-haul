@@ -4,9 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, ArrowLeft, ChevronRight } from 'lucide-react';
-import { ALERT_TYPE_STYLES } from '@/constants/driver-alerts-mock';
+import { ALERT_TYPE_ICONS, ALERT_TYPE_STYLES } from '@/constants/driver-alerts';
 import { DRIVER_DESKTOP_NAV } from '@/constants/driver-navigation';
-import { ALERT_TYPE_ICONS } from '@/constants/driver-alerts';
 import { useAuthStore } from '@/stores/auth.store';
 import { getInitials } from '@/lib/utils';
 import { useNotifications } from '@/hooks/notifications/use-notifications';
@@ -23,13 +22,13 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const onAlerts = pathname === '/driver/alerts';
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore(s => s.user);
   const userInitials = user ? getInitials(user.name) : 'DR';
   const { data: notificationsData } = useNotifications({ page: 1, limit: 5 });
   const markRead = useMarkRead();
   const notifications = notificationsData?.data ?? [];
 
-  const unread = notifications.filter((n) => !n.isRead).length;
+  const unread = notifications.filter(n => !n.isRead).length;
   const preview = notifications.slice(0, 4);
 
   useEffect(() => {

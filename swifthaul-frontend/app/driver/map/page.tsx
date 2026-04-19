@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
-import { MOCK_ACTIVE_DELIVERY } from '@/constants/driver-queue-mock';
 import { MOCK_MAP_STOPS } from '@/constants/driver-map-mock';
 import { MAP_PIN_STYLES, MAP_STOP_LABEL, MAP_STOP_BADGE } from '@/constants/driver-map';
 
@@ -136,7 +135,7 @@ export default function DriverMapPage() {
 
           {/* Navigate button */}
           <Link
-            href={`/driver/orders/${MOCK_ACTIVE_DELIVERY.referenceId}`}
+            href={`/driver/orders/${MOCK_MAP_STOPS.find(s => s.status === 'active')?.referenceId ?? 'unknown'}`}
             className="absolute bottom-3 right-3 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-light text-white text-sm font-semibold shadow-lg hover:bg-primary-hover transition-colors"
           >
             <Navigation className="w-4 h-4" />

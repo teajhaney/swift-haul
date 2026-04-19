@@ -42,3 +42,33 @@ export const DRIVERS = {
   FAILED_TO_LOAD: 'Failed to load drivers',
   FAILED_TO_LOAD_HINT: 'Check your connection and try again',
 } as const;
+
+export const AVAILABILITY_STYLES: Record<string, { dot: string; badge: string; label: string }> = {
+  AVAILABLE: {
+    dot: 'bg-success',
+    badge: 'bg-success/10 text-success',
+    label: 'Available',
+  },
+  BUSY: {
+    dot: 'bg-warning',
+    badge: 'bg-warning/10 text-warning',
+    label: 'Busy',
+  },
+  OFFLINE: {
+    dot: 'bg-border-strong',
+    badge: 'bg-surface-elevated text-text-muted',
+    label: 'Offline',
+  },
+};
+
+export const DRIVER_AVAILABILITY_OPTIONS = [
+  { value: 'AVAILABLE', label: 'Available' },
+  { value: 'BUSY',      label: 'Busy'      },
+  { value: 'OFFLINE',   label: 'Offline'   },
+] as const;
+
+export const AVAILABILITY_TOGGLE_STYLES: Record<string, { active: string; dot: string }> = {
+  AVAILABLE: { active: 'bg-success text-white border-success',        dot: 'bg-success'    },
+  BUSY:      { active: 'bg-warning text-white border-warning',        dot: 'bg-warning'    },
+  OFFLINE:   { active: 'bg-text-muted text-white border-text-muted',  dot: 'bg-text-muted' },
+};

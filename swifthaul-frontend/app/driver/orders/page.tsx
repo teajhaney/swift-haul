@@ -16,8 +16,7 @@ import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
 
-import { DRIVER_QUEUE, QUEUE_PAGE_SIZE, DRIVER_ACTIVE_STATUSES } from '@/constants/driver-queue';
-import { PRIORITY_COLORS } from '@/constants/driver-queue-mock';
+import { DRIVER_QUEUE, QUEUE_PAGE_SIZE, DRIVER_ACTIVE_STATUSES, PRIORITY_COLORS } from '@/constants/driver-queue';
 
 import { useOrders } from '@/hooks/orders/use-orders';
 import { formatTime } from '@/lib/utils';

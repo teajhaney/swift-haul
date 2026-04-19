@@ -19,8 +19,9 @@ import {
   DRIVER_QUEUE,
   CTA_CONFIG,
   DRIVER_NEXT_STATUS,
+  STATUS_COLORS,
+  PRIORITY_COLORS
 } from '@/constants/driver-queue';
-import { STATUS_COLORS, PRIORITY_COLORS } from '@/constants/driver-queue-mock';
 import { DRIVER_DETAIL_NAV as DETAIL_NAV } from '@/constants/driver-navigation';
 
 import { useOrder } from '@/hooks/orders/use-order';

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { MapPin, X, type LucideIcon } from 'lucide-react';
-import { MOCK_ADDRESS_SUGGESTIONS } from '@/constants/order-form-mock';
+import { MOCK_ADDRESS_SUGGESTIONS } from '@/constants/order-form';
 
 interface AddressAutocompleteProps {
   id: string;

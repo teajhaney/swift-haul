@@ -16,8 +16,7 @@ import {
 import { KpiCard } from '@/components/analytics/kpi-card';
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
 import { DASHBOARD } from '@/constants/dashboard';
-import { PRIORITY_STYLES } from '@/constants/dashboard-mock';
-import { PRIORITY_LABELS } from '@/constants/orders';
+import { PRIORITY_LABELS, PRIORITY_STYLES } from '@/constants/orders';
 import { useOrders } from '@/hooks/orders/use-orders';
 import { useAnalyticsStats } from '@/hooks/analytics/use-analytics-stats';
 import { useChartData } from '@/hooks/analytics/use-chart-data';

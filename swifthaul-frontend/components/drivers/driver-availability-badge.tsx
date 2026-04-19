@@ -1,5 +1,5 @@
 import type { DriverAvailability } from '@/types/driver';
-import { AVAILABILITY_STYLES } from '@/constants/drivers-mock';
+import { AVAILABILITY_STYLES } from '@/constants/drivers';
 
 interface DriverAvailabilityBadgeProps {
   availability: DriverAvailability;

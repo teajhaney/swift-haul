@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 import { DRIVER_DETAIL } from '@/constants/driver-detail';
-import { AVAILABILITY_STYLES } from '@/constants/drivers-mock';
+import { AVAILABILITY_STYLES } from '@/constants/drivers';
 import { AssignOrderModal } from '@/components/drivers/assign-order-modal';
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
 import { useDriver } from '@/hooks/drivers/use-driver';

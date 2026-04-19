@@ -20,7 +20,7 @@ import { useLogout } from '@/hooks/auth/use-logout';
 import { useMe } from '@/hooks/auth/use-me';
 import { useDriver } from '@/hooks/drivers/use-driver';
 import { useUpdateAvailability } from '@/hooks/drivers/use-update-availability';
-import { AVAILABILITY_OPTIONS, AVAILABILITY_STYLES } from '@/constants/driver-profile-mock';
+import { DRIVER_AVAILABILITY_OPTIONS, AVAILABILITY_TOGGLE_STYLES } from '@/constants/drivers';
 import { getInitials, formatMemberSince } from '@/lib/utils';
 import type { DriverAvailability } from '@/types/driver';
 
@@ -105,9 +105,9 @@ export default function DriverProfilePage() {
 
           {/* Availability toggle */}
           <div className="flex gap-2 mt-5 w-full">
-            {AVAILABILITY_OPTIONS.map(opt => {
+            {DRIVER_AVAILABILITY_OPTIONS.map(opt => {
               const isActive = currentAvailability === opt.value;
-              const style = AVAILABILITY_STYLES[opt.value];
+              const style = AVAILABILITY_TOGGLE_STYLES[opt.value];
               return (
                 <button
                   key={opt.value}

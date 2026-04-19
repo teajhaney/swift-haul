@@ -75,3 +75,20 @@ export const DRIVER_NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
 export const DRIVER_ACTIVE_STATUSES: OrderStatus[] = [
   'ACCEPTED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY',
 ];
+
+export const STATUS_COLORS: Record<string, string> = {
+  IN_TRANSIT:       'text-primary-light bg-primary-subtle',
+  ASSIGNED:         'text-info bg-info/10',
+  ACCEPTED:         'text-success bg-success/10',
+  PICKED_UP:        'text-warning bg-warning/10',
+  OUT_FOR_DELIVERY: 'text-purple-600 bg-purple-50',
+  DELIVERED:        'text-success bg-success/10',
+  FAILED:           'text-error bg-error/10',
+};
+
+export const PRIORITY_COLORS: Record<string, string> = {
+  EXPRESS:  'text-accent bg-accent-soft',
+  HIGH:     'text-error bg-error/10',
+  STANDARD: 'text-text-secondary bg-surface-elevated border border-border',
+  LOW:      'text-text-muted bg-surface-elevated border border-border',
+};
