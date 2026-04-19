@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useRef, useState } from 'react';
+import { use, useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Camera,
@@ -51,9 +51,71 @@ export default function DriverPodPage({
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [showFailModal, setShowFailModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  async function startCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCameraActive(true);
+    } catch (error) {
+      console.error('Camera access denied or failed', error);
+      toast.error('Unable to access camera. Please check permissions.');
+    }
+  }
+
+  function stopCamera() {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
+  }
+
+  function capturePhoto() {
+    if (!videoRef.current) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(videoRef.current, 0, 0);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const file = new File([blob], 'pod.jpg', { type: 'image/jpeg' });
+            if (photoUrl) URL.revokeObjectURL(photoUrl);
+            setPhotoFile(file);
+            setPhotoUrl(URL.createObjectURL(file));
+            setStep('review');
+            stopCamera();
+          }
+        },
+        'image/jpeg',
+        0.8
+      );
+    }
+  }
+
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isCameraActive]);
+
+  useEffect(() => {
+    return () => stopCamera();
+  }, []);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -70,6 +132,9 @@ export default function DriverPodPage({
     setPhotoFile(null);
     setPhotoUrl(null);
     setStep('photo');
+    setTimeout(() => {
+      startCamera();
+    }, 100);
   }
 
   async function confirmDelivered() {
@@ -109,7 +174,7 @@ export default function DriverPodPage({
           title={POD.PAGE_TITLE}
         />
         <div className="max-w-md mx-auto px-4 py-8">
-          <div className="h-64 rounded-xl bg-surface-elevated animate-pulse" />
+          <div className="h-64 rounded-xl bg-surface border border-border shadow-sm animate-pulse" />
         </div>
       </>
     );
@@ -180,8 +245,28 @@ export default function DriverPodPage({
                     <X className="w-4 h-4" />
                   </button>
                 </div>
+              ) : isCameraActive ? (
+                <div
+                  className="relative rounded-xl overflow-hidden border-2 border-primary-light bg-black"
+                  style={{ aspectRatio: '4/3' }}
+                >
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded tracking-wide uppercase">
+                    {POD.LIVE_VIEW}
+                  </div>
+                </div>
               ) : (
-                <div className="relative rounded-xl overflow-hidden border-2 border-border bg-surface-elevated h-52" />
+                <div className="relative rounded-xl overflow-hidden border-2 border-border bg-surface-elevated h-52 flex flex-col items-center justify-center p-6 text-center text-text-muted">
+                  <Camera className="w-8 h-8 mb-2 opacity-50" />
+                  <p className="text-sm font-medium">Camera is inactive</p>
+                  <p className="text-xs max-w-[200px] mt-1 opacity-80">{POD.PHOTO_HINT}</p>
+                </div>
               )}
 
               {photoUrl ? (
@@ -201,10 +286,26 @@ export default function DriverPodPage({
                     Retake
                   </button>
                 </>
+              ) : isCameraActive ? (
+                <>
+                  <button
+                    onClick={capturePhoto}
+                    className="w-full h-12 rounded-xl bg-primary-light hover:bg-primary-hover text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Camera className="w-4 h-4" />
+                    Capture Photo
+                  </button>
+                  <button
+                    onClick={stopCamera}
+                    className="w-full h-11 rounded-xl border border-border text-text-secondary text-sm font-medium hover:bg-surface-elevated transition-colors flex items-center justify-center gap-2"
+                  >
+                    Cancel
+                  </button>
+                </>
               ) : (
                 <>
                   <button
-                    onClick={() => cameraInputRef.current?.click()}
+                    onClick={startCamera}
                     className="w-full h-12 rounded-xl bg-primary-light hover:bg-primary-hover text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     <Camera className="w-4 h-4" />

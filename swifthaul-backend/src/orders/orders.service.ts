@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { JwtPayload } from '../auth/types/jwt-payload.type';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { isValidTransition } from './order-state-machine';
+import { CLOUDINARY_FOLDERS } from '../common/constants/cloudinary.constants';
 import type { CreateOrderDto } from './dto/create-order.dto';
 import type { UpdateOrderDto } from './dto/update-order.dto';
 import type { ListOrdersDto } from './dto/list-orders.dto';
@@ -349,7 +350,7 @@ export class OrdersService {
 
     const uploadedPhoto = await this.cloudinaryService.uploadStream(
       file.buffer,
-      'swifthaul/pod/photos',
+      CLOUDINARY_FOLDERS.POD_PHOTOS,
     );
 
     let signatureUrl: string | undefined;
@@ -358,7 +359,7 @@ export class OrdersService {
       const signatureBuffer = Buffer.from(signatureBase64, 'base64');
       const uploadedSignature = await this.cloudinaryService.uploadStream(
         signatureBuffer,
-        'swifthaul/pod/signatures',
+        CLOUDINARY_FOLDERS.POD_SIGNATURES,
       );
       signatureUrl = uploadedSignature.secure_url;
     }

@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getBackendErrorMessage } from '@/lib/errors';
+import api from '@/lib/api';
 
 interface UploadPodPayload {
   referenceId: string;
@@ -29,20 +30,17 @@ export function useUploadPod() {
       formData.append('photo', photoFile);
       formData.append('signedBy', signedBy);
 
-      const res = await fetch(`/api/orders/${referenceId}/pod`, {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
+      const { data } = await api.post<UploadPodResponse>(
+        `/orders/${referenceId}/pod`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
-      if (!res.ok) {
-        const err = (await res.json()) as {
-          error?: { message?: string };
-        };
-        throw new Error(err.error?.message ?? 'POD upload failed');
-      }
-
-      return res.json() as Promise<UploadPodResponse>;
+      return data;
     },
     onSuccess: (_, { referenceId }) => {
       // Invalidate order queries to refresh the data
