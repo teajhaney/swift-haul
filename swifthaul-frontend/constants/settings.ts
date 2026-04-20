@@ -25,7 +25,7 @@ export const SETTINGS = {
   REACTIVATE_ACTION:   'Reactivate',
   RESEND_INVITE:       'Resend Invite',
 
-  PAGE_SIZE: 8,
+  PAGE_SIZE: 10,
   SHOWING: (from: number, to: number, total: number) =>
     `Showing ${from}–${to} of ${total} members`,
   PREVIOUS: 'Previous',

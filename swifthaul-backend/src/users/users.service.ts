@@ -69,7 +69,12 @@ export class UsersService {
 
     return {
       data: users.map((u) => this.toUserListItem(u)),
-      meta: { total, page, limit },
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 

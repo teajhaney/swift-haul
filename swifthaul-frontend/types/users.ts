@@ -1,15 +1,15 @@
-import type { Role } from '@prisma/client';
+import { UserRole } from './settings';
 
 export interface UserListItem {
   id: string;
   name: string;
   email: string;
   phone: string | null;
-  role: Role;
+  role: UserRole;
   avatarUrl: string | null;
   isActive: boolean;
   inviteAccepted: boolean;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export interface PaginatedUsers {
@@ -20,4 +20,15 @@ export interface PaginatedUsers {
     limit: number;
     totalPages: number;
   };
+}
+
+export interface ListUsersQuery {
+  page?: number;
+  limit?: number;
+  role?: UserRole;
+  search?: string;
+}
+
+export interface UpdateUserStatusPayload {
+  isActive: boolean;
 }
