@@ -16,6 +16,11 @@ export interface OrderDispatcherInfo {
   name: string;
 }
 
+export interface OrderPodInfo {
+  failReason: string | null;
+  failureNotes: string | null;
+}
+
 export interface StatusLogEntry {
   id: string;
   fromStatus: OrderStatus;
@@ -37,6 +42,7 @@ export interface OrderListItem {
   driver: OrderDriverInfo | null;
   dispatcher: OrderDispatcherInfo;
   estimatedDelivery: Date | null;
+  pod?: OrderPodInfo | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -93,6 +99,7 @@ export type OrderListResult = Prisma.OrderGetPayload<{
   include: {
     driver: { select: { id: true; name: true; avatarUrl: true } };
     dispatcher: { select: { id: true; name: true } };
+    pod: { select: { failReason: true; failureNotes: true } };
   };
 }>;
 

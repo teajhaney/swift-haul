@@ -7,10 +7,10 @@ export const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.PICKED_UP]: [OrderStatus.IN_TRANSIT],
   [OrderStatus.IN_TRANSIT]: [OrderStatus.OUT_FOR_DELIVERY],
   [OrderStatus.OUT_FOR_DELIVERY]: [OrderStatus.DELIVERED, OrderStatus.FAILED],
-  [OrderStatus.FAILED]: [OrderStatus.RESCHEDULED],
+  [OrderStatus.FAILED]: [OrderStatus.RESCHEDULED, OrderStatus.ASSIGNED],
   [OrderStatus.RESCHEDULED]: [OrderStatus.ASSIGNED],
   [OrderStatus.DELIVERED]: [],
-  [OrderStatus.CANCELLED]: [],
+  [OrderStatus.CANCELLED]: [OrderStatus.RESCHEDULED, OrderStatus.ASSIGNED],
 };
 
 export function isValidTransition(from: OrderStatus, to: OrderStatus): boolean {

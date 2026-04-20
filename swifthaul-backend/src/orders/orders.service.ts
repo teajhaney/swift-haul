@@ -164,6 +164,7 @@ export class OrdersService {
         include: {
           driver: { select: { id: true, name: true, avatarUrl: true } },
           dispatcher: { select: { id: true, name: true } },
+          pod: { select: { failReason: true, failureNotes: true } },
         },
       }),
       this.prisma.order.count({ where }),
@@ -389,7 +390,9 @@ export class OrdersService {
 
     if (
       order.status !== OrderStatus.PENDING &&
-      order.status !== OrderStatus.RESCHEDULED
+      order.status !== OrderStatus.RESCHEDULED &&
+      order.status !== OrderStatus.FAILED &&
+      order.status !== OrderStatus.CANCELLED
     ) {
       throw new InvalidTransitionException(order.status, OrderStatus.ASSIGNED);
     }
@@ -511,6 +514,12 @@ export class OrdersService {
         : null,
       dispatcher: { id: order.dispatcher.id, name: order.dispatcher.name },
       estimatedDelivery: order.estimatedDelivery,
+      pod: order.pod
+        ? {
+            failReason: order.pod.failReason,
+            failureNotes: order.pod.failureNotes,
+          }
+        : null,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
     };

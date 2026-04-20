@@ -14,8 +14,6 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { AssignDriverDto } from './dto/assign-driver.dto';
 import { UploadPodDto } from './dto/upload-pod.dto';
-
-// Applied to the OrdersController class
 export const ApiOrdersController = () => applyDecorators(ApiTags('Orders'));
 
 // POST /orders
@@ -246,3 +244,5 @@ export const ApiUploadPod = () =>
       description: 'POD already exists for this order.',
     }),
   );
+
+

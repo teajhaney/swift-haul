@@ -93,6 +93,10 @@ export interface ApiOrderListItem {
   driver: ApiOrderDriver | null;
   dispatcher: { id: string; name: string };
   estimatedDelivery: string | null;
+  pod?: {
+    failReason: string | null;
+    failureNotes: string | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

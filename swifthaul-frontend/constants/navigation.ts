@@ -8,6 +8,7 @@ export const NAV_SECTIONS: NavSection[] = [
     title: 'MAIN',
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { label: 'Operations', href: '/operations', icon: Package },
       { label: 'Orders', href: '/orders', icon: Package },
       { label: 'Drivers', href: '/drivers', icon: Truck },
     ],
@@ -26,6 +27,7 @@ export const NAV_SECTIONS: NavSection[] = [
 
 export const BOTTOM_NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Ops', href: '/operations', icon: Package },
   { label: 'Orders', href: '/orders', icon: Package },
   { label: 'Drivers', href: '/drivers', icon: Truck },
   { label: 'Alerts', href: '/notifications', icon: Bell },
@@ -36,6 +38,7 @@ export const BOTTOM_NAV_ITEMS: NavItem[] = [
 
 export const PAGE_META: Record<string, PageMeta> = {
   '/dashboard': { section: 'Main', title: 'Dashboard' },
+  '/operations': { section: 'Main', title: 'Resolution Queue' },
   '/orders': { section: 'Main', title: 'Orders' },
   '/orders/new': { section: 'Orders', title: 'New Order' },
   '/drivers': { section: 'Main', title: 'Drivers' },
