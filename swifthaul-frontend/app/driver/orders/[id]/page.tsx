@@ -20,7 +20,7 @@ import {
   CTA_CONFIG,
   DRIVER_NEXT_STATUS,
   STATUS_COLORS,
-  PRIORITY_COLORS
+  PRIORITY_COLORS,
 } from '@/constants/driver-queue';
 import { DRIVER_DETAIL_NAV as DETAIL_NAV } from '@/constants/driver-navigation';
 
@@ -266,9 +266,9 @@ export default function DriverDeliveryDetailPage({
                   {order.status.replaceAll('_', ' ')}
                 </span>
                 <span
-                  className={`px-2 py-0.5 rounded text-[11px] font-bold tracking-wider uppercase ${PRIORITY_COLORS[order.priority]}`}
+                  className={`px-2 py-0.5 rounded text-[11px] font-bold tracking-wider uppercase ${PRIORITY_COLORS[order.priority] ?? 'bg-gray-100 text-gray-600'}`}
                 >
-                  {order.priority}
+                  {order.priority.replaceAll('_', ' ')}
                 </span>
               </div>
 

@@ -88,7 +88,6 @@ export const STATUS_COLORS: Record<string, string> = {
 
 export const PRIORITY_COLORS: Record<string, string> = {
   EXPRESS:  'text-accent bg-accent-soft',
-  HIGH:     'text-error bg-error/10',
+  SAME_DAY: 'text-error bg-error/10 border border-error/20',
   STANDARD: 'text-text-secondary bg-surface-elevated border border-border',
-  LOW:      'text-text-muted bg-surface-elevated border border-border',
 };

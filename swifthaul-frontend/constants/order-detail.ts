@@ -84,4 +84,9 @@ export const ORDER_DETAIL = {
   NOT_FOUND_HEADING: 'Order not found',
   NOT_FOUND_SUB:     'This order ID does not exist or may have been removed.',
   NOT_FOUND_BACK:    'Back to Orders',
+
+  // Share link
+  COPY_SHARE_LINK: 'Copy tracking link',
+  SHARE_LINK_SUCCESS: 'Tracking link copied to clipboard',
+  SHARE_MESSAGE_TEMPLATE: 'Your SwiftHaul delivery ({id}) is on its way! Track it live here: {link}',
 } as const;

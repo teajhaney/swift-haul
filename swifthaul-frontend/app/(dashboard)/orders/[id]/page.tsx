@@ -138,8 +138,12 @@ export default function OrderDetailPage({ params }: Props) {
   function copyTrackingLink() {
     if (!detail) return;
     const url = `${window.location.origin}/track/${detail.trackingToken}`;
-    navigator.clipboard.writeText(url).then(() => {
-      toast.success('Tracking link copied');
+    const message = ORDER_DETAIL.SHARE_MESSAGE_TEMPLATE
+      .replace('{id}', detail.referenceId)
+      .replace('{link}', url);
+
+    navigator.clipboard.writeText(message).then(() => {
+      toast.success(ORDER_DETAIL.SHARE_LINK_SUCCESS);
     });
   }
 
@@ -176,10 +180,10 @@ export default function OrderDetailPage({ params }: Props) {
             {/* Tracking link */}
             <button
               onClick={copyTrackingLink}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface-elevated transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface border border-border text-sm font-semibold text-text-primary hover:bg-surface-elevated transition-all active:scale-95 shadow-sm"
             >
-              <Copy className="w-3.5 h-3.5" />
-              Copy tracking link
+              <Copy className="w-4 h-4 text-primary-light" />
+              {ORDER_DETAIL.COPY_SHARE_LINK}
             </button>
             <Link
               href={`/track/${detail.trackingToken}`}

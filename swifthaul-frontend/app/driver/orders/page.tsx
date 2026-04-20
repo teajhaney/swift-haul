@@ -115,9 +115,9 @@ export default function DriverOrderQueuePage() {
                   <div className="flex items-center gap-2 mb-3">
                     <OrderStatusBadge status={activeOrder.status} />
                     <span
-                      className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wider uppercase ml-auto sm:ml-0 ${PRIORITY_COLORS[activeOrder.priority]}`}
+                      className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wider uppercase ml-auto sm:ml-0 ${PRIORITY_COLORS[activeOrder.priority] ?? 'bg-gray-100 text-gray-600'}`}
                     >
-                      {activeOrder.priority} PRIORITY
+                      {activeOrder.priority.replaceAll('_', ' ')} PRIORITY
                     </span>
                   </div>
 

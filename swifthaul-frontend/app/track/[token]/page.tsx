@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Circle,
   AlertTriangle,
+  Phone,
 } from 'lucide-react';
 import {
   TRACKING,
@@ -179,48 +180,36 @@ export default function CustomerTrackingPage({
   return (
     <div className="min-h-screen bg-surface-subtle flex flex-col">
 
-      {/* Mobile header */}
-      <header className="sm:hidden bg-surface border-b border-border h-14 flex items-center justify-center px-4">
-        <span className="text-base font-bold text-text-primary">{TRACKING.BRAND}</span>
-      </header>
+      <nav className="h-16 bg-surface border-b border-border sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto h-full px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary-light flex items-center justify-center shadow-sm">
+              <Truck className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-lg font-bold text-primary tracking-tight">{TRACKING.BRAND}</span>
+          </div>
+          <button 
+            onClick={() => window.location.href = '/track'}
+            className="text-xs font-bold text-text-muted hover:text-primary-light transition-colors"
+          >
+            New Search
+          </button>
+        </div>
+      </nav>
 
       <main className="flex-1">
         <div className="max-w-lg mx-auto px-4 py-6 sm:py-10 space-y-5">
 
-          {/* Desktop: logo + title */}
-          <div className="hidden sm:flex flex-col items-center text-center gap-3 mb-2">
-            <div className="w-14 h-14 rounded-2xl bg-primary-light flex items-center justify-center shadow-md">
-              <Truck className="w-7 h-7 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-text-primary">{TRACKING.TITLE}</h1>
-            {!isFailed && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                {isDelivered ? 'DELIVERED' : TRACKING.LIVE}
-              </span>
-            )}
-          </div>
-
-          {/* Mobile: title + tracking ID */}
-          <div className="sm:hidden text-center pt-1">
-            <h1 className="text-xl font-bold text-text-primary mb-1">{TRACKING.TITLE}</h1>
-            <p className="font-mono text-sm text-text-muted mb-3">{order.referenceId}</p>
-            <div className="flex items-center justify-between text-xs">
-              {!isFailed ? (
-                <span className="inline-flex items-center gap-1.5 text-success font-semibold">
+          <div className="text-center py-4">
+            <h1 className="text-2xl font-black text-text-primary mb-2 tracking-tight">{TRACKING.TITLE}</h1>
+            <div className="flex items-center justify-center gap-2">
+               {!isFailed && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-[10px] font-bold tracking-widest uppercase animate-pulse">
                   <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                  {isDelivered ? 'DELIVERED' : TRACKING.LIVE_TRACKING}
-                </span>
-              ) : (
-                <span className="text-error font-semibold text-xs">
-                  {order.status.replace(/_/g, ' ')}
+                  {isDelivered ? 'DELIVERED' : TRACKING.LIVE}
                 </span>
               )}
-              {order.statusLogs.length > 0 && (
-                <span className="text-text-muted">
-                  {formatEventTime(order.statusLogs[order.statusLogs.length - 1].createdAt)}
-                </span>
-              )}
+              <span className="text-xs font-mono text-text-muted">ID: {order.referenceId}</span>
             </div>
           </div>
 
@@ -363,13 +352,20 @@ export default function CustomerTrackingPage({
             </div>
 
             {/* Desktop: bottom bar */}
-            <div className="hidden sm:flex items-center justify-between absolute bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-sm px-4 py-2 border-t border-border">
-              <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                <span className="w-2 h-2 rounded-full bg-accent" />
-                {isDelivered ? 'Delivered' : TRACKING.LIVE}
-                {order.driver && ` · ${order.driver.vehicleType ?? ''}`}
+            <div className="absolute bottom-4 left-4 right-4 bg-surface/95 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20 shadow-2xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-accent animate-pulse" />
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-text-muted leading-none">Status</span>
+                  <span className="text-sm font-bold text-text-primary">
+                    {isDelivered ? 'Delivered' : `Driver is ${order.driver?.name ? 'on their way' : 'assigned'}`}
+                  </span>
+                </div>
               </div>
-              <span className="text-xs font-bold text-primary-light">ETA {estimatedArrival}</span>
+              <div className="text-right">
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted leading-none">Est. Arrival</p>
+                <p className="text-base font-black text-primary-light">{estimatedArrival}</p>
+              </div>
             </div>
 
             <p className="sm:hidden absolute bottom-2 left-2 text-[9px] text-text-muted">{TRACKING.MAP_ATTRIBUTION}</p>
@@ -422,19 +418,23 @@ export default function CustomerTrackingPage({
                 </div>
               </div>
 
-              {/* Driver */}
-              <div className="flex items-center gap-3 px-5 py-4">
-                <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center shrink-0 shadow-sm">
-                  <span className="text-xs font-bold text-white">{driverInitials}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-0.5">{TRACKING.DRIVER_LABEL}</p>
-                  <p className="text-sm font-semibold text-text-primary">{driverName}</p>
-                  {order.driver?.vehicleType && (
-                    <p className="text-xs text-text-secondary capitalize">{order.driver.vehicleType.toLowerCase()}</p>
-                  )}
-                </div>
+            <div className="bg-surface-elevated flex items-center gap-4 px-5 py-5 border-t border-border">
+              <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center shrink-0 shadow-lg shadow-primary-light/20 relative">
+                <span className="text-sm font-bold text-white">{driverInitials}</span>
+                {!isDelivered && order.driver && (
+                  <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-success border-2 border-white rounded-full" />
+                )}
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-0.5">Your Swift Driver</p>
+                <p className="text-base font-bold text-text-primary leading-tight">{driverName}</p>
+              </div>
+              {order.driver && (
+                <button className="w-11 h-11 rounded-full border border-border flex items-center justify-center text-primary-light hover:bg-surface transition-colors shadow-sm">
+                  <Phone className="w-5 h-5" />
+                </button>
+              )}
+            </div>
             </div>
           </div>
 

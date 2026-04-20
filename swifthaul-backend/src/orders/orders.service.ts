@@ -454,10 +454,12 @@ export class OrdersService {
     return { message: 'Order deleted.' };
   }
 
-  // public tracking by token
+  // public tracking by token or referenceId
   async findByTrackingToken(token: string): Promise<PublicTrackingResponse> {
-    const order = await this.prisma.order.findUnique({
-      where: { trackingToken: token },
+    const order = await this.prisma.order.findFirst({
+      where: {
+        OR: [{ trackingToken: token }, { referenceId: token }],
+      },
       include: {
         driver: {
           select: {
