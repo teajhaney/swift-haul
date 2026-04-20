@@ -368,7 +368,52 @@ export default function SettingsPage() {
                       >
                         {member.role}
                       </span>
-                      <Arrow className="w-4 h-4 text-text-muted" />
+                      
+                      {!member.isCurrentUser && (
+                        <div className="relative">
+                          <button
+                            onClick={() =>
+                              setOpenMenu(
+                                openMenu === member.id ? null : member.id
+                              )
+                            }
+                            className="p-1.5 rounded-lg hover:bg-surface-elevated transition-colors text-text-muted"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+
+                          {openMenu === member.id && (
+                            <div
+                              className="absolute right-0 bottom-full mb-1 w-40 bg-surface border border-border rounded-lg shadow-lg z-20 overflow-hidden"
+                              onMouseLeave={() => setOpenMenu(null)}
+                            >
+                              {member.status === 'INVITED' ? (
+                                <button
+                                  onClick={() => resendInvite(member.email)}
+                                  className="w-full px-4 py-2.5 text-left text-sm text-text-primary hover:bg-surface-elevated transition-colors"
+                                >
+                                  {SETTINGS.RESEND_INVITE}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() =>
+                                    toggleStatus(member.id, member.status)
+                                  }
+                                  className={`w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-surface-elevated ${
+                                    member.status === 'ACTIVE'
+                                      ? 'text-error'
+                                      : 'text-success'
+                                  }`}
+                                >
+                                  {member.status === 'ACTIVE'
+                                    ? SETTINGS.DEACTIVATE_ACTION
+                                    : SETTINGS.REACTIVATE_ACTION}
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
