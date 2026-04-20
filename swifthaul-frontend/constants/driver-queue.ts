@@ -49,7 +49,7 @@ export const DRIVER_QUEUE = {
   MI_SUFFIX: 'mi',
 } as const;
 
-export const QUEUE_PAGE_SIZE = 5;
+export const QUEUE_PAGE_SIZE = 10;
 
 /** CTA button config for each driver order status on the detail page */
 export const CTA_CONFIG: Record<DriverOrderStatus, { label: string; color: string } | null> = {

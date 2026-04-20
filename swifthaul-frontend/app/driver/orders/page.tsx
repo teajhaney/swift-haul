@@ -16,9 +16,15 @@ import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
 
-import { DRIVER_QUEUE, QUEUE_PAGE_SIZE, DRIVER_ACTIVE_STATUSES, PRIORITY_COLORS } from '@/constants/driver-queue';
+import {
+  DRIVER_QUEUE,
+  QUEUE_PAGE_SIZE,
+  DRIVER_ACTIVE_STATUSES,
+  PRIORITY_COLORS,
+} from '@/constants/driver-queue';
 
 import { useOrders } from '@/hooks/orders/use-orders';
+import { useMe } from '@/hooks/auth/use-me';
 import { formatTime } from '@/lib/utils';
 import type { ApiOrderListItem, OrderStatus } from '@/types/order';
 
@@ -36,18 +42,25 @@ const STATUS_PRIORITY: Record<OrderStatus, number> = {
 };
 
 export default function DriverOrderQueuePage() {
+  const { data: me, isLoading: meLoading } = useMe();
   const [page, setPage] = useState(1);
 
   // backend auto-filters to this driver's orders when role=DRIVER
   // backend ListOrdersDto enforces max limit=50
-  const { data, isLoading, isError } = useOrders({ page: 1, limit: 50 });
+  const { data, isLoading: ordersLoading, isError } = useOrders({ 
+    page, 
+    limit: QUEUE_PAGE_SIZE,
+    driverId: me?.id
+  });
+
+  const isLoading = meLoading || ordersLoading;
+
   const allOrders: ApiOrderListItem[] = [...(data?.data ?? [])].sort(
-    (a, b) =>
-      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   );
 
   // Keep exactly one primary active order; keep additional accepted orders in upcoming.
-  const inProgress = allOrders.filter((order) =>
+  const inProgress = allOrders.filter(order =>
     DRIVER_ACTIVE_STATUSES.includes(order.status)
   );
   const activeOrder = [...inProgress].sort((a, b) => {
@@ -56,17 +69,20 @@ export default function DriverOrderQueuePage() {
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   })[0];
 
-  const queue = allOrders.filter((order) => {
+  const queue = allOrders.filter(order => {
     if (order.referenceId === activeOrder?.referenceId) return false;
     return order.status === 'ASSIGNED' || order.status === 'ACCEPTED';
   });
 
-  const totalPages = Math.max(1, Math.ceil(queue.length / QUEUE_PAGE_SIZE));
-  const start = (page - 1) * QUEUE_PAGE_SIZE;
-  const pageQueue = queue.slice(start, start + QUEUE_PAGE_SIZE);
+  // Server-side pagination metadata
+  const totalItems = data?.meta.total ?? 0;
+  // Subtracting 1 from totalItems if there is an activeOrder to reflect the queue count correctly
+  // but for simple pagination UI, we can just use totalPages from meta
+  const totalPages = data?.meta.total ? Math.ceil(data.meta.total / QUEUE_PAGE_SIZE) : 1;
 
   function goTo(p: number) {
     setPage(Math.max(1, Math.min(p, totalPages)));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   return (
@@ -74,7 +90,6 @@ export default function DriverOrderQueuePage() {
       <DriverTopbar />
 
       <div className="max-w-4xl mx-auto px-4 py-5 space-y-6">
-
         {/* ── Active Delivery ── */}
         <section>
           <div className="flex items-center gap-2 mb-3">
@@ -167,9 +182,14 @@ export default function DriverOrderQueuePage() {
                     preserveAspectRatio="none"
                   >
                     <line
-                      x1="25%" y1="30%" x2="70%" y2="65%"
-                      stroke="#1A6FB5" strokeWidth="2"
-                      strokeDasharray="6 4" strokeLinecap="round"
+                      x1="25%"
+                      y1="30%"
+                      x2="70%"
+                      y2="65%"
+                      stroke="#1A6FB5"
+                      strokeWidth="2"
+                      strokeDasharray="6 4"
+                      strokeLinecap="round"
                     />
                   </svg>
                   <div className="absolute left-[23%] top-[26%] -translate-x-1/2 -translate-y-full">
@@ -193,8 +213,12 @@ export default function DriverOrderQueuePage() {
           ) : (
             <div className="bg-surface rounded-xl border border-border shadow-sm p-6 flex flex-col items-center text-center gap-2">
               <Package className="w-10 h-10 text-text-muted" />
-              <p className="text-sm font-semibold text-text-primary">{DRIVER_QUEUE.NO_ACTIVE}</p>
-              <p className="text-xs text-text-muted">{DRIVER_QUEUE.NO_ACTIVE_HINT}</p>
+              <p className="text-sm font-semibold text-text-primary">
+                {DRIVER_QUEUE.NO_ACTIVE}
+              </p>
+              <p className="text-xs text-text-muted">
+                {DRIVER_QUEUE.NO_ACTIVE_HINT}
+              </p>
             </div>
           )}
         </section>
@@ -208,7 +232,7 @@ export default function DriverOrderQueuePage() {
               </h2>
               {!isLoading && (
                 <span className="w-5 h-5 rounded-full bg-primary-light flex items-center justify-center text-[10px] font-bold text-white">
-                  {queue.length}
+                  {totalItems}
                 </span>
               )}
             </div>
@@ -217,7 +241,10 @@ export default function DriverOrderQueuePage() {
           {isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="bg-surface rounded-xl border border-border p-4 animate-pulse">
+                <div
+                  key={i}
+                  className="bg-surface rounded-xl border border-border p-4 animate-pulse"
+                >
                   <div className="h-3 w-24 bg-surface-elevated rounded mb-2" />
                   <div className="h-4 w-40 bg-surface-elevated rounded mb-2" />
                   <div className="h-3 w-56 bg-surface-elevated rounded" />
@@ -226,17 +253,21 @@ export default function DriverOrderQueuePage() {
             </div>
           ) : isError ? (
             <div className="bg-surface rounded-xl border border-border p-5 text-center">
-              <p className="text-sm text-error">Unable to load upcoming deliveries right now.</p>
+              <p className="text-sm text-error">
+                Unable to load upcoming deliveries right now.
+              </p>
             </div>
           ) : queue.length === 0 ? (
             <div className="bg-surface rounded-xl border border-border p-5 text-center">
-              <p className="text-sm text-text-muted">No upcoming deliveries assigned.</p>
+              <p className="text-sm text-text-muted">
+                No upcoming deliveries assigned.
+              </p>
             </div>
           ) : (
             <>
               {/* Desktop: 2-column grid */}
               <div className="hidden sm:grid grid-cols-2 gap-3">
-                {pageQueue.map(order => (
+                {queue.map(order => (
                   <Link
                     key={order.referenceId}
                     href={`/driver/orders/${order.referenceId}`}
@@ -269,7 +300,7 @@ export default function DriverOrderQueuePage() {
 
               {/* Mobile: stacked cards */}
               <div className="sm:hidden space-y-3">
-                {pageQueue.map(order => (
+                {queue.map(order => (
                   <Link
                     key={order.referenceId}
                     href={`/driver/orders/${order.referenceId}`}
@@ -303,8 +334,7 @@ export default function DriverOrderQueuePage() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                   <p className="text-xs text-text-muted sm:hidden">
-                    {start + 1}–{Math.min(start + QUEUE_PAGE_SIZE, queue.length)} of{' '}
-                    {queue.length}
+                    Page {page} of {totalPages}
                   </p>
                   <div className="flex items-center gap-1 ml-auto">
                     <button
@@ -315,19 +345,21 @@ export default function DriverOrderQueuePage() {
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                      <button
-                        key={p}
-                        onClick={() => goTo(p)}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                          p === page
-                            ? 'bg-primary-light text-white'
-                            : 'border border-border text-text-secondary hover:bg-surface-elevated'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      p => (
+                        <button
+                          key={p}
+                          onClick={() => goTo(p)}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                            p === page
+                              ? 'bg-primary-light text-white'
+                              : 'border border-border text-text-secondary hover:bg-surface-elevated'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
                     <button
                       onClick={() => goTo(page + 1)}
                       disabled={page === totalPages}

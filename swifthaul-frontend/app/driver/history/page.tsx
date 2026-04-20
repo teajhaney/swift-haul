@@ -20,6 +20,7 @@ import type { HistoryFilterTab } from '@/types/driver-pages';
 import { useOrders } from '@/hooks/orders/use-orders';
 import { formatDateString } from '@/lib/utils';
 import type { ApiOrderListItem } from '@/types/order';
+import { useMe } from '@/hooks/auth/use-me';
 
 type HistoryStatus = 'DELIVERED' | 'FAILED';
 type HistoryOrderItem = ApiOrderListItem & { status: HistoryStatus };
@@ -30,29 +31,40 @@ function isHistoryOrderItem(order: ApiOrderListItem): order is HistoryOrderItem 
 }
 
 export default function DriverHistoryPage() {
+  const { data: me, isLoading: meLoading } = useMe();
   const [activeTab, setActiveTab] = useState<HistoryFilterTab>('week');
   const [page, setPage] = useState(1);
-  const { data, isLoading } = useOrders({ page: 1, limit: 50 });
 
-  const allOrders: ApiOrderListItem[] = data?.data ?? [];
-  const historyBase = allOrders.filter(isHistoryOrderItem);
-  const items = historyBase.filter((item) => {
-    const diffDays =
-      (HISTORY_RENDER_BASE_MS - new Date(item.updatedAt).getTime()) /
-      (1000 * 60 * 60 * 24);
-    if (activeTab === 'today') return diffDays < 1;
-    if (activeTab === 'week') return diffDays < 7;
-    if (activeTab === 'month') return diffDays < 30;
-    return true;
+  // Map tabs to dateFrom strings
+  const getDateFrom = () => {
+    if (activeTab === 'all') return undefined;
+    const date = new Date();
+    if (activeTab === 'today') date.setHours(0, 0, 0, 0);
+    else if (activeTab === 'week') date.setDate(date.getDate() - 7);
+    else if (activeTab === 'month') date.setMonth(date.getMonth() - 1);
+    return date.toISOString();
+  };
+
+  const { data, isLoading: ordersLoading } = useOrders({
+    page,
+    limit: HISTORY_PAGE_SIZE,
+    driverId: me?.id,
+    dateFrom: getDateFrom(),
   });
 
-  const deliveredCount = items.filter(
-    item => item.status === 'DELIVERED'
-  ).length;
-  const failedCount = items.filter(item => item.status === 'FAILED').length;
-  const totalPages = Math.max(1, Math.ceil(items.length / HISTORY_PAGE_SIZE));
-  const start = (page - 1) * HISTORY_PAGE_SIZE;
-  const pageItems = items.slice(start, start + HISTORY_PAGE_SIZE);
+  const isLoading = meLoading || (!!me?.id && ordersLoading);
+
+  const allOrders: ApiOrderListItem[] = data?.data ?? [];
+  // For the delivery history, we strictly only show DELIVERED or FAILED
+  // If the backend returned other statuses (like ASSIGNED), we filter them out.
+  // Note: Better to have a backend status filter that accepts multiple values,
+  // but for now we filter locally.
+  const pageItems = allOrders.filter(isHistoryOrderItem);
+
+  // Stats - strictly speaking, these should come from a summary API,
+  // but we can use the metadata total for the current view.
+  const totalCount = data?.meta.total ?? 0;
+  const totalPages = data?.meta.total ? Math.ceil(data.meta.total / HISTORY_PAGE_SIZE) : 1;
 
   function goTo(p: number) {
     setPage(Math.max(1, Math.min(p, totalPages)));
@@ -84,7 +96,7 @@ export default function DriverHistoryPage() {
                 Total
               </p>
               <p className="text-xl font-bold text-text-primary">
-                {items.length}
+                {totalCount}
               </p>
             </div>
           </div>
@@ -97,12 +109,7 @@ export default function DriverHistoryPage() {
                 This Week
               </p>
               <p className="text-xl font-bold text-text-primary">
-                {historyBase.filter((item) => {
-                  const diffDays =
-                    (HISTORY_RENDER_BASE_MS - new Date(item.updatedAt).getTime()) /
-                    (1000 * 60 * 60 * 24);
-                  return diffDays < 7;
-                }).length}
+                {activeTab === 'all' ? '—' : totalCount}
               </p>
             </div>
           </div>
@@ -115,12 +122,7 @@ export default function DriverHistoryPage() {
                 On-time
               </p>
               <p className="text-xl font-bold text-text-primary">
-                {deliveredCount + failedCount > 0
-                  ? Math.round(
-                      (deliveredCount / (deliveredCount + failedCount)) * 100
-                    )
-                  : 0}
-                %
+                —
               </p>
             </div>
           </div>
@@ -256,9 +258,7 @@ export default function DriverHistoryPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-1">
             <p className="text-xs text-text-muted">
-              Showing {start + 1}–
-              {Math.min(start + HISTORY_PAGE_SIZE, items.length)} of{' '}
-              {items.length} deliveries
+              Page {page} of {totalPages} ({totalCount} deliveries)
             </p>
             <div className="flex items-center gap-1">
               <button

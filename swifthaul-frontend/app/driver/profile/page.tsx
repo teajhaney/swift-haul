@@ -20,8 +20,12 @@ import { useLogout } from '@/hooks/auth/use-logout';
 import { useMe } from '@/hooks/auth/use-me';
 import { useDriver } from '@/hooks/drivers/use-driver';
 import { useUpdateAvailability } from '@/hooks/drivers/use-update-availability';
-import { DRIVER_AVAILABILITY_OPTIONS, AVAILABILITY_TOGGLE_STYLES } from '@/constants/drivers';
+import {
+  DRIVER_AVAILABILITY_OPTIONS,
+  AVAILABILITY_TOGGLE_STYLES,
+} from '@/constants/drivers';
 import { getInitials, formatMemberSince } from '@/lib/utils';
+import { useOrders } from '@/hooks/orders/use-orders';
 import type { DriverAvailability } from '@/types/driver';
 
 const VEHICLE_LABELS: Record<string, string> = {
@@ -34,10 +38,17 @@ const VEHICLE_LABELS: Record<string, string> = {
 export default function DriverProfilePage() {
   const { data: me, isLoading: meLoading } = useMe();
   const { data: profile, isLoading: profileLoading } = useDriver(me?.id ?? '');
-  const { mutate: updateAvailability, isPending: availPending } = useUpdateAvailability();
+  const { data: ordersData, isLoading: ordersLoading } = useOrders({
+    page: 1,
+    limit: 50,
+    driverId: me?.id,
+  });
+  const { mutate: updateAvailability, isPending: availPending } =
+    useUpdateAvailability();
   const logout = useLogout();
 
-  const isLoading = meLoading || (!!me?.id && profileLoading);
+  const isLoading =
+    meLoading || (!!me?.id && profileLoading) || (!!me?.id && ordersLoading);
 
   function handleAvailability(availability: DriverAvailability) {
     if (!me?.id || availability === profile?.availability) return;
@@ -56,7 +67,10 @@ export default function DriverProfilePage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-surface rounded-xl border border-border p-4 h-24" />
+              <div
+                key={i}
+                className="bg-surface rounded-xl border border-border p-4 h-24"
+              />
             ))}
           </div>
         </div>
@@ -66,7 +80,29 @@ export default function DriverProfilePage() {
 
   const name = me?.name ?? '';
   const initials = getInitials(name);
-  const currentAvailability = (profile?.availability ?? 'OFFLINE') as DriverAvailability;
+  const currentAvailability = (profile?.availability ??
+    'OFFLINE') as DriverAvailability;
+
+  // Derive stats dynamically from the actual orders matching History page logic
+  const allOrders = ordersData?.data ?? [];
+  const completedOrders = allOrders.filter(o => o.status === 'DELIVERED');
+  const failedOrders = allOrders.filter(o => o.status === 'FAILED');
+
+  const historicalCount = completedOrders.length + failedOrders.length;
+  const totalDeliveries = historicalCount; // Total historical deliveries
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const completedToday = completedOrders.filter(o => {
+    const d = new Date(o.updatedAt);
+    return d >= startOfToday;
+  }).length;
+
+  const successRate =
+    historicalCount > 0
+      ? (completedOrders.length / historicalCount) * 100
+      : 100;
+  const rating = profile?.rating ? Number(profile.rating) : 5.0;
 
   return (
     <>
@@ -79,7 +115,11 @@ export default function DriverProfilePage() {
           <div className="w-20 h-20 rounded-full bg-primary-light flex items-center justify-center mb-3 shadow-md">
             {me?.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={me.avatarUrl} alt={name} className="w-full h-full rounded-full object-cover" />
+              <img
+                src={me.avatarUrl}
+                alt={name}
+                className="w-full h-full rounded-full object-cover"
+              />
             ) : (
               <span className="text-2xl font-bold text-white">{initials}</span>
             )}
@@ -93,7 +133,7 @@ export default function DriverProfilePage() {
             {profile && (
               <span className="flex items-center gap-0.5 text-sm text-warning font-semibold">
                 <Star className="w-3.5 h-3.5 fill-warning" />
-                {Number(profile.rating).toFixed(1)}
+                {rating.toFixed(1)}
               </span>
             )}
           </div>
@@ -111,7 +151,9 @@ export default function DriverProfilePage() {
               return (
                 <button
                   key={opt.value}
-                  onClick={() => handleAvailability(opt.value as DriverAvailability)}
+                  onClick={() =>
+                    handleAvailability(opt.value as DriverAvailability)
+                  }
                   disabled={availPending}
                   className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all disabled:opacity-60 ${
                     isActive
@@ -136,7 +178,9 @@ export default function DriverProfilePage() {
               <div className="w-8 h-8 rounded-lg bg-primary-subtle flex items-center justify-center mx-auto mb-2">
                 <Package className="w-4 h-4 text-primary-light" />
               </div>
-              <p className="text-2xl font-bold text-text-primary">{profile.totalDeliveries}</p>
+              <p className="text-2xl font-bold text-text-primary">
+                {totalDeliveries}
+              </p>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mt-0.5">
                 Total Deliveries
               </p>
@@ -145,7 +189,9 @@ export default function DriverProfilePage() {
               <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center mx-auto mb-2">
                 <Star className="w-4 h-4 text-warning fill-warning" />
               </div>
-              <p className="text-2xl font-bold text-text-primary">{Number(profile.rating).toFixed(1)}</p>
+              <p className="text-2xl font-bold text-text-primary">
+                {rating.toFixed(1)}
+              </p>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mt-0.5">
                 Rating
               </p>
@@ -155,7 +201,7 @@ export default function DriverProfilePage() {
                 <TrendingUp className="w-4 h-4 text-success" />
               </div>
               <p className="text-2xl font-bold text-text-primary">
-                {Number(profile.successRate).toFixed(0)}%
+                {successRate.toFixed(0)}%
               </p>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mt-0.5">
                 Success Rate
@@ -165,7 +211,9 @@ export default function DriverProfilePage() {
               <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center mx-auto mb-2">
                 <Flame className="w-4 h-4 text-accent" />
               </div>
-              <p className="text-2xl font-bold text-text-primary">{profile.completedToday}</p>
+              <p className="text-2xl font-bold text-text-primary">
+                {completedToday}
+              </p>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mt-0.5">
                 Today
               </p>
@@ -183,7 +231,9 @@ export default function DriverProfilePage() {
           </div>
           <div className="flex items-center gap-3 px-4 py-3">
             <Mail className="w-4 h-4 text-text-muted shrink-0" />
-            <span className="text-sm text-text-secondary flex-1">{me?.email ?? '—'}</span>
+            <span className="text-sm text-text-secondary flex-1">
+              {me?.email ?? '—'}
+            </span>
           </div>
         </div>
 
@@ -201,7 +251,9 @@ export default function DriverProfilePage() {
                 <p className="text-sm font-bold text-text-primary">
                   {VEHICLE_LABELS[profile.vehicleType] ?? profile.vehicleType}
                 </p>
-                <p className="text-xs text-text-muted font-mono mt-0.5">{profile.vehiclePlate}</p>
+                <p className="text-xs text-text-muted font-mono mt-0.5">
+                  {profile.vehiclePlate}
+                </p>
               </div>
               <span className="ml-auto px-2 py-0.5 rounded text-[10px] font-bold bg-surface-elevated border border-border text-text-secondary tracking-wide uppercase">
                 {profile.vehicleType}
@@ -221,7 +273,9 @@ export default function DriverProfilePage() {
               className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-surface-elevated transition-colors text-left"
             >
               <Icon className="w-4 h-4 text-text-muted shrink-0" />
-              <span className="flex-1 text-sm text-text-secondary">{label}</span>
+              <span className="flex-1 text-sm text-text-secondary">
+                {label}
+              </span>
               <ChevronRight className="w-4 h-4 text-text-muted" />
             </button>
           ))}
