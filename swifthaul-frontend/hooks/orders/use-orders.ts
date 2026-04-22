@@ -17,6 +17,7 @@ export function useOrders(filters: OrderFilters = {}) {
       if (filters.driverId) params.driverId = filters.driverId;
       if (filters.dateFrom) params.dateFrom = filters.dateFrom;
       if (filters.dateTo) params.dateTo = filters.dateTo;
+      if (filters.dateField) params.dateField = filters.dateField;
 
       const res = await api.get<ApiOrderListResponse>('/orders', { params });
       return res.data;

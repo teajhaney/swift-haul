@@ -62,6 +62,12 @@ export const ApiListOrders = () =>
       description: 'ISO 8601 date — createdAt <= dateTo',
     }),
     ApiQuery({
+      name: 'dateField',
+      required: false,
+      description:
+        'Date field to filter on. Defaults to createdAt. Use updatedAt for delivery history.',
+    }),
+    ApiQuery({
       name: 'page',
       required: false,
       description: 'Page number (default 1)',
@@ -244,5 +250,3 @@ export const ApiUploadPod = () =>
       description: 'POD already exists for this order.',
     }),
   );
-
-

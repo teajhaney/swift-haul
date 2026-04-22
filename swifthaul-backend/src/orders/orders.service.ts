@@ -150,7 +150,9 @@ export class OrdersService {
       const dateFilter: Prisma.DateTimeFilter<'Order'> = {};
       if (query.dateFrom) dateFilter.gte = new Date(query.dateFrom);
       if (query.dateTo) dateFilter.lte = new Date(query.dateTo);
-      where.createdAt = dateFilter;
+      const dateField =
+        query.dateField === 'updatedAt' ? 'updatedAt' : 'createdAt';
+      where[dateField] = dateFilter;
     }
 
     if (query.search) {

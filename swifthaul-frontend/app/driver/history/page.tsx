@@ -24,7 +24,6 @@ import { useMe } from '@/hooks/auth/use-me';
 
 type HistoryStatus = 'DELIVERED' | 'FAILED';
 type HistoryOrderItem = ApiOrderListItem & { status: HistoryStatus };
-const HISTORY_RENDER_BASE_MS = Date.now();
 
 function isHistoryOrderItem(
   order: ApiOrderListItem
@@ -41,9 +40,17 @@ export default function DriverHistoryPage() {
   const getDateFrom = () => {
     if (activeTab === 'all') return undefined;
     const date = new Date();
-    if (activeTab === 'today') date.setHours(0, 0, 0, 0);
-    else if (activeTab === 'week') date.setDate(date.getDate() - 7);
-    else if (activeTab === 'month') date.setMonth(date.getMonth() - 1);
+    if (activeTab === 'today') {
+      date.setHours(0, 0, 0, 0);
+    } else if (activeTab === 'week') {
+      const day = date.getDay();
+      const diffToMonday = (day + 6) % 7;
+      date.setDate(date.getDate() - diffToMonday);
+      date.setHours(0, 0, 0, 0);
+    } else if (activeTab === 'month') {
+      date.setDate(1);
+      date.setHours(0, 0, 0, 0);
+    }
     return date.toISOString();
   };
 
@@ -53,6 +60,7 @@ export default function DriverHistoryPage() {
     driverId: me?.id,
     statuses: 'DELIVERED,FAILED',
     dateFrom: getDateFrom(),
+    dateField: 'updatedAt',
   });
 
   const isLoading = meLoading || (!!me?.id && ordersLoading);
@@ -203,7 +211,9 @@ export default function DriverHistoryPage() {
                     </td>
                     <td className="px-4 py-3">
                       {s && Icon && (
-                        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full ${s.bg} ${s.text} text-[10px] font-bold uppercase tracking-wider`}>
+                        <div
+                          className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full ${s.bg} ${s.text} text-[10px] font-bold uppercase tracking-wider`}
+                        >
                           <Icon className="w-3 h-3" />
                           {item.status.replace('_', ' ')}
                         </div>
@@ -232,7 +242,9 @@ export default function DriverHistoryPage() {
                     {item.referenceId}
                   </span>
                   {s && Icon && (
-                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${s.bg} ${s.text} text-[10px] font-bold uppercase`}>
+                    <div
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${s.bg} ${s.text} text-[10px] font-bold uppercase`}
+                    >
                       <Icon className="w-2.5 h-2.5" />
                       {item.status.replace('_', ' ')}
                     </div>
@@ -250,8 +262,8 @@ export default function DriverHistoryPage() {
                 </div>
 
                 <div className="text-[10px] text-text-muted border-t border-border pt-2 flex justify-between">
-                   <span>{item.referenceId}</span>
-                   <span>{formatDateString(item.updatedAt)}</span>
+                  <span>{item.referenceId}</span>
+                  <span>{formatDateString(item.updatedAt)}</span>
                 </div>
               </div>
             );

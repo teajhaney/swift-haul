@@ -36,6 +36,10 @@ export class ListOrdersDto {
   dateTo?: string;
 
   @IsOptional()
+  @IsString()
+  dateField?: 'createdAt' | 'updatedAt';
+
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Type(() => Number)

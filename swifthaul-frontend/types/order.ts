@@ -49,6 +49,7 @@ export interface OrderFilters {
   driverId?: string;
   dateFrom?: string;
   dateTo?: string;
+  dateField?: 'createdAt' | 'updatedAt';
 }
 
 export interface UpdateOrderPayload {
