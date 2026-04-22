@@ -28,9 +28,18 @@ function getSecret() {
   return new TextEncoder().encode(process.env.JWT_SECRET!);
 }
 
+function getHomeForRole(role: string) {
+  return role === 'DRIVER' ? '/driver/orders' : '/dashboard';
+}
+
+type RefreshResult = {
+  setCookies: string[];
+  role: string | null;
+};
+
 // Attempt a silent token refresh via the NestJS backend.
-// Returns a NextResponse with new Set-Cookie headers on success, null on failure.
-async function tryRefresh(request: NextRequest): Promise<NextResponse | null> {
+// Returns new Set-Cookie headers and the refreshed user's role on success, null on failure.
+async function tryRefresh(request: NextRequest): Promise<RefreshResult | null> {
   try {
     const res = await fetch(`${process.env.BACKEND_URL}/auth/refresh`, {
       method: 'POST',
@@ -39,30 +48,49 @@ async function tryRefresh(request: NextRequest): Promise<NextResponse | null> {
 
     if (!res.ok) return null;
 
-    const next = NextResponse.next();
-    res.headers.getSetCookie().forEach((c) => next.headers.append('Set-Cookie', c));
-    return next;
+    const body = (await res.json()) as { role?: string };
+    return {
+      setCookies: res.headers.getSetCookie(),
+      role: body.role ?? null,
+    };
   } catch {
     return null;
   }
 }
 
+function withSetCookies(response: NextResponse, setCookies: string[]) {
+  setCookies.forEach((cookie) => response.headers.append('Set-Cookie', cookie));
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('accessToken')?.value;
+  const refreshToken = request.cookies.get('refreshToken')?.value;
 
   if (isPublic(pathname)) {
-    // Authenticated user landing on /login → send them home
-    if (pathname === '/login' && token) {
+    // Authenticated user landing on / or /login → send them home
+    if ((pathname === '/' || pathname === '/login') && token) {
       try {
         const { payload } = await jwtVerify(token, getSecret());
         const role = payload['role'] as string;
-        const home = role === 'DRIVER' ? '/driver/orders' : '/dashboard';
+        const home = getHomeForRole(role);
         return NextResponse.redirect(new URL(home, request.url));
       } catch {
-        // Expired or invalid — let them reach the login page
+        // Expired or invalid — fall through to refresh if possible
       }
     }
+
+    if ((pathname === '/' || pathname === '/login') && refreshToken) {
+      const refreshed = await tryRefresh(request);
+      if (refreshed?.role) {
+        const response = NextResponse.redirect(
+          new URL(getHomeForRole(refreshed.role), request.url)
+        );
+        return withSetCookies(response, refreshed.setCookies);
+      }
+    }
+
     return NextResponse.next();
   }
 
@@ -70,7 +98,9 @@ export async function middleware(request: NextRequest) {
   // The refresh token cookie lasts 7 days, so the user may still have a valid session.
   if (!token) {
     const refreshed = await tryRefresh(request);
-    if (refreshed) return refreshed;
+    if (refreshed) {
+      return withSetCookies(NextResponse.next(), refreshed.setCookies);
+    }
 
     const url = new URL('/login', request.url);
     url.searchParams.set('from', pathname);
@@ -112,7 +142,9 @@ export async function middleware(request: NextRequest) {
     if (err instanceof errors.JWTExpired) {
       // Access token is expired — try silent refresh before giving up
       const refreshed = await tryRefresh(request);
-      if (refreshed) return refreshed;
+      if (refreshed) {
+        return withSetCookies(NextResponse.next(), refreshed.setCookies);
+      }
     }
 
     // Invalid token or refresh failed → send to login
