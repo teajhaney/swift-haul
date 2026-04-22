@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { Bell } from 'lucide-react';
 
 import { NotificationIcon } from '@/components/notifications/notification-icon';
+import { NotificationText } from '@/components/notifications/notification-text';
 import { NOTIFICATION_BELL } from '@/constants/messages';
 import { useNotifications } from '@/hooks/notifications/use-notifications';
 import { useMarkAllRead } from '@/hooks/notifications/use-mark-all-read';
 import { formatTimestamp } from '@/lib/utils';
+import { useAuthStore } from '@/stores/auth.store';
 import type { ApiNotification } from '@/types/notification';
 
 interface NotificationBellProps {
@@ -23,6 +25,7 @@ export function NotificationBell({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const user = useAuthStore((s) => s.user);
   const { data } = useNotifications({ limit: 5, page: 1 });
   const markAllRead = useMarkAllRead();
 
@@ -43,6 +46,15 @@ export function NotificationBell({
     e.stopPropagation();
     markAllRead.mutate();
   }
+
+  const getNotificationLink = (n: ApiNotification) => {
+    if (!n.orderReferenceId) {
+      return user?.role === 'DRIVER' ? '/driver/alerts' : '/notifications';
+    }
+    return user?.role === 'DRIVER' 
+      ? `/driver/orders/${n.orderReferenceId}` 
+      : `/orders/${n.orderReferenceId}`;
+  };
 
   return (
     <div ref={containerRef} className="relative">
@@ -95,8 +107,10 @@ export function NotificationBell({
               </div>
             ) : (
               preview.map(n => (
-                <div
+                <Link
                   key={n.id}
+                  href={getNotificationLink(n)}
+                  onClick={() => setOpen(false)}
                   className={`flex items-start gap-3 px-4 py-3.5 transition-colors hover:bg-surface-elevated ${!n.isRead ? 'bg-primary-subtle/30' : ''}`}
                 >
                   <NotificationIcon type={n.type} size="sm" />
@@ -110,9 +124,11 @@ export function NotificationBell({
                         {!n.isRead && <span className="w-1.5 h-1.5 rounded-full bg-primary-light" />}
                       </div>
                     </div>
-                    <p className="text-xs text-text-secondary mt-0.5 leading-relaxed line-clamp-2">{n.body}</p>
+                    <div className="text-xs text-text-secondary mt-0.5 leading-relaxed line-clamp-2">
+                      <NotificationText text={n.body} />
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))
             )}
           </div>
@@ -120,7 +136,7 @@ export function NotificationBell({
           {/* Footer */}
           <div className="border-t border-border px-4 py-2.5 text-center">
             <Link
-              href="/notifications"
+              href={user?.role === 'DRIVER' ? '/driver/alerts' : '/notifications'}
               onClick={() => setOpen(false)}
               className="text-xs font-semibold text-primary-light hover:text-primary-hover transition-colors"
             >

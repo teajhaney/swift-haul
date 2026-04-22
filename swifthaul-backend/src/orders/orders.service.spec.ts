@@ -3,6 +3,7 @@ import { Availability, OrderStatus, Priority, Role } from '@prisma/client';
 
 import { OrdersService } from './orders.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   CannotDeleteActiveOrderException,
   DriverAtCapacityException,
@@ -119,7 +120,17 @@ describe('OrdersService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [OrdersService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        OrdersService,
+        { provide: PrismaService, useValue: prisma },
+        {
+          provide: NotificationsService,
+          useValue: {
+            notifyOrderAssigned: jest.fn(),
+            notifyStatusChanged: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);

@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import { CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
+import { NotificationText } from '@/components/notifications/notification-text';
 import { ALERT_TYPE_ICONS, ALERT_TYPE_STYLES, ALERTS_PAGE_SIZE } from '@/constants/driver-alerts';
 import { useNotifications } from '@/hooks/notifications/use-notifications';
 import { useMarkRead } from '@/hooks/notifications/use-mark-read';
 import { useMarkAllRead } from '@/hooks/notifications/use-mark-all-read';
-import { formatTimestamp } from '@/lib/utils';
+import { formatTimestamp, getPageNumbers } from '@/lib/utils';
 
 export default function DriverAlertsPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const { data, isLoading } = useNotifications({ page, limit: ALERTS_PAGE_SIZE });
   const markRead = useMarkRead();
@@ -69,19 +72,21 @@ export default function DriverAlertsPage() {
           {pageItems.map(alert => {
             const styles = ALERT_TYPE_STYLES[alert.type];
             const Icon   = ALERT_TYPE_ICONS[alert.type];
+            const href = alert.orderReferenceId ? `/driver/orders/${alert.orderReferenceId}` : undefined;
+
+            const handleClick = () => {
+              if (!alert.isRead) markRead.mutate(alert.id);
+              if (href) router.push(href);
+            };
 
             return (
               <button
                 key={alert.id}
-                onClick={() => {
-                  if (!alert.isRead) {
-                    markRead.mutate(alert.id);
-                  }
-                }}
+                onClick={handleClick}
                 className={`w-full text-left flex items-start gap-3 p-4 rounded-xl border transition-colors ${
                   alert.isRead
                     ? 'bg-surface border-border hover:bg-surface-elevated'
-                    : 'bg-surface border-border hover:bg-surface-elevated'
+                    : 'bg-surface border-border hover:bg-surface-elevated shadow-sm'
                 }`}
                 style={!alert.isRead ? { borderLeftWidth: '3px', borderLeftColor: 'var(--color-primary-light)' } : undefined}
               >
@@ -103,10 +108,19 @@ export default function DriverAlertsPage() {
                       </span>
                     </div>
                   </div>
-                  <p className="text-xs text-text-secondary leading-relaxed">{alert.body}</p>
-                  <span className={`inline-block mt-2 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wide ${styles.bg} ${styles.text}`}>
-                    {styles.label}
-                  </span>
+                  <div className="text-xs text-text-secondary leading-relaxed">
+                    <NotificationText text={alert.body} />
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wide ${styles.bg} ${styles.text}`}>
+                      {styles.label}
+                    </span>
+                    {href && (
+                      <span className="text-[10px] font-semibold text-primary-light flex items-center gap-0.5">
+                        View order <ChevronRight className="w-2.5 h-2.5" />
+                      </span>
+                    )}
+                  </div>
                 </div>
               </button>
             );
@@ -120,38 +134,45 @@ export default function DriverAlertsPage() {
 
         {/* ── Pagination ── */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-4 border-t border-border">
             <p className="text-xs text-text-muted">
               Showing {start + 1}–{Math.min(start + ALERTS_PAGE_SIZE, total)} of {total} alerts
             </p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => goTo(page - 1)}
-                disabled={page === 1}
-                className="pagination-nav-btn"
+                disabled={page === 1 || isLoading}
+                className="pagination-nav-btn disabled:opacity-40"
                 aria-label="Previous page"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  onClick={() => goTo(p)}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                    p === page
-                      ? 'bg-primary-light text-white'
-                      : 'border border-border text-text-secondary hover:bg-surface-elevated'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
+              {getPageNumbers(page, totalPages).map((p, i) =>
+                p === '...' ? (
+                  <span key={`ellipsis-${i}`} className="w-8 text-center text-xs text-text-muted">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => goTo(p)}
+                    disabled={isLoading}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                      p === page
+                        ? 'bg-primary-light text-white'
+                        : 'border border-border text-text-secondary hover:bg-surface-elevated'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
 
               <button
                 onClick={() => goTo(page + 1)}
-                disabled={page === totalPages}
-                className="pagination-nav-btn"
+                disabled={page === totalPages || isLoading}
+                className="pagination-nav-btn disabled:opacity-40"
                 aria-label="Next page"
               >
                 <ChevronRight className="w-4 h-4" />

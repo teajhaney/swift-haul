@@ -28,6 +28,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { SocketProvider } from "@/providers/socket-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -40,8 +42,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans antialiased">
         <QueryProvider>
-          {children}
-          <Toaster />
+          <SocketProvider>
+            {children}
+            <Toaster />
+          </SocketProvider>
         </QueryProvider>
       </body>
     </html>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { NotificationIcon } from '@/components/notifications/notification-icon';
+import { NotificationText } from '@/components/notifications/notification-text';
 import { formatTimestamp } from '@/lib/utils';
 import type { ApiNotification } from '@/types/notification';
 
@@ -32,7 +33,9 @@ export function NotificationRow({ n, onRead, mobile = false }: NotificationRowPr
             {!n.isRead && <span className="w-2 h-2 rounded-full bg-primary-light" />}
           </div>
         </div>
-        <p className="text-sm text-text-secondary mt-0.5 leading-relaxed">{n.body}</p>
+        <div className="text-sm text-text-secondary mt-0.5 leading-relaxed">
+          <NotificationText text={n.body} />
+        </div>
         {n.orderReferenceId && (
           <span className="text-xs font-mono font-semibold text-primary-light mt-1 inline-block">
             {n.orderReferenceId}

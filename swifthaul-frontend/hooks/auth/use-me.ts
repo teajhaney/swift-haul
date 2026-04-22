@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { type AxiosError } from 'axios';
 import api from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import type { AuthUser } from '@/types/auth';
@@ -21,8 +22,13 @@ export function useMe() {
         const user = res.data.data;
         setUser(user);
         return user;
-      } catch {
-        clear();
+      } catch (error: unknown) {
+        const axiosError = error as AxiosError;
+        // Only clear state if the server explicitly rejected the request (e.g. 401)
+        // If it's a network error (no internet), don't clear the user's session.
+        if (axiosError.response) {
+           clear();
+        }
         throw new Error('Not authenticated');
       }
     },

@@ -19,6 +19,9 @@ import { AssignOrderModal } from '@/components/drivers/assign-order-modal';
 import { OrderStatusBadge } from '@/components/orders/order-status-badge';
 import { useDriver } from '@/hooks/drivers/use-driver';
 import { useOrders } from '@/hooks/orders/use-orders';
+import { useUserNotifications } from '@/hooks/notifications/use-user-notifications';
+import { NotificationIcon } from '@/components/notifications/notification-icon';
+import { NotificationText } from '@/components/notifications/notification-text';
 import type { ApiOrderListItem, OrderStatus } from '@/types/order';
 import { toast } from 'sonner';
 import Image from 'next/image';
@@ -27,6 +30,7 @@ import {
   formatDateString,
   formatMemberSince,
   VEHICLE_LABELS,
+  formatTimestamp,
 } from '@/lib/utils';
 
 const ACTIVE_STATUSES: OrderStatus[] = [
@@ -50,33 +54,43 @@ export default function DriverDetailPage({
   const { data: driver, isLoading, isError } = useDriver(id);
   const [showAssignOrder, setShowAssignOrder] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
+  const [notifPage, setNotifPage] = useState(1);
 
-  // All orders for this driver (active + completed)
-  const { data: driverOrders, isLoading: ordersLoading } = useOrders({
+  // 1. Active orders (no pagination needed as it's usually small, but let's keep it limited)
+  const { data: activeOrdersData, isLoading: activeLoading } = useOrders({
     driverId: id,
-    limit: 50,
+    statuses: ACTIVE_STATUSES.join(','),
+    limit: 10,
   });
 
-  const allOrders: ApiOrderListItem[] = driverOrders?.data ?? [];
+  // 2. Delivery History (server-side pagination)
+  const { data: historyOrdersData, isLoading: historyLoading } = useOrders({
+    driverId: id,
+    statuses: HISTORY_STATUSES.join(','),
+    page: historyPage,
+    limit: HISTORY_PAGE_SIZE,
+  });
 
-  const activeOrders = allOrders.filter(o =>
-    ACTIVE_STATUSES.includes(o.status)
-  );
+  // 3. Notifications (server-side pagination)
+  const { data: notifData, isLoading: notifLoading } = useUserNotifications(id, {
+    page: notifPage,
+    limit: 5,
+  });
 
-  const historyOrders = allOrders.filter(o =>
-    HISTORY_STATUSES.includes(o.status)
-  );
-
-  const historyTotal = historyOrders.length;
+  const activeOrders = activeOrdersData?.data ?? [];
+  const historyOrders = historyOrdersData?.data ?? [];
+  const historyTotal = historyOrdersData?.meta.total ?? 0;
   const historyPages = Math.max(1, Math.ceil(historyTotal / HISTORY_PAGE_SIZE));
   const safeHPage = Math.min(historyPage, historyPages);
-  const historySlice = historyOrders.slice(
-    (safeHPage - 1) * HISTORY_PAGE_SIZE,
-    safeHPage * HISTORY_PAGE_SIZE
-  );
-  const hFrom =
-    historyTotal === 0 ? 0 : (safeHPage - 1) * HISTORY_PAGE_SIZE + 1;
+
+  const notifications = notifData?.data ?? [];
+  const notifTotal = notifData?.meta.total ?? 0;
+  const notifPages = Math.max(1, Math.ceil(notifTotal / 5));
+
+  const hFrom = historyTotal === 0 ? 0 : (safeHPage - 1) * HISTORY_PAGE_SIZE + 1;
   const hTo = Math.min(safeHPage * HISTORY_PAGE_SIZE, historyTotal);
+
+  const ordersLoading = activeLoading || historyLoading;
 
   if (isLoading) {
     return (
@@ -397,7 +411,7 @@ export default function DriverDetailPage({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {historySlice.map(order => (
+                      {historyOrders.map(order => (
                         <tr
                           key={order.referenceId}
                           className="hover:bg-surface-elevated transition-colors"
@@ -453,6 +467,77 @@ export default function DriverDetailPage({
                 </div>
               </div>
             </div>
+
+            {/* Notification Log (Admin View of Driver Feed) */}
+            <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-surface-elevated/10">
+                <h3 className="text-base font-semibold text-text-primary flex items-center gap-2">
+                  Staff Log: Notifications sent to {driver?.name}
+                  {notifTotal > 0 && (
+                     <span className="text-[10px] font-bold bg-primary-light text-white px-1.5 py-0.5 rounded-full">
+                       {notifTotal}
+                     </span>
+                  )}
+                </h3>
+              </div>
+
+              {notifLoading ? (
+                <div className="p-10 flex items-center justify-center">
+                   <div className="w-5 h-5 border-2 border-primary-light border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="py-12 flex flex-col items-center justify-center text-center px-6">
+                  <p className="text-sm text-text-muted">No notifications sent to this driver yet.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border text-sm">
+                  {notifications.map((n) => (
+                    <div key={n.id} className="p-4 flex items-start gap-4 hover:bg-surface-elevated/30 transition-colors">
+                      <NotificationIcon type={n.type} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-3 mb-0.5">
+                           <p className="text-sm font-semibold text-text-primary capitalize truncate">{n.title}</p>
+                           <span className="text-[10px] text-text-muted whitespace-nowrap">{formatTimestamp(n.createdAt)}</span>
+                        </div>
+                        <div className="text-xs text-text-secondary leading-relaxed">
+                          <NotificationText text={n.body} />
+                        </div>
+                        {n.orderReferenceId && (
+                           <Link href={`/orders/${n.orderReferenceId}`} className="text-[10px] font-mono font-bold text-primary-light mt-1 inline-block hover:underline">
+                             {n.orderReferenceId}
+                           </Link>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Notification Pagination */}
+              {notifPages > 1 && (
+                <div className="flex items-center justify-between px-5 py-3 border-t border-border gap-4 bg-surface-elevated/5">
+                  <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider">
+                    Page {notifPage} / {notifPages}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setNotifPage(p => Math.max(1, p - 1))}
+                      disabled={notifPage === 1 || notifLoading}
+                      className="icon-btn disabled:opacity-40"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setNotifPage(p => Math.min(notifPages, p + 1))}
+                      disabled={notifPage === notifPages || notifLoading}
+                      className="icon-btn disabled:opacity-40"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* RIGHT COLUMN */}
@@ -482,25 +567,27 @@ export default function DriverDetailPage({
                     </p>
                   </div>
                 ) : (
-                  activeOrders.map(order => (
-                    <div key={order.referenceId} className="px-4 py-3">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <Link
-                          href={`/orders/${order.referenceId}`}
-                          className="font-mono text-xs font-semibold text-primary-light hover:underline"
-                        >
-                          {order.referenceId}
-                        </Link>
-                        <OrderStatusBadge status={order.status} />
+                  activeOrders.map(order => {
+                    return (
+                      <div key={order.referenceId} className="px-4 py-3">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <Link
+                            href={`/orders/${order.referenceId}`}
+                            className="font-mono text-xs font-semibold text-primary-light hover:underline"
+                          >
+                            {order.referenceId}
+                          </Link>
+                          <OrderStatusBadge status={order.status} />
+                        </div>
+                        <p className="text-sm font-medium text-text-primary truncate">
+                          {order.recipientName}
+                        </p>
+                        <p className="text-xs text-text-secondary truncate mt-0.5">
+                          {order.deliveryAddress}
+                        </p>
                       </div>
-                      <p className="text-sm font-medium text-text-primary truncate">
-                        {order.recipientName}
-                      </p>
-                      <p className="text-xs text-text-secondary truncate mt-0.5">
-                        {order.deliveryAddress}
-                      </p>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
@@ -519,7 +606,7 @@ export default function DriverDetailPage({
         </div>
       </div>
 
-      {showAssignOrder && (
+      {showAssignOrder && driver && (
         <AssignOrderModal
           driverName={driver.name}
           driverId={id}

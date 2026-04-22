@@ -44,6 +44,7 @@ export interface OrderFilters {
   page?: number;
   limit?: number;
   status?: OrderStatus;
+  statuses?: string;
   search?: string;
   driverId?: string;
   dateFrom?: string;

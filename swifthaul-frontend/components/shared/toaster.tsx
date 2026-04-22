@@ -28,6 +28,8 @@ export function Toaster() {
           description: "text-[#64748B] text-xs mt-0.5",
           closeButton:
             "!text-[#94A3B8] hover:!text-[#64748B] !bg-transparent !border-0",
+          actionButton:
+            "!bg-[#1A6FB5] hover:!bg-[#145A94] !text-white !text-xs !font-bold !rounded-lg !px-3 !py-1.5 transition-colors",
         },
       }}
     />

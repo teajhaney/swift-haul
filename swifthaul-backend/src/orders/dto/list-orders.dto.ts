@@ -17,6 +17,10 @@ export class ListOrdersDto {
 
   @IsOptional()
   @IsString()
+  statuses?: string; // Comma-separated or single string
+
+  @IsOptional()
+  @IsString()
   driverId?: string;
 
   @IsOptional()

@@ -2,7 +2,7 @@ export const NOTIFICATIONS = {
   PAGE_HEADING: 'Alert Center',
   PAGE_SUBHEADING: 'Manage your operational updates and system alerts.',
   MARK_ALL_READ: 'Mark all as read',
-  PAGE_SIZE: 10,
+  PAGE_SIZE: 5,
 
   SHOWING: (from: number, to: number, total: number) =>
     `Showing ${from}–${to} of ${total} alerts`,

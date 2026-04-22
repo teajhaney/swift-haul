@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Query, ForbiddenException } from '@nestjs/common';
 
 import { NotificationsService } from './notifications.service';
 import { ListNotificationsDto } from './dto/list-notifications.dto';
@@ -16,14 +16,26 @@ import {
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  // list notifications
+  // list notifications for current user
   @Get()
   @ApiListNotifications()
-  async findAll(
+  async findAll(@Query() query: ListNotificationsDto, @CurrentUser() user: JwtPayload) {
+    return this.notificationsService.findAll(user.sub, query);
+  }
+
+  // list notifications for a specific user (admin/dispatcher only)
+  @Get('user/:userId')
+  @ApiListNotifications() // Reuse the same swagger for now
+  async findAllForUser(
+    @Param('userId') userId: string,
     @Query() query: ListNotificationsDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.notificationsService.findAll(user.sub, query);
+    // Role check is done in the controller for simplicity or could be a guard
+    if (user.role === 'DRIVER' && user.sub !== userId) {
+      throw new ForbiddenException();
+    }
+    return this.notificationsService.findAll(userId, query);
   }
 
   // mark all as read — must be declared before :id to prevent route collision

@@ -8,8 +8,7 @@ import { ALERT_TYPE_ICONS, ALERT_TYPE_STYLES } from '@/constants/driver-alerts';
 import { DRIVER_DESKTOP_NAV } from '@/constants/driver-navigation';
 import { useAuthStore } from '@/stores/auth.store';
 import { getInitials } from '@/lib/utils';
-import { useNotifications } from '@/hooks/notifications/use-notifications';
-import { useMarkRead } from '@/hooks/notifications/use-mark-read';
+import { NotificationBell } from '@/components/layout/notification-bell';
 
 interface DriverTopbarProps {
   /** If provided, mobile shows a back arrow + title instead of the brand */
@@ -19,26 +18,8 @@ interface DriverTopbarProps {
 
 export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const onAlerts = pathname === '/driver/alerts';
   const user = useAuthStore(s => s.user);
   const userInitials = user ? getInitials(user.name) : 'DR';
-  const { data: notificationsData } = useNotifications({ page: 1, limit: 5 });
-  const markRead = useMarkRead();
-  const notifications = notificationsData?.data ?? [];
-
-  const unread = notifications.filter(n => !n.isRead).length;
-  const preview = notifications.slice(0, 4);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
-    }
-    if (open) document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open]);
 
   return (
     <header className="bg-surface border-b border-border sticky top-0 z-30">
@@ -111,98 +92,7 @@ export function DriverTopbar({ backHref, title }: DriverTopbarProps) {
           </div>
 
           {/* Bell */}
-          <div className="relative" ref={ref}>
-            <button
-              className="icon-btn relative"
-              aria-label="Notifications"
-              onClick={() => {
-                if (!onAlerts) setOpen(o => !o);
-              }}
-            >
-              <Bell className="w-5 h-5" />
-              {unread > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent" />
-              )}
-            </button>
-
-            {open && !onAlerts && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-surface rounded-xl border border-border shadow-xl z-50 overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-text-primary">
-                      Alerts
-                    </span>
-                    {unread > 0 && (
-                      <span className="w-5 h-5 rounded-full bg-accent flex items-center justify-center text-[10px] font-bold text-white">
-                        {unread}
-                      </span>
-                    )}
-                  </div>
-                  <Link
-                    href="/driver/alerts"
-                    className="text-xs font-semibold text-primary-light hover:text-primary-hover transition-colors"
-                    onClick={() => setOpen(false)}
-                  >
-                    View all
-                  </Link>
-                </div>
-
-                {/* Alert list */}
-                <div className="divide-y divide-border max-h-64 overflow-y-auto">
-                  {preview.map(alert => {
-                    const style = ALERT_TYPE_STYLES[alert.type];
-                    const Icon = ALERT_TYPE_ICONS[alert.type];
-                    return (
-                      <Link
-                        key={alert.id}
-                        href="/driver/alerts"
-                        onClick={() => {
-                          setOpen(false);
-                          if (!alert.isRead) {
-                            markRead.mutate(alert.id);
-                          }
-                        }}
-                        className="flex items-start gap-3 px-4 py-3 hover:bg-surface-elevated transition-colors"
-                      >
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${style.bg}`}
-                        >
-                          <Icon className={`w-3.5 h-3.5 ${style.text}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-xs font-semibold text-text-primary truncate">
-                              {alert.title}
-                            </p>
-                            {!alert.isRead && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary-light shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-[11px] text-text-secondary line-clamp-2 mt-0.5 leading-relaxed">
-                            {alert.body}
-                          </p>
-                          <p className="text-[10px] text-text-muted mt-1">
-                            {new Date(alert.createdAt).toLocaleString()}
-                          </p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                {/* Footer */}
-                <Link
-                  href="/driver/alerts"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-primary-light hover:bg-surface-elevated transition-colors border-t border-border"
-                >
-                  See all alerts
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            )}
-          </div>
+          <NotificationBell />
 
           {/* Avatar */}
           <Link

@@ -26,7 +26,9 @@ type HistoryStatus = 'DELIVERED' | 'FAILED';
 type HistoryOrderItem = ApiOrderListItem & { status: HistoryStatus };
 const HISTORY_RENDER_BASE_MS = Date.now();
 
-function isHistoryOrderItem(order: ApiOrderListItem): order is HistoryOrderItem {
+function isHistoryOrderItem(
+  order: ApiOrderListItem
+): order is HistoryOrderItem {
   return order.status === 'DELIVERED' || order.status === 'FAILED';
 }
 
@@ -49,22 +51,21 @@ export default function DriverHistoryPage() {
     page,
     limit: HISTORY_PAGE_SIZE,
     driverId: me?.id,
+    statuses: 'DELIVERED,FAILED',
     dateFrom: getDateFrom(),
   });
 
   const isLoading = meLoading || (!!me?.id && ordersLoading);
 
-  const allOrders: ApiOrderListItem[] = data?.data ?? [];
-  // For the delivery history, we strictly only show DELIVERED or FAILED
-  // If the backend returned other statuses (like ASSIGNED), we filter them out.
-  // Note: Better to have a backend status filter that accepts multiple values,
-  // but for now we filter locally.
-  const pageItems = allOrders.filter(isHistoryOrderItem);
+  const pageItems: ApiOrderListItem[] = data?.data ?? [];
+  // No more local filtering needed since the backend handles it via statuses param
 
   // Stats - strictly speaking, these should come from a summary API,
   // but we can use the metadata total for the current view.
   const totalCount = data?.meta.total ?? 0;
-  const totalPages = data?.meta.total ? Math.ceil(data.meta.total / HISTORY_PAGE_SIZE) : 1;
+  const totalPages = data?.meta.total
+    ? Math.ceil(data.meta.total / HISTORY_PAGE_SIZE)
+    : 1;
 
   function goTo(p: number) {
     setPage(Math.max(1, Math.min(p, totalPages)));
@@ -121,9 +122,7 @@ export default function DriverHistoryPage() {
               <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                 On-time
               </p>
-              <p className="text-xl font-bold text-text-primary">
-                —
-              </p>
+              <p className="text-xl font-bold text-text-primary">—</p>
             </div>
           </div>
         </div>
@@ -178,8 +177,9 @@ export default function DriverHistoryPage() {
                 </tr>
               )}
               {pageItems.map((item, idx) => {
-                const s = HISTORY_STATUS_STYLES[item.status];
-                const Icon = s.icon;
+                const isHistory = isHistoryOrderItem(item);
+                const s = isHistory ? HISTORY_STATUS_STYLES[item.status] : null;
+                const Icon = s?.icon;
                 return (
                   <tr
                     key={item.referenceId}
@@ -202,12 +202,12 @@ export default function DriverHistoryPage() {
                       </p>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide ${s.bg} ${s.text}`}
-                      >
-                        <Icon className="w-3 h-3" />
-                        {item.status}
-                      </span>
+                      {s && Icon && (
+                        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full ${s.bg} ${s.text} text-[10px] font-bold uppercase tracking-wider`}>
+                          <Icon className="w-3 h-3" />
+                          {item.status.replace('_', ' ')}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
@@ -219,35 +219,39 @@ export default function DriverHistoryPage() {
         {/* Mobile cards */}
         <div className="sm:hidden space-y-2">
           {pageItems.map(item => {
-            const s = HISTORY_STATUS_STYLES[item.status];
-            const Icon = s.icon;
+            const isHistory = isHistoryOrderItem(item);
+            const s = isHistory ? HISTORY_STATUS_STYLES[item.status] : null;
+            const Icon = s?.icon;
             return (
               <div
                 key={item.referenceId}
-                className="bg-surface rounded-xl border border-border p-4"
+                className="bg-surface rounded-xl border border-border p-4 space-y-3"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <span className="font-mono text-xs text-text-muted">
-                      {item.referenceId}
-                    </span>
-                    <p className="text-sm font-semibold text-text-primary mt-0.5">
-                      {item.recipientName}
-                    </p>
-                  </div>
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide ${s.bg} ${s.text}`}
-                  >
-                    <Icon className="w-3 h-3" />
-                    {item.status}
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs text-text-muted">
+                    {item.referenceId}
                   </span>
+                  {s && Icon && (
+                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${s.bg} ${s.text} text-[10px] font-bold uppercase`}>
+                      <Icon className="w-2.5 h-2.5" />
+                      {item.status.replace('_', ' ')}
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-1 text-xs text-text-secondary mb-3">
-                  <MapPin className="w-3 h-3 shrink-0" />
-                  <span className="truncate">{item.deliveryAddress}</span>
+
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-text-primary">
+                    {item.recipientName}
+                  </p>
+                  <div className="flex items-center gap-1 text-xs text-text-secondary">
+                    <MapPin className="w-3 h-3 shrink-0" />
+                    <span className="truncate">{item.deliveryAddress}</span>
+                  </div>
                 </div>
-                <div className="text-xs text-text-muted border-t border-border pt-2">
-                  {formatDateString(item.updatedAt)}
+
+                <div className="text-[10px] text-text-muted border-t border-border pt-2 flex justify-between">
+                   <span>{item.referenceId}</span>
+                   <span>{formatDateString(item.updatedAt)}</span>
                 </div>
               </div>
             );

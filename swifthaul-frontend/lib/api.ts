@@ -74,9 +74,12 @@ api.interceptors.response.use(
     try {
       await refreshPromise;
       return api(original);
-    } catch {
-      // Refresh failed — session is dead, send to login
-      if (typeof window !== 'undefined') {
+    } catch (refreshError: unknown) {
+      const axiosError = refreshError as AxiosError;
+      const isNetworkError = !axiosError.response;
+
+      // Refresh failed — if it's NOT a network error, session is dead, send to login
+      if (!isNetworkError && typeof window !== 'undefined') {
         window.location.href = '/login';
       }
       return Promise.reject(error);

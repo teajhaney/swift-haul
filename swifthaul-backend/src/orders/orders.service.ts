@@ -2,16 +2,17 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Availability, OrderStatus, Prisma, Role } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { JwtPayload } from '../auth/types/jwt-payload.type';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { isValidTransition } from './order-state-machine';
 import { CLOUDINARY_FOLDERS } from '../common/constants/cloudinary.constants';
-import type { CreateOrderDto } from './dto/create-order.dto';
-import type { UpdateOrderDto } from './dto/update-order.dto';
-import type { ListOrdersDto } from './dto/list-orders.dto';
-import type { UpdateStatusDto } from './dto/update-status.dto';
-import type { AssignDriverDto } from './dto/assign-driver.dto';
-import type { UploadPodDto } from './dto/upload-pod.dto';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
+import { ListOrdersDto } from './dto/list-orders.dto';
+import { UpdateStatusDto } from './dto/update-status.dto';
+import { AssignDriverDto } from './dto/assign-driver.dto';
+import { UploadPodDto } from './dto/upload-pod.dto';
 import type {
   OrderDetail,
   OrderDetailResult,
@@ -61,6 +62,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // create order
@@ -137,7 +139,12 @@ export class OrdersService {
       where.driverId = query.driverId;
     }
 
-    if (query.status) where.status = query.status;
+    if (query.status) {
+      where.status = query.status;
+    } else if (query.statuses) {
+      const statusList = query.statuses.split(',') as OrderStatus[];
+      where.status = { in: statusList };
+    }
 
     if (query.dateFrom ?? query.dateTo) {
       const dateFilter: Prisma.DateTimeFilter<'Order'> = {};
@@ -282,6 +289,13 @@ export class OrdersService {
       throw new ForbiddenResourceException();
     }
 
+    // Get the name of the person performing the update for notifications
+    const actingUser = await this.prisma.user.findUnique({
+      where: { id: user.sub },
+      select: { name: true },
+    });
+    const actingUserName = actingUser?.name || user.email;
+
     if (!isValidTransition(order.status, dto.status)) {
       throw new InvalidTransitionException(order.status, dto.status);
     }
@@ -317,7 +331,13 @@ export class OrdersService {
     });
 
     // Phase 3: emit WebSocket event
-    // Phase 4: queue email notification
+    void this.notifications.notifyStatusChanged(
+      order.id,
+      order.referenceId,
+      dto.status,
+      actingUserName,
+      user.sub,
+    );
 
     return this.findOne(referenceId, user);
   }
@@ -434,7 +454,11 @@ export class OrdersService {
     });
 
     // Phase 3: emit WebSocket event
-    // Phase 4: queue email notification
+    void this.notifications.notifyOrderAssigned(
+      dto.driverId,
+      order.id,
+      order.referenceId,
+    );
 
     return this.findOne(referenceId, user);
   }

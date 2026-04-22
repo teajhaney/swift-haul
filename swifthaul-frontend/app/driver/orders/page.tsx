@@ -47,10 +47,20 @@ export default function DriverOrderQueuePage() {
 
   // backend auto-filters to this driver's orders when role=DRIVER
   // backend ListOrdersDto enforces max limit=50
+  // only fetch active/pending orders for the queue
+  const activeStatusList = [
+    'ASSIGNED',
+    'ACCEPTED',
+    'PICKED_UP',
+    'IN_TRANSIT',
+    'OUT_FOR_DELIVERY',
+  ].join(',');
+
   const { data, isLoading: ordersLoading, isError } = useOrders({ 
     page, 
     limit: QUEUE_PAGE_SIZE,
-    driverId: me?.id
+    driverId: me?.id,
+    statuses: activeStatusList,
   });
 
   const isLoading = meLoading || ordersLoading;
@@ -75,9 +85,8 @@ export default function DriverOrderQueuePage() {
   });
 
   // Server-side pagination metadata
-  const totalItems = data?.meta.total ?? 0;
-  // Subtracting 1 from totalItems if there is an activeOrder to reflect the queue count correctly
-  // but for simple pagination UI, we can just use totalPages from meta
+  // Upcoming deliveries count: Total active from backend minus the 1 currently active order
+  const totalUpcoming = Math.max(0, (data?.meta.total ?? 0) - (activeOrder ? 1 : 0));
   const totalPages = data?.meta.total ? Math.ceil(data.meta.total / QUEUE_PAGE_SIZE) : 1;
 
   function goTo(p: number) {
@@ -232,7 +241,7 @@ export default function DriverOrderQueuePage() {
               </h2>
               {!isLoading && (
                 <span className="w-5 h-5 rounded-full bg-primary-light flex items-center justify-center text-[10px] font-bold text-white">
-                  {totalItems}
+                  {totalUpcoming}
                 </span>
               )}
             </div>
