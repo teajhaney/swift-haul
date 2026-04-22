@@ -405,48 +405,40 @@ export default function OrdersPage() {
 
         {/* ── Pagination footer ── */}
         {!isLoading && total > 0 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-border gap-4">
-            <p className="text-xs text-text-secondary shrink-0">
+          <div className="pagination-footer">
+            <p className="text-xs text-text-secondary sm:hidden">
+              {from}–{to} of {total}
+            </p>
+            <p className="hidden text-xs text-text-secondary shrink-0 sm:block">
               {ORDERS.SHOWING(from, to, total)}
             </p>
 
-            <div className="flex items-center gap-1">
+            <div className="pagination-controls gap-0.5 sm:gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={safePage === 1}
-                className="icon-btn disabled:opacity-40 disabled:cursor-not-allowed"
+                className="pagination-nav-btn"
                 aria-label="Previous page"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              {pageNumbers.map((p, i) =>
-                p === '...' ? (
-                  <span
-                    key={`ellipsis-${i}`}
-                    className="w-8 text-center text-xs text-text-muted"
-                  >
-                    …
-                  </span>
-                ) : (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                      p === safePage
-                        ? 'bg-primary text-white'
-                        : 'text-text-secondary hover:bg-surface-elevated'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                )
-              )}
+              {pageNumbers.map(p => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`pagination-page-btn text-sm font-medium ${
+                    p === safePage ? 'pagination-page-btn-active' : ''
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
 
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={safePage === totalPages}
-                className="icon-btn disabled:opacity-40 disabled:cursor-not-allowed"
+                className="pagination-nav-btn"
                 aria-label="Next page"
               >
                 <ChevronRight className="w-4 h-4" />

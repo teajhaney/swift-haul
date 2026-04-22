@@ -321,6 +321,26 @@
   }
 
   /* ── Pagination controls ───────────────────────────────── */
+  .pagination-footer {
+    @apply flex items-center justify-between gap-4 px-4 py-3 border-t border-border sm:px-5;
+  }
+
+  .pagination-footer-compact {
+    @apply flex items-center justify-between gap-4;
+  }
+
+  .pagination-controls {
+    @apply flex items-center gap-1 shrink-0;
+  }
+
+  .pagination-controls-inline {
+    @apply flex items-center gap-1 shrink-0;
+  }
+
+  .pagination-ellipsis {
+    @apply w-8 text-center text-xs text-text-muted;
+  }
+
   /* Prev / Next arrow buttons */
   .pagination-nav-btn {
     @apply w-8 h-8 rounded-lg border border-border flex items-center justify-center

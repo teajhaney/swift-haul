@@ -25,7 +25,7 @@ import {
 
 import { useOrders } from '@/hooks/orders/use-orders';
 import { useMe } from '@/hooks/auth/use-me';
-import { formatTime } from '@/lib/utils';
+import { formatTime, getPageNumbers } from '@/lib/utils';
 import type { ApiOrderListItem, OrderStatus } from '@/types/order';
 
 const STATUS_PRIORITY: Record<OrderStatus, number> = {
@@ -88,6 +88,7 @@ export default function DriverOrderQueuePage() {
   // Upcoming deliveries count: Total active from backend minus the 1 currently active order
   const totalUpcoming = Math.max(0, (data?.meta.total ?? 0) - (activeOrder ? 1 : 0));
   const totalPages = data?.meta.total ? Math.ceil(data.meta.total / QUEUE_PAGE_SIZE) : 1;
+  const pageNumbers = getPageNumbers(page, totalPages);
 
   function goTo(p: number) {
     setPage(Math.max(1, Math.min(p, totalPages)));
@@ -341,11 +342,11 @@ export default function DriverOrderQueuePage() {
 
               {/* ── Pagination ── */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
+                <div className="pagination-footer-compact mt-4">
                   <p className="text-xs text-text-muted sm:hidden">
                     Page {page} of {totalPages}
                   </p>
-                  <div className="flex items-center gap-1 ml-auto">
+                  <div className="pagination-controls ml-auto sm:ml-0">
                     <button
                       onClick={() => goTo(page - 1)}
                       disabled={page === 1}
@@ -354,21 +355,17 @@ export default function DriverOrderQueuePage() {
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      p => (
-                        <button
-                          key={p}
-                          onClick={() => goTo(p)}
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                            p === page
-                              ? 'bg-primary-light text-white'
-                              : 'border border-border text-text-secondary hover:bg-surface-elevated'
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      )
-                    )}
+                    {pageNumbers.map(p => (
+                      <button
+                        key={p}
+                        onClick={() => goTo(p)}
+                        className={`pagination-page-btn ${
+                          p === page ? 'pagination-page-btn-active' : ''
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
                     <button
                       onClick={() => goTo(page + 1)}
                       disabled={page === totalPages}

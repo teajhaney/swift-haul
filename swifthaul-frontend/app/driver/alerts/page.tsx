@@ -24,6 +24,7 @@ export default function DriverAlertsPage() {
   const unreadCount = data?.meta.unreadCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / ALERTS_PAGE_SIZE));
   const start = (page - 1) * ALERTS_PAGE_SIZE;
+  const pageNumbers = getPageNumbers(page, totalPages);
 
   function goTo(p: number) {
     setPage(Math.max(1, Math.min(p, totalPages)));
@@ -134,11 +135,11 @@ export default function DriverAlertsPage() {
 
         {/* ── Pagination ── */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4 border-t border-border">
+          <div className="pagination-footer-compact pt-4 border-t border-border">
             <p className="text-xs text-text-muted">
               Showing {start + 1}–{Math.min(start + ALERTS_PAGE_SIZE, total)} of {total} alerts
             </p>
-            <div className="flex items-center gap-1">
+            <div className="pagination-controls">
               <button
                 onClick={() => goTo(page - 1)}
                 disabled={page === 1 || isLoading}
@@ -148,26 +149,18 @@ export default function DriverAlertsPage() {
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              {getPageNumbers(page, totalPages).map((p, i) =>
-                p === '...' ? (
-                  <span key={`ellipsis-${i}`} className="w-8 text-center text-xs text-text-muted">
-                    …
-                  </span>
-                ) : (
-                  <button
-                    key={p}
-                    onClick={() => goTo(p)}
-                    disabled={isLoading}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                      p === page
-                        ? 'bg-primary-light text-white'
-                        : 'border border-border text-text-secondary hover:bg-surface-elevated'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                )
-              )}
+              {pageNumbers.map(p => (
+                <button
+                  key={p}
+                  onClick={() => goTo(p)}
+                  disabled={isLoading}
+                  className={`pagination-page-btn ${
+                    p === page ? 'pagination-page-btn-active' : ''
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
 
               <button
                 onClick={() => goTo(page + 1)}

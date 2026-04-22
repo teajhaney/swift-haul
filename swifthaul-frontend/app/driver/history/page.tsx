@@ -12,13 +12,17 @@ import {
 import { DriverTopbar } from '@/components/driver/driver-topbar';
 import { DriverBottomNav } from '@/components/driver/driver-bottom-nav';
 import {
+  HistoryCardSkeleton,
+  HistoryStatSkeleton,
+} from '@/components/driver/history-skeleton';
+import {
   HISTORY_TABS,
   HISTORY_STATUS_STYLES,
   HISTORY_PAGE_SIZE,
 } from '@/constants/driver-history';
 import type { HistoryFilterTab } from '@/types/driver-pages';
 import { useOrders } from '@/hooks/orders/use-orders';
-import { formatDateString } from '@/lib/utils';
+import { formatDateString, getPageNumbers } from '@/lib/utils';
 import type { ApiOrderListItem } from '@/types/order';
 import { useMe } from '@/hooks/auth/use-me';
 
@@ -64,6 +68,7 @@ export default function DriverHistoryPage() {
   });
 
   const isLoading = meLoading || (!!me?.id && ordersLoading);
+  const isInitialLoading = isLoading && !data;
 
   const pageItems: ApiOrderListItem[] = data?.data ?? [];
   // No more local filtering needed since the backend handles it via statuses param
@@ -74,6 +79,7 @@ export default function DriverHistoryPage() {
   const totalPages = data?.meta.total
     ? Math.ceil(data.meta.total / HISTORY_PAGE_SIZE)
     : 1;
+  const pageNumbers = getPageNumbers(page, totalPages);
 
   function goTo(p: number) {
     setPage(Math.max(1, Math.min(p, totalPages)));
@@ -96,58 +102,70 @@ export default function DriverHistoryPage() {
 
         {/* ── Stats row ── */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary-subtle flex items-center justify-center shrink-0">
-              <Package className="w-4 h-4 text-primary-light" />
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                Total
-              </p>
-              <p className="text-xl font-bold text-text-primary">
-                {totalCount}
-              </p>
-            </div>
-          </div>
-          <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center shrink-0">
-              <Clock className="w-4 h-4 text-info" />
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                This Week
-              </p>
-              <p className="text-xl font-bold text-text-primary">
-                {activeTab === 'all' ? '—' : totalCount}
-              </p>
-            </div>
-          </div>
-          <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
-              <TrendingUp className="w-4 h-4 text-success" />
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                On-time
-              </p>
-              <p className="text-xl font-bold text-text-primary">—</p>
-            </div>
-          </div>
+          {isInitialLoading ? (
+            <>
+              <HistoryStatSkeleton />
+              <HistoryStatSkeleton />
+              <HistoryStatSkeleton />
+            </>
+          ) : (
+            <>
+              <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary-subtle flex items-center justify-center shrink-0">
+                  <Package className="w-4 h-4 text-primary-light" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                    Total
+                  </p>
+                  <p className="text-xl font-bold text-text-primary">
+                    {totalCount}
+                  </p>
+                </div>
+              </div>
+              <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 text-info" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                    This Week
+                  </p>
+                  <p className="text-xl font-bold text-text-primary">
+                    {activeTab === 'all' ? '—' : totalCount}
+                  </p>
+                </div>
+              </div>
+              <div className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-4 h-4 text-success" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                    On-time
+                  </p>
+                  <p className="text-xl font-bold text-text-primary">—</p>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── Filter tabs ── */}
-        <div className="flex gap-1 bg-surface-elevated rounded-xl p-1 border border-border">
+        <div className="grid grid-cols-2 gap-1 bg-surface-elevated rounded-xl p-1 border border-border sm:flex">
           {HISTORY_TABS.map(tab => (
             <button
               key={tab.key}
               onClick={() => changeTab(tab.key)}
-              className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
+              className={`min-w-0 py-2 px-2 rounded-lg text-xs font-semibold transition-colors sm:flex-1 ${
                 activeTab === tab.key
                   ? 'bg-surface text-text-primary shadow-sm border border-border'
                   : 'text-text-muted hover:text-text-secondary'
               }`}
             >
-              {tab.label}
+              <span className="block truncate sm:whitespace-nowrap">
+                {tab.label}
+              </span>
             </button>
           ))}
         </div>
@@ -177,7 +195,7 @@ export default function DriverHistoryPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading && (
+              {isInitialLoading && (
                 <tr>
                   <td colSpan={5} className="px-4 py-4">
                     <div className="h-24 bg-surface-elevated rounded animate-pulse" />
@@ -228,6 +246,25 @@ export default function DriverHistoryPage() {
 
         {/* Mobile cards */}
         <div className="sm:hidden space-y-2">
+          {isInitialLoading && (
+            <>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <HistoryCardSkeleton key={i} />
+              ))}
+            </>
+          )}
+
+          {!isInitialLoading && pageItems.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border bg-surface px-4 py-10 text-center">
+              <p className="text-sm font-semibold text-text-primary">
+                No deliveries found
+              </p>
+              <p className="mt-1 text-xs text-text-secondary">
+                Try a different time range to view completed or failed orders.
+              </p>
+            </div>
+          )}
+
           {pageItems.map(item => {
             const isHistory = isHistoryOrderItem(item);
             const s = isHistory ? HISTORY_STATUS_STYLES[item.status] : null;
@@ -237,13 +274,13 @@ export default function DriverHistoryPage() {
                 key={item.referenceId}
                 className="bg-surface rounded-xl border border-border p-4 space-y-3"
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-text-muted">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-mono text-xs text-text-muted break-all">
                     {item.referenceId}
                   </span>
                   {s && Icon && (
                     <div
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${s.bg} ${s.text} text-[10px] font-bold uppercase`}
+                      className={`inline-flex shrink-0 items-center gap-1 px-2 py-0.5 rounded-full ${s.bg} ${s.text} text-[10px] font-bold uppercase`}
                     >
                       <Icon className="w-2.5 h-2.5" />
                       {item.status.replace('_', ' ')}
@@ -255,15 +292,15 @@ export default function DriverHistoryPage() {
                   <p className="text-sm font-semibold text-text-primary">
                     {item.recipientName}
                   </p>
-                  <div className="flex items-center gap-1 text-xs text-text-secondary">
+                  <div className="flex items-start gap-1 text-xs text-text-secondary">
                     <MapPin className="w-3 h-3 shrink-0" />
-                    <span className="truncate">{item.deliveryAddress}</span>
+                    <span className="break-words">{item.deliveryAddress}</span>
                   </div>
                 </div>
 
-                <div className="text-[10px] text-text-muted border-t border-border pt-2 flex justify-between">
-                  <span>{item.referenceId}</span>
-                  <span>{formatDateString(item.updatedAt)}</span>
+                <div className="text-[10px] text-text-muted border-t border-border pt-2 flex items-center justify-between gap-3">
+                  <span className="uppercase tracking-wider">Updated</span>
+                  <span className="text-right">{formatDateString(item.updatedAt)}</span>
                 </div>
               </div>
             );
@@ -272,11 +309,11 @@ export default function DriverHistoryPage() {
 
         {/* ── Pagination ── */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-1">
+          <div className="pagination-footer-compact pt-1">
             <p className="text-xs text-text-muted">
               Page {page} of {totalPages} ({totalCount} deliveries)
             </p>
-            <div className="flex items-center gap-1">
+            <div className="pagination-controls">
               <button
                 onClick={() => goTo(page - 1)}
                 disabled={page === 1}
@@ -286,14 +323,14 @@ export default function DriverHistoryPage() {
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+              {pageNumbers.map(p => (
                 <button
                   key={p}
                   onClick={() => goTo(p)}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                  className={`pagination-page-btn ${
                     p === page
-                      ? 'bg-primary-light text-white'
-                      : 'border border-border text-text-secondary hover:bg-surface-elevated'
+                      ? 'pagination-page-btn-active'
+                      : ''
                   }`}
                 >
                   {p}

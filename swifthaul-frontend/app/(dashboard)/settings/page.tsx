@@ -5,8 +5,7 @@ import {
   UserPlus,
   MoreVertical,
   ChevronLeft,
-  ChevronRight,
-  ChevronRight as Arrow,
+  ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,7 +16,7 @@ import { useInvite } from '@/hooks/auth/use-invite';
 import { useUsers } from '@/hooks/users/use-users';
 import { useMe } from '@/hooks/auth/use-me';
 import { useUpdateUserStatus } from '@/hooks/users/use-update-user-status';
-import { formatDateString } from '@/lib/utils';
+import { formatDateString, getPageNumbers } from '@/lib/utils';
 import type { TeamMember, UserRole, MemberStatus } from '@/types/settings';
 import type { UserListItem } from '@/types/users';
 
@@ -72,9 +71,9 @@ export default function SettingsPage() {
   const totalPages =
     usersData?.meta.totalPages ??
     Math.max(1, Math.ceil(total / SETTINGS.PAGE_SIZE));
-  const safePage = page;
-  const from = (page - 1) * SETTINGS.PAGE_SIZE + 1;
+  const from = total === 0 ? 0 : (page - 1) * SETTINGS.PAGE_SIZE + 1;
   const to = Math.min(page * SETTINGS.PAGE_SIZE, total);
+  const pageNumbers = getPageNumbers(page, totalPages);
 
   const invite = useInvite();
 
@@ -279,29 +278,42 @@ export default function SettingsPage() {
               </table>
 
               {/* Pagination footer */}
-              <div className="flex items-center justify-between px-5 py-3 border-t border-border gap-4">
-                <p className="text-xs text-text-secondary">
-                  {SETTINGS.SHOWING(from, to, total)}
-                </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={safePage === 1}
-                    className="px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-text-secondary hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                    {SETTINGS.PREVIOUS}
-                  </button>
-                  <button
-                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                    disabled={safePage === totalPages}
-                    className="px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-text-secondary hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
-                  >
-                    {SETTINGS.NEXT}
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+              {total > 0 && (
+                <div className="pagination-footer">
+                  <p className="text-xs text-text-secondary shrink-0">
+                    {SETTINGS.SHOWING(from, to, total)}
+                  </p>
+                  <div className="pagination-controls">
+                    <button
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="pagination-nav-btn"
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    {pageNumbers.map(p => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`pagination-page-btn text-sm font-medium ${
+                          p === page ? 'pagination-page-btn-active' : ''
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="pagination-nav-btn"
+                      aria-label="Next page"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
         </div>
@@ -335,85 +347,98 @@ export default function SettingsPage() {
                 return (
                   <div
                     key={member.id}
-                    className={`bg-surface rounded-xl border border-border shadow-sm flex items-center gap-3 px-4 py-4 ${isDeactivated ? 'opacity-50' : ''}`}
+                    className={`bg-surface rounded-xl border border-border shadow-sm px-4 py-4 ${isDeactivated ? 'opacity-50' : ''}`}
                   >
-                    <div className="relative shrink-0">
-                      <div className="w-11 h-11 rounded-full bg-primary-light flex items-center justify-center">
-                        <span className="text-xs font-bold text-white">
-                          {member.avatarInitials}
-                        </span>
-                      </div>
-                      <span
-                        className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface ${STATUS_STYLES[member.status].dot}`}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-semibold text-text-primary truncate">
-                          {member.name}
-                        </span>
-                        {member.isCurrentUser && (
-                          <span className="px-1 py-0.5 rounded text-[9px] font-bold bg-primary text-white tracking-wide shrink-0">
-                            {SETTINGS.YOU_BADGE}
+                    <div className="flex items-start gap-3">
+                      <div className="relative shrink-0">
+                        <div className="w-11 h-11 rounded-full bg-primary-light flex items-center justify-center">
+                          <span className="text-xs font-bold text-white">
+                            {member.avatarInitials}
                           </span>
-                        )}
+                        </div>
+                        <span
+                          className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface ${STATUS_STYLES[member.status].dot}`}
+                        />
                       </div>
-                      <p className="text-xs text-text-secondary mt-0.5">
-                        {member.title}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold tracking-wide ${ROLE_STYLES[member.role]}`}
-                      >
-                        {member.role}
-                      </span>
-                      
-                      {!member.isCurrentUser && (
-                        <div className="relative">
-                          <button
-                            onClick={() =>
-                              setOpenMenu(
-                                openMenu === member.id ? null : member.id
-                              )
-                            }
-                            className="p-1.5 rounded-lg hover:bg-surface-elevated transition-colors text-text-muted"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-
-                          {openMenu === member.id && (
-                            <div
-                              className="absolute right-0 bottom-full mb-1 w-40 bg-surface border border-border rounded-lg shadow-lg z-20 overflow-hidden"
-                              onMouseLeave={() => setOpenMenu(null)}
-                            >
-                              {member.status === 'INVITED' ? (
-                                <button
-                                  onClick={() => resendInvite(member.email)}
-                                  className="w-full px-4 py-2.5 text-left text-sm text-text-primary hover:bg-surface-elevated transition-colors"
-                                >
-                                  {SETTINGS.RESEND_INVITE}
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() =>
-                                    toggleStatus(member.id, member.status)
-                                  }
-                                  className={`w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-surface-elevated ${
-                                    member.status === 'ACTIVE'
-                                      ? 'text-error'
-                                      : 'text-success'
-                                  }`}
-                                >
-                                  {member.status === 'ACTIVE'
-                                    ? SETTINGS.DEACTIVATE_ACTION
-                                    : SETTINGS.REACTIVATE_ACTION}
-                                </button>
-                              )}
-                            </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-semibold text-text-primary truncate">
+                            {member.name}
+                          </span>
+                          {member.isCurrentUser && (
+                            <span className="px-1 py-0.5 rounded text-[9px] font-bold bg-primary text-white tracking-wide shrink-0">
+                              {SETTINGS.YOU_BADGE}
+                            </span>
                           )}
                         </div>
-                      )}
+                        <p className="text-xs text-text-secondary mt-0.5">
+                          {member.title}
+                        </p>
+                        <p className="mt-1 text-xs text-text-muted break-all">
+                          {member.email}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold tracking-wide whitespace-nowrap ${ROLE_STYLES[member.role]}`}
+                        >
+                          {member.role}
+                        </span>
+                      
+                        {!member.isCurrentUser && (
+                          <div className="relative">
+                            <button
+                              onClick={() =>
+                                setOpenMenu(
+                                  openMenu === member.id ? null : member.id
+                                )
+                              }
+                              className="p-1.5 rounded-lg hover:bg-surface-elevated transition-colors text-text-muted"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+
+                            {openMenu === member.id && (
+                              <div
+                                className="absolute right-0 bottom-full mb-1 w-40 bg-surface border border-border rounded-lg shadow-lg z-20 overflow-hidden"
+                                onMouseLeave={() => setOpenMenu(null)}
+                              >
+                                {member.status === 'INVITED' ? (
+                                  <button
+                                    onClick={() => resendInvite(member.email)}
+                                    className="w-full px-4 py-2.5 text-left text-sm text-text-primary hover:bg-surface-elevated transition-colors"
+                                  >
+                                    {SETTINGS.RESEND_INVITE}
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() =>
+                                      toggleStatus(member.id, member.status)
+                                    }
+                                    className={`w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-surface-elevated ${
+                                      member.status === 'ACTIVE'
+                                        ? 'text-error'
+                                        : 'text-success'
+                                    }`}
+                                  >
+                                    {member.status === 'ACTIVE'
+                                      ? SETTINGS.DEACTIVATE_ACTION
+                                      : SETTINGS.REACTIVATE_ACTION}
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-[11px]">
+                      <span className={`font-semibold ${STATUS_STYLES[member.status].text}`}>
+                        {STATUS_STYLES[member.status].label}
+                      </span>
+                      <span className="text-text-muted">
+                        Joined {member.joinedDate}
+                      </span>
                     </div>
                   </div>
                 );
@@ -422,27 +447,42 @@ export default function SettingsPage() {
           </div>
 
           {/* Mobile pagination */}
-          <div className="flex items-center justify-between pt-2">
-            <p className="text-xs text-text-secondary">
-              {SETTINGS.SHOWING(from, to, total)}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={safePage === 1}
-                className="icon-btn disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={safePage === totalPages}
-                className="icon-btn disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+          {total > 0 && (
+            <div className="pagination-footer">
+              <p className="text-xs text-text-secondary shrink-0">
+                {SETTINGS.SHOWING(from, to, total)}
+              </p>
+              <div className="pagination-controls">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="pagination-nav-btn"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {pageNumbers.map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`pagination-page-btn text-sm font-medium ${
+                      p === page ? 'pagination-page-btn-active' : ''
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="pagination-nav-btn"
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* FAB mobile invite */}

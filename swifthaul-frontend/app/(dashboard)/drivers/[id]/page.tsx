@@ -22,7 +22,7 @@ import { useOrders } from '@/hooks/orders/use-orders';
 import { useUserNotifications } from '@/hooks/notifications/use-user-notifications';
 import { NotificationIcon } from '@/components/notifications/notification-icon';
 import { NotificationText } from '@/components/notifications/notification-text';
-import type { ApiOrderListItem, OrderStatus } from '@/types/order';
+import type {  OrderStatus } from '@/types/order';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import {
@@ -72,10 +72,13 @@ export default function DriverDetailPage({
   });
 
   // 3. Notifications (server-side pagination)
-  const { data: notifData, isLoading: notifLoading } = useUserNotifications(id, {
-    page: notifPage,
-    limit: 5,
-  });
+  const { data: notifData, isLoading: notifLoading } = useUserNotifications(
+    id,
+    {
+      page: notifPage,
+      limit: 5,
+    }
+  );
 
   const activeOrders = activeOrdersData?.data ?? [];
   const historyOrders = historyOrdersData?.data ?? [];
@@ -87,7 +90,8 @@ export default function DriverDetailPage({
   const notifTotal = notifData?.meta.total ?? 0;
   const notifPages = Math.max(1, Math.ceil(notifTotal / 5));
 
-  const hFrom = historyTotal === 0 ? 0 : (safeHPage - 1) * HISTORY_PAGE_SIZE + 1;
+  const hFrom =
+    historyTotal === 0 ? 0 : (safeHPage - 1) * HISTORY_PAGE_SIZE + 1;
   const hTo = Math.min(safeHPage * HISTORY_PAGE_SIZE, historyTotal);
 
   const ordersLoading = activeLoading || historyLoading;
@@ -441,15 +445,15 @@ export default function DriverDetailPage({
               )}
 
               {/* Pagination footer */}
-              <div className="flex items-center justify-between px-5 py-3 border-t border-border gap-4">
+              <div className="pagination-footer">
                 <p className="text-xs text-text-secondary">
                   {DRIVER_DETAIL.HISTORY_SHOWING(hFrom, hTo, historyTotal)}
                 </p>
-                <div className="flex items-center gap-1">
+                <div className="pagination-controls-inline">
                   <button
                     onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
                     disabled={safeHPage === 1}
-                    className="icon-btn disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="pagination-nav-btn"
                     aria-label="Previous"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -459,7 +463,7 @@ export default function DriverDetailPage({
                       setHistoryPage(p => Math.min(historyPages, p + 1))
                     }
                     disabled={safeHPage === historyPages}
-                    className="icon-btn disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="pagination-nav-btn"
                     aria-label="Next"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -474,38 +478,50 @@ export default function DriverDetailPage({
                 <h3 className="text-base font-semibold text-text-primary flex items-center gap-2">
                   Staff Log: Notifications sent to {driver?.name}
                   {notifTotal > 0 && (
-                     <span className="text-[10px] font-bold bg-primary-light text-white px-1.5 py-0.5 rounded-full">
-                       {notifTotal}
-                     </span>
+                    <span className="text-[10px] font-bold bg-primary-light text-white px-1.5 py-0.5 rounded-full">
+                      {notifTotal}
+                    </span>
                   )}
                 </h3>
               </div>
 
               {notifLoading ? (
                 <div className="p-10 flex items-center justify-center">
-                   <div className="w-5 h-5 border-2 border-primary-light border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-primary-light border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="py-12 flex flex-col items-center justify-center text-center px-6">
-                  <p className="text-sm text-text-muted">No notifications sent to this driver yet.</p>
+                  <p className="text-sm text-text-muted">
+                    No notifications sent to this driver yet.
+                  </p>
                 </div>
               ) : (
                 <div className="divide-y divide-border text-sm">
-                  {notifications.map((n) => (
-                    <div key={n.id} className="p-4 flex items-start gap-4 hover:bg-surface-elevated/30 transition-colors">
+                  {notifications.map(n => (
+                    <div
+                      key={n.id}
+                      className="p-4 flex items-start gap-4 hover:bg-surface-elevated/30 transition-colors"
+                    >
                       <NotificationIcon type={n.type} size="sm" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-3 mb-0.5">
-                           <p className="text-sm font-semibold text-text-primary capitalize truncate">{n.title}</p>
-                           <span className="text-[10px] text-text-muted whitespace-nowrap">{formatTimestamp(n.createdAt)}</span>
+                          <p className="text-sm font-semibold text-text-primary capitalize truncate">
+                            {n.title}
+                          </p>
+                          <span className="text-[10px] text-text-muted whitespace-nowrap">
+                            {formatTimestamp(n.createdAt)}
+                          </span>
                         </div>
                         <div className="text-xs text-text-secondary leading-relaxed">
                           <NotificationText text={n.body} />
                         </div>
                         {n.orderReferenceId && (
-                           <Link href={`/orders/${n.orderReferenceId}`} className="text-[10px] font-mono font-bold text-primary-light mt-1 inline-block hover:underline">
-                             {n.orderReferenceId}
-                           </Link>
+                          <Link
+                            href={`/orders/${n.orderReferenceId}`}
+                            className="text-[10px] font-mono font-bold text-primary-light mt-1 inline-block hover:underline"
+                          >
+                            {n.orderReferenceId}
+                          </Link>
                         )}
                       </div>
                     </div>
@@ -515,22 +531,24 @@ export default function DriverDetailPage({
 
               {/* Notification Pagination */}
               {notifPages > 1 && (
-                <div className="flex items-center justify-between px-5 py-3 border-t border-border gap-4 bg-surface-elevated/5">
+                <div className="flex flex-col gap-3 px-4 py-3 border-t border-border bg-surface-elevated/5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                   <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider">
                     Page {notifPage} / {notifPages}
                   </p>
-                  <div className="flex items-center gap-1">
+                  <div className="pagination-controls-inline">
                     <button
                       onClick={() => setNotifPage(p => Math.max(1, p - 1))}
                       disabled={notifPage === 1 || notifLoading}
-                      className="icon-btn disabled:opacity-40"
+                      className="pagination-nav-btn"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setNotifPage(p => Math.min(notifPages, p + 1))}
+                      onClick={() =>
+                        setNotifPage(p => Math.min(notifPages, p + 1))
+                      }
                       disabled={notifPage === notifPages || notifLoading}
-                      className="icon-btn disabled:opacity-40"
+                      className="pagination-nav-btn"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>

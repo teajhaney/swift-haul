@@ -17,19 +17,28 @@ export default function OperationsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
 
-  const { data, isLoading, isError } = useOrders({
+  const { data, isLoading } = useOrders({
     status: tab,
     page,
     limit: 10,
   });
 
   const orders = data?.data ?? [];
-  const total = data?.meta.total ?? 0;
+
 
   function openAssign(id: string) {
     setSelectedId(id);
     setAssignOpen(true);
   }
+
+  const emptyTitle =
+    tab === 'FAILED'
+      ? OPERATIONS.EMPTY_FAILED_TITLE
+      : OPERATIONS.EMPTY_CANCELLED_TITLE;
+  const emptySubtitle =
+    tab === 'FAILED'
+      ? OPERATIONS.EMPTY_FAILED_SUB
+      : OPERATIONS.EMPTY_CANCELLED_SUB;
 
   return (
     <div className="space-y-6">
@@ -44,13 +53,13 @@ export default function OperationsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-border">
+      <div className="flex border-b border-border overflow-x-auto no-scrollbar">
         <button
           onClick={() => {
             setTab('FAILED');
             setPage(1);
           }}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
             tab === 'FAILED'
               ? 'border-primary-light text-primary-light'
               : 'border-transparent text-text-muted hover:text-text-primary'
@@ -63,7 +72,7 @@ export default function OperationsPage() {
             setTab('CANCELLED');
             setPage(1);
           }}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
             tab === 'CANCELLED'
               ? 'border-primary-light text-primary-light'
               : 'border-transparent text-text-muted hover:text-text-primary'
@@ -90,106 +99,172 @@ export default function OperationsPage() {
               <CheckCircle className="w-6 h-6" />
             </div>
             <h3 className="text-base font-semibold text-text-primary">
-              {tab === 'FAILED'
-                ? OPERATIONS.EMPTY_FAILED_TITLE
-                : OPERATIONS.EMPTY_CANCELLED_TITLE}
+              {emptyTitle}
             </h3>
             <p className="text-sm text-text-secondary max-w-xs mt-1">
-              {tab === 'FAILED'
-                ? OPERATIONS.EMPTY_FAILED_SUB
-                : OPERATIONS.EMPTY_CANCELLED_SUB}
+              {emptySubtitle}
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-surface-elevated border-b border-border">
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-5 py-3">
-                    {OPERATIONS.COL_ORDER}
-                  </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-4 py-3">
-                    {OPERATIONS.COL_REASON}
-                  </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-4 py-3">
-                    {OPERATIONS.COL_RECIPIENT}
-                  </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-4 py-3">
-                    {OPERATIONS.COL_LAST_DRIVER}
-                  </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-4 py-3">
-                    {OPERATIONS.COL_TIME}
-                  </th>
-                  <th className="text-right text-xs font-semibold uppercase tracking-wider text-text-secondary px-5 py-3">
-                    {OPERATIONS.COL_ACTIONS}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {orders.map(order => (
-                  <tr
-                    key={order.referenceId}
-                    className="hover:bg-surface-elevated/50 transition-colors"
-                  >
-                    <td className="px-5 py-4">
+          <>
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full min-w-[760px]">
+                <thead>
+                  <tr className="bg-surface-elevated border-b border-border">
+                    <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-5 py-3">
+                      {OPERATIONS.COL_ORDER}
+                    </th>
+                    <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-4 py-3">
+                      {OPERATIONS.COL_REASON}
+                    </th>
+                    <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-4 py-3">
+                      {OPERATIONS.COL_RECIPIENT}
+                    </th>
+                    <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-4 py-3">
+                      {OPERATIONS.COL_LAST_DRIVER}
+                    </th>
+                    <th className="text-left text-xs font-semibold uppercase tracking-wider text-text-secondary px-4 py-3">
+                      {OPERATIONS.COL_TIME}
+                    </th>
+                    <th className="text-right text-xs font-semibold uppercase tracking-wider text-text-secondary px-5 py-3">
+                      {OPERATIONS.COL_ACTIONS}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {orders.map(order => (
+                    <tr
+                      key={order.referenceId}
+                      className="hover:bg-surface-elevated/50 transition-colors"
+                    >
+                      <td className="px-5 py-4">
+                        <Link
+                          href={`/orders/${order.referenceId}`}
+                          className="font-mono text-sm font-semibold text-primary-light hover:underline"
+                        >
+                          {order.referenceId}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-text-primary">
+                            {order.pod?.failReason
+                              ? OPERATIONS.REASONS[
+                                  order.pod
+                                    .failReason as keyof typeof OPERATIONS.REASONS
+                                ] || order.pod.failReason
+                              : 'N/A'}
+                          </span>
+                          {order.pod?.failureNotes && (
+                            <span className="text-xs text-text-muted truncate max-w-[200px]">
+                              {order.pod.failureNotes}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-text-primary">
+                        {order.recipientName}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-text-muted" />
+                          <span className="text-sm text-text-secondary">
+                            {order.driver?.name || 'Unassigned'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-text-muted">
+                        {formatDateString(order.updatedAt)}
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openAssign(order.referenceId)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-text-secondary hover:bg-surface-elevated transition-colors"
+                          >
+                            <Truck className="w-3.5 h-3.5 text-primary-light" />
+                            {OPERATIONS.ACTION_REASSIGN}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="md:hidden divide-y divide-border">
+              {orders.map(order => (
+                <div key={order.referenceId} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
                       <Link
                         href={`/orders/${order.referenceId}`}
-                        className="font-mono text-sm font-semibold text-primary-light hover:underline"
+                        className="font-mono text-sm font-semibold text-primary-light break-all"
                       >
                         {order.referenceId}
                       </Link>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-text-primary">
-                          {order.pod?.failReason
-                            ? OPERATIONS.REASONS[
-                                order.pod
-                                  .failReason as keyof typeof OPERATIONS.REASONS
-                              ] || order.pod.failReason
-                            : 'N/A'}
-                        </span>
-                        {order.pod?.failureNotes && (
-                          <span className="text-xs text-text-muted truncate max-w-[200px]">
-                            {order.pod.failureNotes}
+                      <p className="mt-1 text-xs text-text-muted">
+                        {formatDateString(order.updatedAt)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => openAssign(order.referenceId)}
+                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs font-semibold text-text-secondary hover:bg-surface-elevated transition-colors"
+                    >
+                      <Truck className="w-3.5 h-3.5 text-primary-light" />
+                      {OPERATIONS.ACTION_REASSIGN}
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                        {OPERATIONS.COL_REASON}
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-text-primary break-words">
+                        {order.pod?.failReason
+                          ? OPERATIONS.REASONS[
+                              order.pod
+                                .failReason as keyof typeof OPERATIONS.REASONS
+                            ] || order.pod.failReason
+                          : 'N/A'}
+                      </p>
+                      {order.pod?.failureNotes && (
+                        <p className="mt-1 text-xs text-text-secondary break-words">
+                          {order.pod.failureNotes}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                          {OPERATIONS.COL_RECIPIENT}
+                        </p>
+                        <p className="mt-1 text-sm text-text-primary break-words">
+                          {order.recipientName}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                          {OPERATIONS.COL_LAST_DRIVER}
+                        </p>
+                        <div className="mt-1 flex items-start gap-2 text-sm text-text-secondary">
+                          <User className="mt-0.5 w-4 h-4 shrink-0 text-text-muted" />
+                          <span className="break-words">
+                            {order.driver?.name || 'Unassigned'}
                           </span>
-                        )}
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-text-primary">
-                      {order.recipientName}
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-text-muted" />
-                        <span className="text-sm text-text-secondary">
-                          {order.driver?.name || 'Unassigned'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-text-muted">
-                      {formatDateString(order.updatedAt)}
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => openAssign(order.referenceId)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-text-secondary hover:bg-surface-elevated transition-colors"
-                        >
-                          <Truck className="w-3.5 h-3.5 text-primary-light" />
-                          {OPERATIONS.ACTION_REASSIGN}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
-
-
 
       {/* Assign Driver Modal */}
       {assignOpen && selectedId && (
