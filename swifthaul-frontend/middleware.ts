@@ -3,6 +3,7 @@ import { jwtVerify, errors } from 'jose';
 
 // Paths that do not require authentication
 const PUBLIC_EXACT = new Set([
+  '/',
   '/login',
   '/forgot-password',
   '/reset-password',
