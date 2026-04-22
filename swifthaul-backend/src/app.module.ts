@@ -14,8 +14,11 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { UsersModule } from './users/users.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
+  controllers: [AppController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
 
@@ -37,6 +40,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     UsersModule,
   ],
   providers: [
+    AppService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     // JWT check runs globally — routes opt out with @Public()
     { provide: APP_GUARD, useClass: JwtAuthGuard },
