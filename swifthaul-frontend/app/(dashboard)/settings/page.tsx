@@ -5,7 +5,7 @@ import {
   UserPlus,
   MoreVertical,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -324,7 +324,7 @@ export default function SettingsPage() {
             <p className="text-sm text-text-secondary">
               {SETTINGS.MOBILE_SUBHEADING}
             </p>
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-success/10 text-success">
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-success/10 text-success whitespace-nowrap shrink-0">
               {SETTINGS.ACTIVE_COUNT_BADGE(activeCount)}
             </span>
           </div>
@@ -384,7 +384,7 @@ export default function SettingsPage() {
                         >
                           {member.role}
                         </span>
-                      
+
                         {!member.isCurrentUser && (
                           <div className="relative">
                             <button
@@ -433,7 +433,9 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-[11px]">
-                      <span className={`font-semibold ${STATUS_STYLES[member.status].text}`}>
+                      <span
+                        className={`font-semibold ${STATUS_STYLES[member.status].text}`}
+                      >
                         {STATUS_STYLES[member.status].label}
                       </span>
                       <span className="text-text-muted">
