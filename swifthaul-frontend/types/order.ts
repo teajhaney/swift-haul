@@ -92,6 +92,10 @@ export interface ApiOrderListItem {
   recipientName: string;
   recipientPhone: string;
   deliveryAddress: string;
+  pickupLat: number | null;
+  pickupLng: number | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
   driver: ApiOrderDriver | null;
   dispatcher: { id: string; name: string };
   estimatedDelivery: string | null;

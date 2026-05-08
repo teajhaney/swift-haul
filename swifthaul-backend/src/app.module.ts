@@ -12,6 +12,7 @@ import { DriversModule } from './drivers/drivers.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { UsersModule } from './users/users.module';
+import { TrackingModule } from './tracking/tracking.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AppController } from './app.controller';
@@ -38,6 +39,7 @@ import { AppService } from './app.service';
     NotificationsModule,
     AnalyticsModule,
     UsersModule,
+    TrackingModule,
   ],
   providers: [
     AppService,

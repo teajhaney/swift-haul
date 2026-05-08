@@ -32,10 +32,29 @@ export interface ApiTrackingResponse {
   status: string;
   recipientName: string;
   deliveryAddress: string;
+  pickupAddress: string;
+  pickupLat: number | null;
+  pickupLng: number | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
   estimatedDelivery: string | null;
   driver: {
     name: string;
     vehicleType: string | null;
+    currentLat: number | null;
+    currentLng: number | null;
+    locationUpdatedAt: string | null;
   } | null;
   statusLogs: ApiTrackingStatusLog[];
+}
+
+export interface TrackingLocationEvent {
+  referenceId: string;
+  trackingToken: string;
+  driverId: string;
+  lat: number;
+  lng: number;
+  speed: number | null;
+  heading: number | null;
+  locationUpdatedAt: string;
 }

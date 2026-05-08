@@ -106,7 +106,13 @@ export class OrdersService {
             name: true,
             avatarUrl: true,
             driverProfile: {
-              select: { vehicleType: true, vehiclePlate: true },
+              select: {
+                vehicleType: true,
+                vehiclePlate: true,
+                currentLat: true,
+                currentLng: true,
+                locationUpdatedAt: true,
+              },
             },
           },
         },
@@ -196,7 +202,13 @@ export class OrdersService {
             name: true,
             avatarUrl: true,
             driverProfile: {
-              select: { vehicleType: true, vehiclePlate: true },
+              select: {
+                vehicleType: true,
+                vehiclePlate: true,
+                currentLat: true,
+                currentLng: true,
+                locationUpdatedAt: true,
+              },
             },
           },
         },
@@ -261,7 +273,13 @@ export class OrdersService {
             name: true,
             avatarUrl: true,
             driverProfile: {
-              select: { vehicleType: true, vehiclePlate: true },
+              select: {
+                vehicleType: true,
+                vehiclePlate: true,
+                currentLat: true,
+                currentLng: true,
+                locationUpdatedAt: true,
+              },
             },
           },
         },
@@ -531,6 +549,10 @@ export class OrdersService {
       recipientName: order.recipientName,
       recipientPhone: order.recipientPhone,
       deliveryAddress: order.deliveryAddress,
+      pickupLat: order.pickupLat,
+      pickupLng: order.pickupLng,
+      deliveryLat: order.deliveryLat,
+      deliveryLng: order.deliveryLng,
       driver: order.driver
         ? {
             id: order.driver.id,
@@ -570,6 +592,10 @@ export class OrdersService {
             avatarUrl: order.driver.avatarUrl,
             vehicleType: order.driver.driverProfile?.vehicleType ?? null,
             vehiclePlate: order.driver.driverProfile?.vehiclePlate ?? null,
+            currentLat: order.driver.driverProfile?.currentLat ?? null,
+            currentLng: order.driver.driverProfile?.currentLng ?? null,
+            locationUpdatedAt:
+              order.driver.driverProfile?.locationUpdatedAt ?? null,
           }
         : null,
       dispatcher: { id: order.dispatcher.id, name: order.dispatcher.name },
@@ -606,11 +632,20 @@ export class OrdersService {
       status: order.status,
       recipientName: order.recipientName,
       deliveryAddress: order.deliveryAddress,
+      pickupAddress: order.pickupAddress,
+      pickupLat: order.pickupLat,
+      pickupLng: order.pickupLng,
+      deliveryLat: order.deliveryLat,
+      deliveryLng: order.deliveryLng,
       estimatedDelivery: order.estimatedDelivery,
       driver: order.driver
         ? {
             name: order.driver.name,
             vehicleType: order.driver.driverProfile?.vehicleType ?? null,
+            currentLat: order.driver.driverProfile?.currentLat ?? null,
+            currentLng: order.driver.driverProfile?.currentLng ?? null,
+            locationUpdatedAt:
+              order.driver.driverProfile?.locationUpdatedAt ?? null,
           }
         : null,
       statusLogs: order.statusLogs.map((log) => ({

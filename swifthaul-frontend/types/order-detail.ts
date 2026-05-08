@@ -17,6 +17,9 @@ export interface Driver {
   avatarUrl: string | null;
   vehicleType: string | null;
   vehiclePlate: string | null;
+  currentLat: number | null;
+  currentLng: number | null;
+  locationUpdatedAt: string | null;
 }
 
 // API response types for the order detail endpoint

@@ -20,7 +20,15 @@ import {
   TRACKING_STATUS_COLORS,
 } from '@/constants/tracking';
 import { useTracking } from '@/hooks/orders/use-tracking';
+import { useTrackingSocket } from '@/hooks/tracking/use-tracking-socket';
+import { getBounds, toMapPoint } from '@/lib/tracking-map';
 import type { TrackingTimelineEvent, ApiTrackingStatusLog } from '@/types/tracking';
+
+const DEFAULT_TRACKING_POINTS = {
+  pickup: { left: 18, top: 58 },
+  driver: { left: 52, top: 42 },
+  delivery: { left: 74, top: 56 },
+};
 
 // Maps a status log entry's toStatus to a human label and note
 const STATUS_TIMELINE_META: Record<string, { label: string; note: string }> = {
@@ -173,9 +181,47 @@ export default function CustomerTrackingPage({
   const driverName       = order.driver?.name ?? 'Not yet assigned';
   const driverInitials   = order.driver ? getInitials(order.driver.name) : '—';
   const estimatedArrival = formatEstimatedDelivery(order.estimatedDelivery);
+  const liveLocationEvent = useTrackingSocket(token);
 
   const isFailed    = order.status === 'FAILED' || order.status === 'CANCELLED';
   const isDelivered = order.status === 'DELIVERED';
+  const pickupCoords =
+    typeof order.pickupLat === 'number' && typeof order.pickupLng === 'number'
+      ? { lat: order.pickupLat, lng: order.pickupLng }
+      : null;
+  const deliveryCoords =
+    typeof order.deliveryLat === 'number' &&
+    typeof order.deliveryLng === 'number'
+      ? { lat: order.deliveryLat, lng: order.deliveryLng }
+      : null;
+  const driverCoords =
+    liveLocationEvent?.referenceId === order.referenceId
+      ? { lat: liveLocationEvent.lat, lng: liveLocationEvent.lng }
+      : typeof order.driver?.currentLat === 'number' &&
+          typeof order.driver?.currentLng === 'number'
+        ? { lat: order.driver.currentLat, lng: order.driver.currentLng }
+        : null;
+  const mapBounds = getBounds([pickupCoords, driverCoords, deliveryCoords]);
+  const pickupPoint = toMapPoint(
+    pickupCoords,
+    mapBounds,
+    DEFAULT_TRACKING_POINTS.pickup,
+  );
+  const driverPoint = toMapPoint(
+    driverCoords,
+    mapBounds,
+    DEFAULT_TRACKING_POINTS.driver,
+  );
+  const deliveryPoint = toMapPoint(
+    deliveryCoords,
+    mapBounds,
+    DEFAULT_TRACKING_POINTS.delivery,
+  );
+  const statusSummary = isDelivered
+    ? 'Delivered'
+    : driverCoords
+      ? 'Driver is live on route'
+      : `Driver is ${order.driver?.name ? 'on their way' : 'assigned'}`;
 
   return (
     <div className="min-h-screen bg-surface-subtle flex flex-col">
@@ -297,7 +343,6 @@ export default function CustomerTrackingPage({
             </div>
           )}
 
-          {/* Map placeholder — real Leaflet map comes in Phase 3 with GPS pings */}
           <div
             className="rounded-xl overflow-hidden border border-border shadow-sm relative h-52 sm:h-56"
             style={{
@@ -309,22 +354,43 @@ export default function CustomerTrackingPage({
               backgroundColor: '#EEF2F7',
             }}
           >
-            {/* Route SVG */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
-              <line x1="20%" y1="60%" x2="52%" y2="44%" stroke="#1A6FB5" strokeWidth="2" strokeDasharray="7 5" strokeLinecap="round" />
-              <line x1="52%" y1="44%" x2="74%" y2="58%" stroke="#10B981" strokeWidth="2" strokeDasharray="7 5" strokeLinecap="round" />
+              <line
+                x1={`${pickupPoint.left}%`}
+                y1={`${pickupPoint.top}%`}
+                x2={`${driverPoint.left}%`}
+                y2={`${driverPoint.top}%`}
+                stroke="#1A6FB5"
+                strokeWidth="2"
+                strokeDasharray="7 5"
+                strokeLinecap="round"
+              />
+              <line
+                x1={`${driverPoint.left}%`}
+                y1={`${driverPoint.top}%`}
+                x2={`${deliveryPoint.left}%`}
+                y2={`${deliveryPoint.top}%`}
+                stroke="#10B981"
+                strokeWidth="2"
+                strokeDasharray="7 5"
+                strokeLinecap="round"
+              />
             </svg>
 
-            {/* Depot pin */}
-            <div className="absolute left-[18%] top-[58%] -translate-x-1/2 -translate-y-full">
+            <div
+              className="absolute -translate-x-1/2 -translate-y-full"
+              style={{ left: `${pickupPoint.left}%`, top: `${pickupPoint.top}%` }}
+            >
               <div className="w-7 h-7 rounded-full bg-success border-2 border-white shadow flex items-center justify-center">
                 <Warehouse className="w-3.5 h-3.5 text-white" />
               </div>
             </div>
 
-            {/* Driver pin */}
             {order.driver && !isDelivered && (
-              <div className="absolute left-[52%] top-[42%] -translate-x-1/2 -translate-y-1/2">
+              <div
+                className="absolute -translate-x-1/2 -translate-y-1/2"
+                style={{ left: `${driverPoint.left}%`, top: `${driverPoint.top}%` }}
+              >
                 <div className="relative">
                   <span className="absolute inset-0 rounded-full bg-accent opacity-30 animate-ping" />
                   <div className="w-8 h-8 rounded-full bg-accent border-2 border-white shadow-lg flex items-center justify-center relative">
@@ -334,8 +400,10 @@ export default function CustomerTrackingPage({
               </div>
             )}
 
-            {/* Destination pin */}
-            <div className="absolute left-[74%] top-[56%] -translate-x-1/2 -translate-y-full">
+            <div
+              className="absolute -translate-x-1/2 -translate-y-full"
+              style={{ left: `${deliveryPoint.left}%`, top: `${deliveryPoint.top}%` }}
+            >
               <div className={`w-7 h-7 rounded-full border-2 border-white shadow flex items-center justify-center ${isDelivered ? 'bg-success' : 'bg-primary-light'}`}>
                 {isDelivered ? (
                   <Check className="w-3.5 h-3.5 text-white" />
@@ -358,7 +426,7 @@ export default function CustomerTrackingPage({
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-widest text-text-muted leading-none">Status</span>
                   <span className="text-sm font-bold text-text-primary">
-                    {isDelivered ? 'Delivered' : `Driver is ${order.driver?.name ? 'on their way' : 'assigned'}`}
+                    {statusSummary}
                   </span>
                 </div>
               </div>

@@ -9,6 +9,9 @@ export interface OrderDriverInfo {
 export interface OrderDriverDetailInfo extends OrderDriverInfo {
   vehicleType: VehicleType | null;
   vehiclePlate: string | null;
+  currentLat: number | null;
+  currentLng: number | null;
+  locationUpdatedAt: Date | null;
 }
 
 export interface OrderDispatcherInfo {
@@ -39,6 +42,10 @@ export interface OrderListItem {
   recipientName: string;
   recipientPhone: string;
   deliveryAddress: string;
+  pickupLat: number | null;
+  pickupLng: number | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
   driver: OrderDriverInfo | null;
   dispatcher: OrderDispatcherInfo;
   estimatedDelivery: Date | null;
@@ -80,10 +87,18 @@ export interface PublicTrackingResponse {
   status: OrderStatus;
   recipientName: string;
   deliveryAddress: string;
+  pickupAddress: string;
+  pickupLat: number | null;
+  pickupLng: number | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
   estimatedDelivery: Date | null;
   driver: {
     name: string;
     vehicleType: VehicleType | null;
+    currentLat: number | null;
+    currentLng: number | null;
+    locationUpdatedAt: Date | null;
   } | null;
   statusLogs: Array<{
     fromStatus: OrderStatus;
@@ -110,7 +125,15 @@ export type OrderDetailResult = Prisma.OrderGetPayload<{
         id: true;
         name: true;
         avatarUrl: true;
-        driverProfile: { select: { vehicleType: true; vehiclePlate: true } };
+        driverProfile: {
+          select: {
+            vehicleType: true;
+            vehiclePlate: true;
+            currentLat: true;
+            currentLng: true;
+            locationUpdatedAt: true;
+          };
+        };
       };
     };
     dispatcher: { select: { id: true; name: true } };
@@ -126,7 +149,14 @@ export type OrderTrackingResult = Prisma.OrderGetPayload<{
     driver: {
       select: {
         name: true;
-        driverProfile: { select: { vehicleType: true } };
+        driverProfile: {
+          select: {
+            vehicleType: true;
+            currentLat: true;
+            currentLng: true;
+            locationUpdatedAt: true;
+          };
+        };
       };
     };
     statusLogs: { orderBy: { createdAt: 'asc' } };
